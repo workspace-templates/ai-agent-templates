@@ -1,0 +1,45 @@
+{
+  "slug": "graphql-api-rules",
+  "title": "GraphQL API Rules",
+  "kind": "rules",
+  "category": "backend",
+  "summary": "Project rules for GraphQL servers: consistent schema naming, deliberate nullability, dataloaders, typed errors and depth and cost limits.",
+  "description": [
+    "Once clients ship against a GraphQL schema, renaming anything gets expensive, so naming and nullability decisions matter more than resolver code. These rules front-load those choices.",
+    "They also guard the server: batching removes the usual N+1 trap, and query limits stop one expensive request from taking the service down."
+  ],
+  "stacks": [
+    "graphql"
+  ],
+  "topics": [
+    "api-design",
+    "performance"
+  ],
+  "useWhen": [
+    "You are designing or extending a GraphQL schema",
+    "Resolvers hit the database once per list item",
+    "Clients cannot tell expected failures from crashes",
+    "You expose the API publicly and need abuse limits"
+  ],
+  "body": "# Project rules: GraphQL API\n\n## Schema design\n- Types are PascalCase nouns, fields camelCase, enums SCREAMING_SNAKE_CASE. Name mutations as verb plus noun, such as `createInvoice`.\n- Each mutation takes one `input` object and returns a payload type with the changed object and a list of user errors. Do not return bare booleans.\n- Make fields non-null only when the server can always provide them; one failing nullable field then does not null its parent. Keep list items non-null.\n- Use cursor-based connections for lists that can grow. Never reuse or repurpose a field; add a new one and mark the old with `@deprecated(reason:)`.\n- Use custom scalars (`DateTime`, `URL`) over raw strings, and opaque global ids.\n\n## Resolvers\n- Resolvers stay thin and call services. Batch and cache per request with DataLoader; create the loaders in the context for every request.\n- Check authorization in the service layer or with a directive, not only at the top-level field, so nested access is covered.\n\n## Errors\n- Expected failures (validation, not found, conflict) are typed data in the payload. Unexpected ones throw; mask the details in production and keep a code in extensions.\n\n## Limits\n- Set query depth and complexity limits, a maximum page size, request timeouts and persisted queries for public clients. Disable introspection for anonymous production traffic if the API is private.\n\n## Tests\n- Test operations end to end against the executable schema, and run a schema diff check in CI to catch breaking changes.\n\n## Before finishing\nRun the schema lint, the breaking change check and the test suite.",
+  "example": {
+    "prompt": "Add a mutation to rename a project",
+    "result": "The agent adds renameProject with an input object, returns a payload with the project and user errors, loads authorization in the service, and updates the schema snapshot with a test."
+  },
+  "faq": [
+    {
+      "question": "Does it favor schema-first or code-first?",
+      "answer": "Neither. The naming, nullability and limit rules apply to both, and the file only asks that the schema be reviewable as text."
+    },
+    {
+      "question": "Why return user errors in a payload?",
+      "answer": "Clients can handle expected problems in normal data flow, while real faults stay in the errors array and are logged."
+    }
+  ],
+  "access": [
+    "Instructions only; nothing is executed by the file itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

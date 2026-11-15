@@ -1,0 +1,45 @@
+{
+  "slug": "add-caching",
+  "title": "Add Caching",
+  "kind": "command",
+  "category": "backend",
+  "summary": "Adds caching to a hot read path with clear keys, an expiry and invalidation on writes, after proving the path is hot.",
+  "description": [
+    "A cache is only a good idea when you know what makes it stale. This command asks where the read is hot, picks a key that includes everything the result depends on, and ties invalidation to the writes that change the data.",
+    "It uses the cache layer already in the project, such as Redis, an in-process map or a CDN header, and avoids caching anything that is per-user unless the user id is in the key."
+  ],
+  "stacks": [],
+  "topics": [
+    "performance",
+    "api-design"
+  ],
+  "useWhen": [
+    "A read endpoint or query dominates your load",
+    "The same expensive lookup runs on every request",
+    "You want a cache but fear serving stale or wrong-user data",
+    "You need to cut third-party API calls"
+  ],
+  "body": "Add caching to: $ARGUMENTS\n\n1. Read the code and its callers. Confirm it is worth caching: estimate how often it is read versus written, and how costly each call is. If it is cheap or write-heavy, say so and stop.\n2. Use the cache already in the project. Do not add Redis or a new package without asking.\n3. Build the key from every input that changes the result (ids, locale, filters, tenant, user role). Prefix it with a version string so a format change can invalidate everything.\n4. Pick a TTL from how stale the data may be, and add jitter so many keys do not expire at once. Protect against a stampede with a lock or request coalescing when the miss is expensive.\n5. Invalidate on every write path that changes the source data. List those paths explicitly.\n6. Never cache errors or empty results from failures.\n7. Add tests for hit, miss, expiry and invalidation, then run them.\n\nReport the key format, TTL, invalidation points and the risk of stale reads.",
+  "argumentHint": "[function or route to cache]",
+  "example": {
+    "prompt": "/add-caching getProductPrice in src/pricing/service.ts",
+    "result": "Read:write ratio is about 200:1. Key v1:price:{sku}:{currency}, TTL 300s with 10% jitter.\nInvalidated in updatePrice() and importCatalog(). 4 tests pass.\nRisk: price changes through the admin SQL console would stay stale for up to 5 minutes."
+  },
+  "faq": [
+    {
+      "question": "Does it add Redis for me?",
+      "answer": "No. It reuses the cache you already run and asks before adding any new infrastructure."
+    },
+    {
+      "question": "How does it avoid showing one user another user's data?",
+      "answer": "Anything that depends on the user, role or tenant goes into the cache key, and it refuses to cache results it cannot key safely."
+    }
+  ],
+  "access": [
+    "Reads the code path and its callers",
+    "Edits source and test files, then runs the tests"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

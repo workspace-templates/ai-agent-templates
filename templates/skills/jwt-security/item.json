@@ -1,0 +1,44 @@
+{
+  "slug": "jwt-security",
+  "title": "JWT Security",
+  "kind": "skill",
+  "category": "security",
+  "summary": "Audits how an app signs, verifies, stores and expires JSON Web Tokens, and fixes algorithm confusion, weak secrets and unsafe browser storage.",
+  "description": [
+    "JWTs are easy to issue and easy to get subtly wrong. A verifier that trusts the algorithm named in the token header, a secret that is a short word, or a token kept in localStorage can each hand an attacker the whole system.",
+    "This skill finds every place tokens are created and checked, compares them against a short list of known failure modes, and proposes concrete changes with the library calls to use."
+  ],
+  "stacks": [],
+  "topics": [
+    "security",
+    "api-design"
+  ],
+  "useWhen": [
+    "Your API authenticates with bearer tokens",
+    "You use a JWT library but never read its verification options",
+    "Tokens live in localStorage and you worry about XSS",
+    "You need to add logout or revocation to a stateless setup"
+  ],
+  "body": "# JWT security\n\nFind where tokens are issued and verified, then check each against the failure list below.\n\n## Steps\n\n1. Search for the library calls (`jwt.sign`, `jwt.verify`, `jsonwebtoken`, `jose`, `PyJWT`, `jjwt`) and decoding without verification (`decode`, `jwt_decode` used for decisions).\n2. Verification must pin the algorithm: pass an explicit `algorithms` list (for example only `RS256`). Reject `none`. Never let the token header choose the key type, which enables confusion between RS256 and HS256.\n3. Secrets: HS256 keys must be random and at least 32 bytes, loaded from the environment. Flag short, guessable or committed keys. Prefer asymmetric keys when other services only verify.\n4. Claims: require `exp` with short lifetimes (5 to 15 minutes for access tokens), check `iss` and `aud`, and use `nbf` where relevant. Never put secrets or personal data in the payload; it is only encoded.\n5. Lookup by `kid` must use an allowlist, never a file path or query.\n6. Storage: do not keep tokens in localStorage or sessionStorage. Use an `HttpOnly`, `Secure`, `SameSite` cookie, or hold the token in memory with a refresh cookie.\n7. Refresh and revocation: rotate refresh tokens on use, store them hashed, and keep a denylist or version counter so logout and password change take effect.\n\n## Rules\n\n- A decoded token is untrusted until verified.\n- Do not invent a custom signing scheme.\n\n## Report\n\nPer issue: `path:line`, why it is exploitable, the replacement code. End with the safe settings you recommend.",
+  "example": {
+    "prompt": "Audit how our API uses JWTs.",
+    "result": "Critical: auth/verify.ts:14 calls jwt.verify(token, key) with no algorithms option, so an HS256 token signed with the public key is accepted. Fix: { algorithms: [\"RS256\"] }. High: access tokens last 30 days and live in localStorage (web/src/session.ts:9). Fix: 10 minute expiry, refresh in an HttpOnly cookie. Medium: aud is never checked."
+  },
+  "faq": [
+    {
+      "question": "Should we drop JWTs altogether?",
+      "answer": "Not necessarily. For a single web app, plain server sessions are simpler and easier to revoke. JWTs make sense when several services must verify identity without a shared store."
+    },
+    {
+      "question": "How can a stateless token be revoked?",
+      "answer": "Keep access tokens very short and revoke refresh tokens in a database. For instant cutoff add a per-user token version that the verifier compares."
+    }
+  ],
+  "access": [
+    "Reads source files and configuration",
+    "Edits only token-handling code, and only when you ask for the fixes"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

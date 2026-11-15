@@ -1,0 +1,45 @@
+{
+  "slug": "sveltekit-rules",
+  "title": "SvelteKit Rules",
+  "kind": "rules",
+  "category": "frontend",
+  "summary": "Project rules for SvelteKit: load functions, form actions, Svelte 5 runes, server-only modules and clear client and server boundaries.",
+  "description": [
+    "This rules file keeps an agent inside the SvelteKit model: data comes from load functions, mutations go through form actions, and server code stays on the server.",
+    "It also sets the Svelte 5 style, using runes for state, so new components are consistent and free of legacy store patterns where they are not needed."
+  ],
+  "stacks": [
+    "svelte"
+  ],
+  "topics": [
+    "api-design",
+    "typescript"
+  ],
+  "useWhen": [
+    "You add routes to a SvelteKit app with an agent",
+    "Components fetch data in onMount instead of load",
+    "A form works only with JavaScript enabled",
+    "Private modules risk being bundled for the browser"
+  ],
+  "body": "# Project rules: SvelteKit\n\n## Routing and data\n- Routes live in `src/routes`. Fetch page data in `+page.server.ts` or `+page.ts` `load` functions, not in `onMount`. Use the provided `fetch` so cookies and relative URLs work during server rendering.\n- Return plain serializable data from `load`. Use `depends` and `invalidate` when data must refresh.\n- Put database access, secrets and private environment variables in `+server.ts`, `+page.server.ts` and `$lib/server/`. Import secrets only from `$env/static/private` or `$env/dynamic/private`, never from client code.\n\n## Mutations\n- Use form actions in `+page.server.ts` with real `<form method=\"POST\">` elements and `use:enhance` for progressive enhancement. Validate with Zod, and return `fail(400, { errors })` rather than throwing for user mistakes.\n- Use `error()` for 404 and 403 and `redirect()` after a successful mutation.\n\n## Svelte 5\n- Use runes: `$state`, `$derived`, `$effect` (only for side effects), `$props`. Use `{@render}` snippets instead of slots in new code.\n- Keep components small, and put reusable code in `$lib` with the alias, not long relative paths.\n- Handle auth in `hooks.server.ts` and set `event.locals`; check it in each protected load.\n\n## Quality\n- Use TypeScript with generated `$types`. Test logic with Vitest and flows with Playwright.\n- Run `svelte-check`, the linter and the tests before finishing.",
+  "example": {
+    "prompt": "Add a newsletter signup form to the footer",
+    "result": "The agent adds a form action with Zod validation and fail(400) on errors, enhances the form with use:enhance, keeps the email service key in $lib/server, and adds a Playwright check."
+  },
+  "faq": [
+    {
+      "question": "Why prefer load over onMount fetching?",
+      "answer": "Load runs on the server for the first request, so the page arrives with data and works for crawlers without waiting for client code."
+    },
+    {
+      "question": "Are Svelte stores banned?",
+      "answer": "No. They remain fine for shared reactive state, but local component state should use runes."
+    }
+  ],
+  "access": [
+    "Guidance for the agent; it neither runs commands nor edits files unless you ask"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

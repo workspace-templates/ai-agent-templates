@@ -1,0 +1,47 @@
+{
+  "slug": "nextjs-app-router-rules",
+  "title": "Next.js App Router Rules",
+  "kind": "rules",
+  "category": "frontend",
+  "summary": "Project rules for a Next.js App Router codebase: server components first, explicit caching, typed data boundaries and no client-side waterfalls.",
+  "description": [
+    "Most App Router mistakes come from treating it like the old pages directory. These rules tell the agent where code belongs: server by default, a client component only when it needs state or a browser API.",
+    "They also cover caching, data fetching, forms and type safety, the places where generated code tends to make slow or leaky pages."
+  ],
+  "stacks": [
+    "nextjs",
+    "react",
+    "typescript"
+  ],
+  "topics": [
+    "typescript",
+    "performance"
+  ],
+  "useWhen": [
+    "You start a new Next.js project with the App Router",
+    "An agent keeps adding use client to every file",
+    "Pages are slow because of fetch waterfalls",
+    "You want consistent routing and data conventions"
+  ],
+  "body": "# Project rules: Next.js App Router\n\n## Components\n- Every component is a server component unless it needs state, effects, event handlers or browser APIs. Add `'use client'` only in that leaf file, never in a layout or page just for convenience.\n- Pass serializable props from server to client components. Never pass functions, class instances or secrets.\n- Keep `page.tsx` and `layout.tsx` thin; put logic in `lib/` and UI in `components/`.\n\n## Data\n- Fetch on the server, in the component that needs the data. Start independent requests together with `Promise.all` to avoid waterfalls. Wrap slow parts in `<Suspense>` with a loading fallback.\n- State caching on purpose: set `revalidate`, tags or `cache: 'no-store'` explicitly; do not rely on defaults.\n- Mutations use Server Actions or route handlers. Validate every input with zod on the server and check the user's permission there, not in the UI.\n- Read secrets and environment variables only in server code. Only `NEXT_PUBLIC_` values may reach the browser.\n\n## Routing and files\n- Use route groups for layout sections, `loading.tsx` and `error.tsx` for states, `notFound()` for missing records.\n- Use `next/image`, `next/font` and `generateMetadata` for every public page.\n\n## TypeScript\n- Strict mode. No `any`; type API responses from a zod schema and infer the type.\n\n## Done means\n`npm run lint`, `tsc --noEmit` and `next build` pass without new warnings.",
+  "example": {
+    "prompt": "Add a page that lists the user's invoices with a filter",
+    "result": "The agent creates app/invoices/page.tsx as a server component that reads searchParams, loads invoices on the server, wraps the table in Suspense, and keeps only the filter input in a small client component."
+  },
+  "faq": [
+    {
+      "question": "Where does this file go?",
+      "answer": "It becomes the rules file of your agent, such as CLAUDE.md or a Cursor rules file, and is generated for you per tool."
+    },
+    {
+      "question": "Does it work with the Pages Router?",
+      "answer": "No. The caching and component rules assume the App Router."
+    }
+  ],
+  "access": [
+    "Instructions only; it does not read or run anything by itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

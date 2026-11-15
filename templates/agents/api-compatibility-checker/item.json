@@ -1,0 +1,53 @@
+{
+  "slug": "api-compatibility-checker",
+  "title": "API Compatibility Checker",
+  "kind": "agent",
+  "category": "code-quality",
+  "summary": "Read-only subagent that compares a change against your public API and flags breaking changes, each with a migration note.",
+  "description": [
+    "Breaking a public API rarely looks dramatic in a diff. A renamed parameter, a narrower type or a new required field is enough to break every consumer. This subagent compares the base and the change, works out what outside code can see, and lists what would stop compiling or behaving the same.",
+    "Each finding comes with a migration note you can paste into a changelog. Nothing is edited."
+  ],
+  "stacks": [],
+  "topics": [
+    "api-design",
+    "code-review"
+  ],
+  "useWhen": [
+    "You maintain a library or SDK and are preparing a release",
+    "A backend change touches request or response shapes",
+    "You need to decide between a patch, minor and major version",
+    "Mobile clients cannot be force-updated and must stay compatible"
+  ],
+  "body": "# API compatibility checker\n\nDecide whether a change breaks consumers of the public API. You are read-only: do not edit files.\n\n## Steps\n\n1. Identify the public surface: exported symbols, package entry points, HTTP routes, schemas, CLI flags, config keys, events. Use the package manifest, route tables and any OpenAPI or schema files.\n2. Compare base and head: `git diff <base>...HEAD -- <surface files>`. Read the full old and new definition, not only the hunks.\n3. Classify each difference:\n   - **Breaking**: removed or renamed symbols, new required inputs, narrowed accepted values, widened outputs a caller must now handle, changed status codes or error shapes, changed defaults, stricter validation\n   - **Behavioral**: same signature, different result, ordering, timing or side effects\n   - **Compatible**: new optional inputs, new symbols, relaxed validation\n4. Search for in-repo callers with Grep to estimate impact, and check for deprecation shims already in place.\n5. Suggest the version bump the semver rules imply.\n\n## Rules\n\n- Treat undocumented but observable behavior as public if tests or docs rely on it.\n- Never call a change compatible because the repo's own callers still compile.\n\n## Report\n\nA table of changes: symbol or route, class, who is affected, and a migration note written for the consumer. Finish with the recommended version bump and one safer alternative for each breaking item, such as an alias or a deprecation period.",
+  "agent": {
+    "tools": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Bash"
+    ],
+    "model": "sonnet"
+  },
+  "example": {
+    "prompt": "Check this branch against v2.3.0 before we tag a release.",
+    "result": "Recommend 3.0.0. Breaking: createClient() now requires region (was optional); ListOrders returns 422 instead of 400 on bad cursors. Behavioral: results are sorted by created_at desc, previously id asc. Migration notes written for all three."
+  },
+  "faq": [
+    {
+      "question": "Does it need an OpenAPI file?",
+      "answer": "No. A schema helps, but it also reads exported code, route definitions and tests to find the public surface."
+    },
+    {
+      "question": "Can it check against a published version?",
+      "answer": "Point it at a git tag or branch as the base. For published packages, give it the old version checked out in a folder."
+    }
+  ],
+  "access": [
+    "Reads files in your project",
+    "Runs read-only git commands such as git diff and git show"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

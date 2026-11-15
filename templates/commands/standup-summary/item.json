@@ -1,0 +1,44 @@
+{
+  "slug": "standup-summary",
+  "title": "Standup Summary",
+  "kind": "command",
+  "category": "productivity",
+  "summary": "Summarizes what you changed since yesterday from git history and the working tree, in a form you can read out at standup.",
+  "description": [
+    "Standup is easier when you do not have to remember Tuesday. This command reads your commits, branches and uncommitted work and turns them into three short parts: done, in progress and blocked.",
+    "It looks at your own work by default, handles weekends by going back to the last working day, and says plainly when the history is too thin to claim anything."
+  ],
+  "stacks": [],
+  "topics": [
+    "git"
+  ],
+  "useWhen": [
+    "Five minutes before the daily standup",
+    "On Monday when Friday is a blur",
+    "When you must send a written status update",
+    "After switching between several branches in a day"
+  ],
+  "body": "Summarize recent work for standup. Scope: $ARGUMENTS (my commits since the last working day if empty).\n\n1. Get the author from `git config user.name`. Choose the start: yesterday, or Friday if today is Monday, unless the user gave a range.\n2. Run `git log --all --author=\"<name>\" --since=\"<start>\" --pretty=\"%h %ad %s\" --date=short` and `git status --short`. Check `git stash list` and the current branch.\n3. Group the commits by branch or feature. Read the diff of a commit only when its subject is vague.\n4. Write three parts, each two or three bullets at most: **Done** (finished and merged or pushed), **In progress** (uncommitted or unpushed work, with the branch), **Blocked or needs input** (only if the history shows reverts, long-lived drafts or failing work; otherwise write \"nothing visible\").\n5. Do not invent plans for today. End with one line asking what to add that git cannot know.\n\nKeep it under 120 words, in the first person, plain language.",
+  "argumentHint": "[author or time range, optional]",
+  "example": {
+    "prompt": "/standup-summary",
+    "result": "Done: finished the retry logic for webhooks and pushed it (feature/webhook-retry, 4 commits).\nIn progress: tests for the backoff timer, uncommitted in 2 files.\nBlocked: nothing visible.\nAnything else to add, like meetings or reviews?"
+  },
+  "faq": [
+    {
+      "question": "Can it summarize my whole team?",
+      "answer": "Yes, pass an author name or a range such as \"team since Monday\" and it widens the search."
+    },
+    {
+      "question": "Does it see work outside git?",
+      "answer": "No. Meetings, reviews and chat are not in the history, so it asks you to add them."
+    }
+  ],
+  "access": [
+    "Reads git history, status and stash list",
+    "Changes nothing"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

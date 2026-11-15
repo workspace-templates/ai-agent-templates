@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "browserbase": {
+      "command": "npx",
+      "args": [
+        "@browserbasehq/mcp"
+      ],
+      "env": {
+        "BROWSERBASE_API_KEY": "${env:BROWSERBASE_API_KEY}",
+        "BROWSERBASE_PROJECT_ID": "${env:BROWSERBASE_PROJECT_ID}",
+        "GEMINI_API_KEY": "${env:GEMINI_API_KEY}"
+      }
+    }
+  }
+}

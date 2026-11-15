@@ -1,0 +1,45 @@
+{
+  "slug": "update-snapshots-safely",
+  "title": "Update Snapshots Safely",
+  "kind": "command",
+  "category": "testing",
+  "summary": "Reviews every changed snapshot before updating it and flags the ones that hide a real regression.",
+  "description": [
+    "Running the update flag on a red suite is how bugs get approved. This command shows each snapshot difference, decides whether it is an intended change, and updates only the ones that are.",
+    "Suspicious differences, such as a missing field or an error message captured as expected output, are held back and explained."
+  ],
+  "stacks": [],
+  "topics": [
+    "testing",
+    "code-review"
+  ],
+  "useWhen": [
+    "After a component or serializer change makes snapshots fail",
+    "When a library upgrade shifts generated markup",
+    "Before approving a pull request with hundreds of snapshot lines",
+    "When the team habit is to press u without looking"
+  ],
+  "body": "Review snapshot changes safely. Scope: $ARGUMENTS (all failing snapshot tests if empty).\n\n1. Run the tests without any update flag and list each failing snapshot with its test name and file. Check `git status` for snapshot files that already changed.\n2. For every failure, show the diff in a compact form and classify it: **intended** (matches the code change you can see in `git diff`), **cosmetic** (whitespace, ordering, generated class names), or **suspicious** (removed content, empty output, error text, undefined or NaN, changed behavior with no matching source change).\n3. Explain each suspicious case, find the cause in the source and propose a fix. Do not update those snapshots.\n4. Update only the intended and cosmetic ones, one file at a time, using the runner's targeted option (for example `jest -u path -t \"name\"` or `vitest -u path`), never a blanket update.\n5. Rerun the whole suite.\n\nReport counts for intended, cosmetic and suspicious, what was updated, and what remains. Ask before committing.",
+  "argumentHint": "[test file or name pattern]",
+  "example": {
+    "prompt": "/update-snapshots-safely src/components",
+    "result": "14 snapshot failures: 9 intended (new aria-label), 3 cosmetic (class order), 2 suspicious.\nSuspicious: Table.test shows an empty body, the rows prop is no longer passed after the refactor.\nUpdated 12, held 2. Fix the Table regression?"
+  },
+  "faq": [
+    {
+      "question": "Why not just run the update flag?",
+      "answer": "A blanket update records whatever the code now produces, including bugs. Reviewing first keeps snapshots meaningful."
+    },
+    {
+      "question": "Does it work outside JavaScript?",
+      "answer": "Yes. The method fits any snapshot or golden-file tool; it adapts the commands to your runner."
+    }
+  ],
+  "access": [
+    "Reads test output and git diffs",
+    "Rewrites snapshot files for approved cases only"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

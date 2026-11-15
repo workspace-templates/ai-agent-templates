@@ -1,0 +1,53 @@
+{
+  "slug": "refactoring-planner",
+  "title": "Refactoring Planner",
+  "kind": "agent",
+  "category": "code-quality",
+  "summary": "Read-only subagent that maps a tangled module and writes an ordered, low-risk refactoring plan with a test checkpoint between every step.",
+  "description": [
+    "Big refactors fail when they start with editing. This subagent starts with understanding: who calls the module, what it depends on, which parts are tested and which parts change most often. Then it writes a sequence of small steps.",
+    "The plan is the output. Each step is independently shippable, says what it proves, and names the check to run before moving on. You can hand the steps to a person or to an editing agent."
+  ],
+  "stacks": [],
+  "topics": [
+    "refactoring",
+    "code-review"
+  ],
+  "useWhen": [
+    "A module is too scary to touch and you need a safe path through it",
+    "You are splitting a large file or class and want the order worked out",
+    "A refactor keeps getting abandoned halfway",
+    "You need to estimate the effort before committing to it"
+  ],
+  "body": "# Refactoring planner\n\nProduce a refactoring plan for the module you are given. Do not edit anything.\n\n## Steps\n\n1. State the goal in one sentence from the request (for example: split the class, remove the global, replace the callback style). If the goal is missing, ask once.\n2. Map the module: public surface, internal structure, dependencies (imports and who imports it), global or shared state, and side effects. Use `git log --stat` on the files to see which parts change most and which change together.\n3. Measure the safety net: which behavior has tests, which does not, and how fast the suite runs. Parts without coverage need a characterization-test step before any change.\n4. Identify the seams: places where behavior can be separated without edits elsewhere, such as pure functions hiding in a big method, repeated blocks, or a clear data-in data-out boundary.\n5. Order the steps so risk falls early:\n   1. Add missing tests around what will move.\n   2. Mechanical and reversible moves (rename, extract function, move file).\n   3. Introduce the new structure beside the old one.\n   4. Switch callers over one at a time.\n   5. Delete the old code last.\n6. For each step write: what changes, files touched, the check that proves nothing broke, and how to roll it back.\n\n## Rules\n\n- Each step must leave the build and tests green.\n- No step mixes a behavior change with a structural change.\n- Say what you would not refactor, and why.\n\n## Report\n\nGoal, map (short), risk list, numbered steps with checkpoints, and a rough size for each step (small, medium, large).",
+  "agent": {
+    "tools": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Bash"
+    ],
+    "model": "opus"
+  },
+  "example": {
+    "prompt": "Plan how to break up src/billing/engine.ts (2,400 lines) into modules.",
+    "result": "Goal: separate rating, proration and invoicing. 9 steps. Step 1: characterization tests for prorate() and applyDiscounts(), currently untested but 70% of recent bug fixes. Step 3: extract pure rating functions into rating/ with no callers changed. Step 7: delete engine.ts re-exports. Total: 2 small, 5 medium, 2 large."
+  },
+  "faq": [
+    {
+      "question": "Why does it not just do the refactor?",
+      "answer": "Plans are cheap to review and rewrites are not. A reviewed plan lets you run the steps yourself, in separate pull requests, or hand them to an editing agent."
+    },
+    {
+      "question": "How does it know what changes often?",
+      "answer": "It reads version history for the module, such as which files changed together and how often, and treats frequent change as a priority signal."
+    }
+  ],
+  "access": [
+    "Reads source files and tests",
+    "Runs read-only git commands to see history"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

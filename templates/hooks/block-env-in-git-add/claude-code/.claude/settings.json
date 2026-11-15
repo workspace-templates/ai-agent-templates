@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{let j={};try{j=JSON.parse(d)||{}}catch(e){process.exit(0)}const i=j.tool_input||{};const q=String.fromCharCode(34),sq=String.fromCharCode(39),bs=String.fromCharCode(92),nl=String.fromCharCode(10);const fs=require('fs'),cp=require('child_process');const sec=n=>{n=n.toLowerCase();return(/^[.]env([.].+)?$/.test(n)&&!/[.](example|sample|template|dist|defaults?)$/.test(n))||/[.](pem|key|p12|pfx|jks|keystore|ppk)$/.test(n)||/^id_(rsa|dsa|ecdsa|ed25519)$/.test(n)||/^(credentials([.](json|ya?ml|xml))?|secrets?[.](json|ya?ml|toml)|[.]netrc|[.]pgpass|[.]htpasswd|service-account.*[.]json)$/.test(n)};for(const sg of String(i.command||'').split(/[;&|]+/)){const a=sg.trim().split(/[ ]+/).map(t=>t.split(q).join('').split(sq).join(''));const k=a.indexOf('add');if(a[0]!=='git'||k<0)continue;const args=a.slice(k+1).filter(t=>t&&t!=='--');let bad=args.filter(t=>t[0]!=='-').map(t=>t.split(bs).join('/').split('/').pop()).find(sec);if(!bad&&args.some(t=>['.','./','*','-A','--all',':/'].indexOf(t)>=0)){try{const cwd=j.cwd||process.cwd();for(const n of fs.readdirSync(cwd)){if(sec(n)&&cp.spawnSync('git',['check-ignore','-q',n],{cwd}).status===1&&cp.spawnSync('git',['ls-files','--',n],{cwd,encoding:'utf8'}).stdout.trim()==='')bad=n}}catch(e){}}if(bad){console.error('Blocked: git add would stage '+bad+', which looks like a secret. Add it to .gitignore, stage the other files by name, and keep real values out of the repository.');process.exit(2)}}})\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}

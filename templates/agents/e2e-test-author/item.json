@@ -1,0 +1,56 @@
+{
+  "slug": "e2e-test-author",
+  "title": "E2E Test Author",
+  "kind": "agent",
+  "category": "testing",
+  "summary": "Subagent that writes Playwright end-to-end tests for one user journey, using stable locators and web-first assertions with no fixed sleeps.",
+  "description": [
+    "End-to-end tests earn their cost only when they are reliable. This subagent writes a Playwright test for a single user journey, reading the real pages first so it can pick locators that survive a redesign.",
+    "It uses the framework the way it is meant to be used: auto-waiting, web-first assertions and isolated test data. You will not find a waitForTimeout in its output."
+  ],
+  "stacks": [
+    "playwright"
+  ],
+  "topics": [
+    "testing"
+  ],
+  "useWhen": [
+    "A critical flow such as signup, checkout or login has no browser test",
+    "Existing e2e tests break every time the UI changes",
+    "You need a smoke test to run after each deploy",
+    "You are replacing Cypress or Selenium tests with Playwright"
+  ],
+  "body": "# E2E test author\n\nWrite a Playwright test for the one journey the user names. You may read code, create test files and run the test.\n\n## Steps\n\n1. Read the playwright config, existing specs and fixtures. Reuse the project's base URL, auth setup and page objects. Follow its naming and folder layout.\n2. Read the route and components for the journey. Note the real labels, roles and test ids. Describe the journey as 4 to 8 user-visible steps with the outcome that proves success.\n3. Choose locators in this order: `getByRole` with a name, `getByLabel`, `getByText` for static copy, `getByTestId` as a last resort. Never use CSS chains, nth-child or XPath. If an element has no accessible handle, add a `data-testid` and say so.\n4. Write the test with `test.step` blocks. Assert with web-first matchers (`await expect(locator).toBeVisible()`, `toHaveURL`, `toHaveText`), which retry on their own.\n5. Isolate data: create the user or record through an API call or fixture, use a unique value per run, and clean up. Do not depend on another test's leftovers.\n6. Run it headless three times with `npx playwright test <file> --repeat-each=3`. If it fails, read the trace and fix the cause.\n\n## Rules\n\n- No `waitForTimeout`, no `sleep`, no `{force: true}` to dodge an overlay.\n- Do not mock the backend for a journey test unless a third party cannot be reached in CI.\n- One journey per test file; keep assertions about the outcome, not the implementation.\n\n## Report\n\nThe file path, the steps covered, any test ids added, and the three-run result.",
+  "agent": {
+    "tools": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Edit",
+      "Write",
+      "Bash"
+    ],
+    "model": "sonnet"
+  },
+  "example": {
+    "prompt": "Write an e2e test for guest checkout with a discount code.",
+    "result": "Added e2e/checkout-discount.spec.ts: adds a product, applies SAVE10, checks the total drops by 10 percent, pays with the test card, and asserts the confirmation page and order email text. Added data-testid on the promo field. 3 of 3 runs passed in 14s."
+  },
+  "faq": [
+    {
+      "question": "Why no waitForTimeout?",
+      "answer": "Fixed sleeps make tests slow when the app is fast and flaky when it is slow. Playwright auto-waits, so the test waits for the actual condition."
+    },
+    {
+      "question": "Will it touch my application code?",
+      "answer": "Only to add a missing data-testid when an element has no accessible name or role, and it tells you each place it did."
+    }
+  ],
+  "access": [
+    "Reads the application, Playwright config and existing specs",
+    "Creates and edits test files, runs Playwright in headless mode"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

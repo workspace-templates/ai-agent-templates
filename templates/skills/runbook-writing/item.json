@@ -1,0 +1,44 @@
+{
+  "slug": "runbook-writing",
+  "title": "Runbook Writing",
+  "kind": "skill",
+  "category": "docs",
+  "summary": "Turns an operational task or alert into a runbook with symptoms, checks and exact commands, so on-call can act at 3am without guessing.",
+  "description": [
+    "A good runbook is read by someone tired, stressed and new to the service. This skill writes for that person: short steps, copyable commands, and a clear answer to what healthy looks like after each one.",
+    "The agent pulls real service names, ports, dashboards and scripts from the repository and infrastructure files, and marks every command as read-only or as one that changes state."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation"
+  ],
+  "useWhen": [
+    "An alert fires and nobody remembers how to handle it",
+    "A manual deploy, failover or restore exists only in one person's head",
+    "You are preparing a service for an on-call rotation",
+    "A postmortem action item says \"write a runbook\""
+  ],
+  "body": "# Runbook writing\n\nWrite for the person on call who did not build this system.\n\n## Steps\n\n1. Identify the scenario: the alert name or task, who triggers it, and the impact on users. Read the alert rule, deploy config, Terraform or compose files and scripts to learn the real service names, hosts, ports and log locations.\n2. Open with a three-line summary: what this runbook is for, severity, and expected time to resolve.\n3. Write the **Symptoms** section: what the alert says, what users see, and the dashboard or log query that confirms it.\n4. Write **Diagnose** as numbered checks, cheapest first. Each check has the command, the output that is normal, and the output that points to a cause with the jump to the matching fix.\n5. Write **Fix** per cause. Label every command `[read-only]` or `[changes state]`. For anything that changes state, add the rollback command and a verification command.\n6. End with **Escalate**: when to stop, who to page, and what facts to hand them (time, commands run, outputs).\n\n## Rules\n\n- One action per step, in the order to run them.\n- Commands must be copyable with no hidden edits; show variables in `<ANGLE_BRACKETS>` and say where to find them.\n- Never include secrets or production credentials.\n- Do not write \"check the logs\" without the exact query.\n- Date the runbook and name its owner.\n\n## Report\n\nThe file path, the commands you could not verify, and gaps where the repository gave no answer.",
+  "example": {
+    "prompt": "Write a runbook for the queue-backlog alert on the worker service",
+    "result": "Created docs/runbooks/queue-backlog.md. Symptoms: depth above 5,000 for 10 minutes. Four diagnostic checks (consumer count, poison message, DB latency, deploy in last hour), three fixes with rollbacks, escalation to the platform team. Unverified: the Grafana panel link, which is not in the repo."
+  },
+  "faq": [
+    {
+      "question": "Does it run the commands?",
+      "answer": "Only read-only ones in your environment, and only if you ask. State-changing commands are written and labeled, never run."
+    },
+    {
+      "question": "Where does it get the service details?",
+      "answer": "From deploy files, alert rules, scripts and config in the repository. Missing details are listed so you can fill them."
+    }
+  ],
+  "access": [
+    "Reads infrastructure, config and alert files",
+    "Writes a runbook file",
+    "Does not execute state-changing commands"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,46 @@
+{
+  "slug": "vue3-composition-rules",
+  "title": "Vue 3 Composition Rules",
+  "kind": "rules",
+  "category": "frontend",
+  "summary": "Project rules for Vue 3: script setup with TypeScript, composables, Pinia stores, typed props and emits, and Vitest component tests.",
+  "description": [
+    "This file steers an agent toward modern Vue 3 code: single-file components with script setup, composables for shared logic and Pinia for state that really is global.",
+    "It rules out older patterns such as the Options API and mixins, and describes how to type props, emits and stores so templates are checked by the compiler."
+  ],
+  "stacks": [
+    "vue",
+    "typescript"
+  ],
+  "topics": [
+    "typescript",
+    "testing"
+  ],
+  "useWhen": [
+    "You work on a Vue 3 project with an agent",
+    "Generated code mixes Options API and Composition API",
+    "State is passed through many layers of props",
+    "You want component tests that survive refactors"
+  ],
+  "body": "# Project rules: Vue 3 with Composition API\n\n## Components\n- Use `<script setup lang=\"ts\">` in every single-file component. Do not write new Options API components or mixins.\n- Type props with `defineProps<{ ... }>()` and defaults with `withDefaults`. Type events with `defineEmits<{ (e: 'save', id: string): void }>()`. Never mutate a prop; emit an event instead.\n- Use `v-model` through `defineModel` for two-way bindings on form components.\n- Give `v-for` a stable `:key`, and never put `v-if` and `v-for` on the same element.\n- Component files are PascalCase and multi-word, with `Base` or `App` prefixes for shared primitives.\n\n## Reactivity\n- Prefer `ref` for values and `computed` for derived state. Use `watch` only for side effects, with `watchEffect` for simple cases.\n- Do not destructure a reactive object without `toRefs` or `storeToRefs`; it loses reactivity.\n\n## Composables and state\n- Put reusable stateful logic in `composables/useThing.ts`, return refs and functions, and clean up listeners in `onScopeDispose` or `onUnmounted`.\n- Use Pinia setup stores for cross-component state, one store per domain. Keep server data and local form state out of global stores when a composable does the job.\n\n## Testing and checks\n- Test with Vitest and Vue Test Utils: mount, act through the DOM, assert on rendered output and emitted events.\n- Run `vue-tsc --noEmit`, the ESLint run and `vitest run` before finishing.",
+  "example": {
+    "prompt": "Add a reusable tag input that supports v-model",
+    "result": "The agent builds TagInput.vue with script setup, defineModel and typed emits, a useTags composable for the add and remove logic, and tests for keyboard entry and duplicate tags."
+  },
+  "faq": [
+    {
+      "question": "Can I keep some Options API components?",
+      "answer": "Existing ones can stay. The rule applies to new files, so the codebase moves one way over time."
+    },
+    {
+      "question": "Why avoid destructuring reactive objects?",
+      "answer": "The copied values stop updating when the source changes. toRefs and storeToRefs keep the link alive."
+    }
+  ],
+  "access": [
+    "Guidance text only; nothing is read or run until you ask the agent to work"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

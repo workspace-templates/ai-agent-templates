@@ -1,0 +1,55 @@
+{
+  "slug": "postman-mcp",
+  "title": "Postman MCP Server",
+  "kind": "mcp",
+  "category": "backend",
+  "summary": "Connect your coding agent to Postman's hosted MCP server to read and update collections, environments and API definitions from the chat.",
+  "description": [
+    "Postman's official MCP server connects an agent to your Postman workspaces. It can find collections, read requests, edit them and work with environments, so API work in your editor stays in step with what the team keeps in Postman.",
+    "This setup uses the hosted minimal endpoint, which exposes a small set of essential tools and signs in with OAuth. Full and code endpoints exist for the whole Postman API or for generating client code."
+  ],
+  "stacks": [],
+  "topics": [
+    "api-design",
+    "testing"
+  ],
+  "useWhen": [
+    "Find the collection that documents an endpoint you are changing",
+    "Add a request to a collection after you ship a new route",
+    "Compare environments to see which variable differs in staging",
+    "Generate client code from an API definition (switch to the code endpoint)"
+  ],
+  "mcp": {
+    "name": "postman",
+    "transport": "http",
+    "url": "https://mcp.postman.com/minimal",
+    "env": [],
+    "headers": [],
+    "source": "https://github.com/postmanlabs/postman-mcp-server",
+    "access": [
+      "Reads Postman workspaces, collections and environments you can open",
+      "Can create and edit collections and requests in those workspaces"
+    ]
+  },
+  "example": {
+    "prompt": "Find the Orders API collection and list the requests that have no test script.",
+    "result": "Orders API has 14 requests. Three have no tests: DELETE /orders/{id}, POST /orders/{id}/refund and GET /orders/export."
+  },
+  "faq": [
+    {
+      "question": "Can I use an API key instead of OAuth?",
+      "answer": "Yes. Send an Authorization header with a Bearer Postman API key. The EU hosts at mcp.eu.postman.com accept API keys only."
+    },
+    {
+      "question": "Where is the full tool set?",
+      "answer": "Use https://mcp.postman.com/mcp for the full mode with over 100 tools. The default minimal endpoint keeps the tool list short."
+    }
+  ],
+  "access": [
+    "Reads and edits Postman collections and environments you can access",
+    "Sends requests to mcp.postman.com"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

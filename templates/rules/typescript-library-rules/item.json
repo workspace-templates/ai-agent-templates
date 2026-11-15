@@ -1,0 +1,45 @@
+{
+  "slug": "typescript-library-rules",
+  "title": "TypeScript Library Rules",
+  "kind": "rules",
+  "category": "backend",
+  "summary": "Project rules for publishing a TypeScript package: exports map, bundled types, semver discipline, tree-shaking and tests against the built output.",
+  "description": [
+    "Writing a library is different from writing an app, because every exported name becomes a promise to strangers. These rules teach the agent to treat the public surface as a contract.",
+    "They cover how the package is described to bundlers and compilers, what a safe change looks like under semver, and how to prove that the built files work before a release."
+  ],
+  "stacks": [
+    "typescript"
+  ],
+  "topics": [
+    "typescript",
+    "api-design"
+  ],
+  "useWhen": [
+    "You are starting a package meant for npm",
+    "An agent keeps adding exports without thinking about breaking changes",
+    "Consumers report missing types or broken ESM and CJS imports",
+    "You want a release checklist the agent follows every time"
+  ],
+  "body": "# Project rules: TypeScript library\n\n## Layout\n- Source in `src/`, one `src/index.ts` that re-exports the public API. Anything not re-exported is private; do not add deep-import paths.\n- Build with tsup, tsdown or tsc to `dist/`. Commit no build output.\n\n## Package contract\n- Describe entry points in the `exports` map with `types`, `import` and `require` conditions (types first). Keep `main` and `types` as fallbacks.\n- Set `\"sideEffects\": false` when true, and list `files` explicitly so only `dist`, README and license ship.\n- Dependencies are for runtime needs only. Frameworks the user already has go in `peerDependencies`.\n\n## Types\n- Enable `strict` and `declaration`. Prefer `unknown` over `any`, and never leak internal types in signatures.\n- Export types with `export type`. Use `import type` inside the library.\n\n## Versioning\n- Removing or narrowing an export, or changing a signature, is a major bump. New optional features are minor. Record every change in CHANGELOG.md.\n- Mark old APIs with `@deprecated` and a replacement before deleting them.\n\n## Tests\n- Unit tests with Vitest beside the code. Add a smoke test that imports the built package the way a consumer would.\n- Run `npx publint` and `npx @arethetypeswrong/cli --pack` to catch export mistakes.\n\n## Before finishing\nRun `npm run lint`, `npm run typecheck`, `npm test` and `npm run build`. Report any change to the public API explicitly.",
+  "example": {
+    "prompt": "Add a retry option to the fetchJson helper",
+    "result": "The agent adds an optional field to the existing options type, keeps the old call signature working, exports the new type from index.ts, adds tests, notes a minor bump in the changelog, and runs publint."
+  },
+  "faq": [
+    {
+      "question": "Does this assume a specific bundler?",
+      "answer": "No. It names tsup and tsc as examples, but the rules concern the package contract, which is the same whichever tool produces dist."
+    },
+    {
+      "question": "Why check the built package and not just source?",
+      "answer": "Most publishing bugs live in the exports map and the generated declarations, which only show up when you import the packed output."
+    }
+  ],
+  "access": [
+    "Instructions only; nothing runs until the agent follows them"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

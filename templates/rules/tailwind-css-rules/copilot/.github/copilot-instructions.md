@@ -1,0 +1,22 @@
+# Project rules: Tailwind CSS
+
+## Tokens
+- Define colors, fonts, spacing extensions, radii and breakpoints once in the theme (`tailwind.config` or the `@theme` block in CSS). Name colors by role (`brand`, `surface`, `danger`), not by hue.
+- Use only theme values. Allow an arbitrary value like `w-[37px]` only for a one-off layout need, and add a short comment; repeat it twice and it becomes a token.
+- Never write raw hex or rgb in class names or inline styles.
+
+## Classes
+- Order classes consistently, by layout, box, typography, color, state. Enforce it with `prettier-plugin-tailwindcss` and do not sort by hand.
+- Build mobile first: base classes for small screens, then `sm:`, `md:`, `lg:` for larger ones. Do not hide content with `hidden` at one size and re-show it at another when a layout change would do.
+- Avoid `!important` modifiers and avoid `@apply` for anything but base element styles.
+
+## Reuse
+- Extract a component (React, Vue, Svelte or a partial) when markup repeats three times. Do not extract a class.
+- Compose conditional classes with `clsx` or `tailwind-merge` so variants override cleanly. Never build class names by string concatenation, because the compiler cannot see them.
+
+## Dark mode and state
+- Use the `dark:` variant with one strategy for the whole project (class or media). Pair every color with its dark counterpart or use semantic tokens that switch.
+- Use `focus-visible:` styles on everything interactive and keep text contrast at WCAG AA.
+
+## Before finishing
+- Run the formatter, the linter and a production build to confirm no classes were purged.

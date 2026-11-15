@@ -1,0 +1,71 @@
+{
+  "slug": "brave-mcp",
+  "title": "Brave Search MCP Server",
+  "kind": "mcp",
+  "category": "productivity",
+  "summary": "Give your coding agent live web, news, image and local search through Brave's own MCP server, so it can look up current docs and errors.",
+  "description": [
+    "Brave publishes this server for its Search API. It exposes tools such as brave_web_search, brave_news_search, brave_local_search, brave_image_search and brave_video_search, plus a summarizer and an LLM context tool.",
+    "It runs on your machine through npx over stdio. The only thing it needs is a Brave Search API key, which you create in the Brave API dashboard and keep in an environment variable.",
+    "Reach for it when the model's training data is too old: a library released last month, an error message you have never seen, or a question about a recent change."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation",
+    "debugging"
+  ],
+  "useWhen": [
+    "Look up the newest release notes for a dependency",
+    "Search for the exact text of an obscure error message",
+    "Check recent news about a vendor outage",
+    "Find a nearby business or place while planning a trip"
+  ],
+  "mcp": {
+    "name": "brave-search",
+    "transport": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "@brave/brave-search-mcp-server",
+      "--transport",
+      "stdio"
+    ],
+    "env": [
+      {
+        "name": "BRAVE_API_KEY",
+        "description": "Your Brave Search API key from the Brave API dashboard"
+      }
+    ],
+    "headers": [],
+    "source": "https://github.com/brave/brave-search-mcp-server",
+    "access": [
+      "Sends your search queries to the Brave Search API",
+      "Reads search results only; it changes nothing on your machine"
+    ]
+  },
+  "example": {
+    "prompt": "Search the web for the changelog of the latest Vite major version and list the breaking changes.",
+    "result": "Found the official Vite release notes. Breaking changes: the minimum Node version was raised, a default browser target changed, and one deprecated plugin hook was removed. Source links are listed below each item."
+  },
+  "faq": [
+    {
+      "question": "Does it cost money?",
+      "answer": "The server is free, but each search counts against your Brave Search API plan. Check the plan limits in the Brave dashboard before letting an agent loop on searches."
+    },
+    {
+      "question": "Can I turn some tools off?",
+      "answer": "Yes. The server reads BRAVE_MCP_ENABLED_TOOLS and BRAVE_MCP_DISABLED_TOOLS, so you can keep only web search if you do not want image or video results."
+    },
+    {
+      "question": "Why stdio and not the HTTP mode?",
+      "answer": "The HTTP mode opens a local port with no authentication, so stdio is the safer default for a single developer machine."
+    }
+  ],
+  "access": [
+    "Sends search queries to Brave over the network",
+    "Needs an API key in BRAVE_API_KEY"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,45 @@
+{
+  "slug": "code-duplication-removal",
+  "title": "Code Duplication Removal",
+  "kind": "skill",
+  "category": "code-quality",
+  "summary": "Detects copy-pasted blocks and merges them into one abstraction only when the copies change together, leaving look-alikes that evolve apart untouched.",
+  "description": [
+    "Duplicated code is not always a problem, and a wrong abstraction costs more than a copy. This skill finds repeated blocks, then checks the history to see whether the copies were edited together or drifted apart.",
+    "Only duplicates that move as a group are merged. Others are left alone and listed with the reason, so the cleanup never ties together things that have separate reasons to change."
+  ],
+  "stacks": [],
+  "topics": [
+    "refactoring",
+    "code-review"
+  ],
+  "useWhen": [
+    "A bug fix had to be made in three places",
+    "Two handlers or components are almost identical",
+    "You want a cleanup that does not create over-general helpers",
+    "Review keeps flagging copy-paste in new code"
+  ],
+  "body": "# Code duplication removal\n\nMerge copies that share a reason to change. Leave the rest.\n\n## Steps\n\n1. Detect candidates with a tool if the project has one (`npx jscpd`, `pmd cpd`, or the linter's duplicate rule); otherwise search for repeated distinctive lines with grep. Ignore generated files, tests and migrations unless asked.\n2. For each pair or group, read all copies side by side. Write down exactly what differs: constants, types, one branch, a name.\n3. Check how they evolved: `git log -L<start>,<end>:<file>` or `git log --oneline -- <file>` for each copy. If a past fix was applied to all copies together, they change together. If they were edited at different times for different reasons, they only look alike.\n4. Decide with this rule: merge when copies change together and the differences can be expressed as parameters without adding more than two flags. Wait (the rule of three) when there are only two copies and the intent is unclear. Leave alone when the copies belong to different features, even if the code is the same today.\n5. When merging, extract the shared part into a function or component with a name from the domain, pass the differences as arguments or callbacks, and put it where both callers can import it without a cycle.\n6. Replace one copy at a time and run the tests after each. If tests do not cover them, add one per copy first.\n7. Delete nothing until all callers use the shared version.\n\n## Rules\n\n- No boolean flag parameters that switch behavior; make two functions.\n- No shared helper with more than four parameters; reconsider the split.\n- Do not touch public signatures in the same change.\n\n## Report\n\nGroups found, which were merged and which left apart with the reason, lines removed and tests run.",
+  "example": {
+    "prompt": "Remove duplication in src/exports/",
+    "result": "jscpd found 4 groups. Merged 2: csv and tsv writers (changed together in 5 commits) into writeDelimited(rows, sep); the two status badge builders into one. Left 2 alone: invoiceTotals and quoteTotals look alike but diverged over tax rules in 3 commits. Net 118 lines removed, all tests pass."
+  },
+  "faq": [
+    {
+      "question": "Why not merge every duplicate it finds?",
+      "answer": "Code that looks alike but changes for different reasons gets tangled when merged. Each later edit then needs another flag, and the helper becomes worse than the copy."
+    },
+    {
+      "question": "How does it know copies change together?",
+      "answer": "It reads the git history of each copy. Fixes applied to all of them in the same commit are the signal."
+    }
+  ],
+  "access": [
+    "Reads source files and git history",
+    "Runs read-only git commands and an optional duplicate detector",
+    "Edits code and runs your tests"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

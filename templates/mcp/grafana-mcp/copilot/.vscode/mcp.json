@@ -1,0 +1,30 @@
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "grafana_url",
+      "description": "Base URL of your Grafana instance, such as https://myinstance.grafana.net",
+      "password": true
+    },
+    {
+      "type": "promptString",
+      "id": "grafana_service_account_token",
+      "description": "A Grafana service account token; give the account a Viewer role to match the read-only flag",
+      "password": true
+    }
+  ],
+  "servers": {
+    "grafana": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "mcp-grafana",
+        "--disable-write"
+      ],
+      "env": {
+        "GRAFANA_URL": "${input:grafana_url}",
+        "GRAFANA_SERVICE_ACCOUNT_TOKEN": "${input:grafana_service_account_token}"
+      }
+    }
+  }
+}

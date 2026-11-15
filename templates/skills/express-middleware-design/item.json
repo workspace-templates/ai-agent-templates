@@ -1,0 +1,47 @@
+{
+  "slug": "express-middleware-design",
+  "title": "Express Middleware Design",
+  "kind": "skill",
+  "category": "backend",
+  "summary": "Orders Express and Fastify middleware correctly, centralizes error handling and validates requests at the edge, so handlers only see clean input.",
+  "description": [
+    "Node servers tend to collect middleware in whatever order it was added, with try/catch in every handler and validation scattered through the code. This skill puts the stack in a deliberate order and gives errors one place to end up.",
+    "It reviews or builds the pipeline from the outside in: request id, logging, security headers, body parsing, auth, validation, handlers, then one error handler that decides the status code and the response shape."
+  ],
+  "stacks": [
+    "node"
+  ],
+  "topics": [
+    "api-design",
+    "security"
+  ],
+  "useWhen": [
+    "You are starting a new Express or Fastify API",
+    "Handlers repeat the same try/catch and res.status(500) code",
+    "An unhandled promise rejection takes your server down",
+    "Requests reach handlers with missing or wrongly typed fields"
+  ],
+  "body": "# Express middleware design\n\nTreat the middleware stack as a pipeline with a fixed order. Read the entry file and every `app.use` call before editing.\n\n## Order, outside in\n\n1. Request id and structured logging.\n2. Security headers (`helmet`) and CORS with an explicit origin list.\n3. Body parsers with a size limit (`express.json({ limit: '100kb' })`).\n4. Rate limiting on auth and write routes.\n5. Authentication, then authorization per route.\n6. Validation of `params`, `query` and `body` with a schema library such as zod, before any handler runs.\n7. Route handlers.\n8. A 404 handler, then one error handler with four arguments, registered last.\n\n## Steps\n\n1. Wrap async handlers so rejections reach `next(err)`. Express 5 does this itself; on Express 4 add a small `asyncHandler` wrapper. In Fastify, throw and let the error handler catch it.\n2. Define an `AppError` class carrying `status`, a stable `code` and a safe message. Handlers throw it; they never call `res.status(500)` themselves.\n3. In the error handler, map `AppError` and validation errors to their status, log everything else with the request id, and answer 500 with a generic body. Never send stack traces.\n4. Validate once, write the parsed result back to `req`, and type it so handlers trust it.\n\n## Rules\n\n- Never call `next()` after sending a response.\n- Do not put business logic in middleware; it parses, checks and passes on.\n- Keep each middleware in its own file with a single job.\n\n## Report\n\nShow the final stack order, the files changed, and routes that still lack validation.",
+  "example": {
+    "prompt": "Our Express API crashes on bad input and every route has its own try/catch. Fix the structure.",
+    "result": "Reordered the stack: request id, helmet, json limit, rate limit, auth, validation, routes, 404, error handler. Added AppError and one error handler; removed 14 try/catch blocks. Added zod schemas for 9 routes. POST /invoices and PATCH /users/:id still accept unvalidated bodies and are listed for follow-up."
+  },
+  "faq": [
+    {
+      "question": "Does it support Fastify?",
+      "answer": "Yes. The same order applies, using hooks and schemas instead of app.use, and its setErrorHandler for central errors."
+    },
+    {
+      "question": "Which validation library does it use?",
+      "answer": "The one already in your package.json. If none exists it proposes zod and asks before adding it."
+    }
+  ],
+  "access": [
+    "Reads server source and package.json",
+    "Edits JavaScript or TypeScript files",
+    "Runs your test script"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

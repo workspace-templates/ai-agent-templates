@@ -1,0 +1,49 @@
+{
+  "slug": "validate-json-after-edit",
+  "title": "Validate JSON After Edit",
+  "kind": "hook",
+  "category": "code-quality",
+  "summary": "A Claude Code hook that parses every edited .json file and sends the parser error back to the agent when the syntax is broken.",
+  "description": [
+    "One missing comma in package.json or a data file breaks builds in confusing ways. This PostToolUse hook runs the built-in JSON parser on any .json file the agent just changed and reports the exact parser message if it fails.",
+    "Files that allow comments, such as tsconfig and jsconfig, are skipped so they do not raise false alarms."
+  ],
+  "stacks": [],
+  "topics": [
+    "debugging",
+    "code-review"
+  ],
+  "useWhen": [
+    "Edit package.json or config files with an agent",
+    "Maintain data files like fixtures and translations",
+    "Catch trailing commas right after they appear",
+    "Avoid a failed install caused by a typo"
+  ],
+  "hook": {
+    "event": "PostToolUse",
+    "matcher": "Edit|Write",
+    "command": "node -e \"process.on('uncaughtException',()=>process.exit(0));let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{let j={};try{j=JSON.parse(d)||{}}catch(e){process.exit(0)}const i=j.tool_input||{};const f=String(i.file_path||'');const fs=require('fs');const rd=()=>{try{return fs.readFileSync(f,'utf8')}catch(e){return null}};const base=require('path').basename(f).toLowerCase();if(!base.endsWith('.json')||/^(tsconfig|jsconfig)/.test(base)||base.includes('devcontainer'))process.exit(0);const t=rd();if(t===null)process.exit(0);try{JSON.parse(t.charCodeAt(0)===65279?t.slice(1):t)}catch(e){console.error('Invalid JSON in '+f+': '+e.message+'. Fix the syntax (commas, quotes, brackets) and save again.');process.exit(2)}process.exit(0)})\"",
+    "timeout": 15
+  },
+  "example": {
+    "prompt": "Add a lint script to package.json.",
+    "result": "The edit leaves a trailing comma. The hook reports the parser error with its position and the agent repairs the file."
+  },
+  "faq": [
+    {
+      "question": "Does it check JSON with comments?",
+      "answer": "tsconfig, jsconfig and devcontainer files are skipped because their format allows comments. Other .json files must be strict."
+    },
+    {
+      "question": "Does it need any package?",
+      "answer": "No. It uses the JSON parser that ships with Node."
+    }
+  ],
+  "access": [
+    "Reads the edited .json file",
+    "Reports parse errors; changes no files"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

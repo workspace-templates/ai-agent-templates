@@ -1,0 +1,45 @@
+{
+  "slug": "error-handling-patterns",
+  "title": "Error Handling Patterns",
+  "kind": "skill",
+  "category": "code-quality",
+  "summary": "Designs consistent error types and propagation, and rewrites swallowed or blindly rethrown errors so failures stay visible and messages help the user.",
+  "description": [
+    "The two common failures are the empty catch block that hides a bug and the rethrow that loses the context needed to find it. This skill sets one policy per layer and applies it across the code you point it at.",
+    "Low-level code reports what failed with its cause attached. Boundaries translate that into a stable error type, and only the outermost layer decides what the user sees."
+  ],
+  "stacks": [],
+  "topics": [
+    "code-review",
+    "refactoring"
+  ],
+  "useWhen": [
+    "Logs say \"something went wrong\" with no cause",
+    "You find catch blocks that ignore the error",
+    "Users see raw exception text or stack traces",
+    "Every module invents its own error shape"
+  ],
+  "body": "# Error handling patterns\n\nHandle an error where you can do something about it; otherwise let it travel with context.\n\n## Steps\n\n1. Search for the smells: empty catch, `catch (e) { log(e) }` followed by continuing, `catch` that returns null or `false`, `throw new Error(e.message)` (drops the cause), and `except Exception: pass`.\n2. Classify each failure: expected (bad input, not found, conflict), environmental (network, disk, timeout) or a bug (broken invariant). Expected ones become typed errors with a stable code. Environmental ones may be retried. Bugs should crash loudly and be logged once.\n3. Define a small hierarchy or tagged result: a base error, plus a few kinds such as `ValidationError`, `NotFoundError` and `UpstreamError`. Each carries a machine code and keeps the original as `cause`.\n4. Wrap at boundaries only. When crossing a module or network edge, add what you were doing (\"loading invoice 42\") and attach the cause. Do not wrap at every call.\n5. Log once, at the place that handles the error, not at every layer it passes through.\n6. At the outermost layer, map error kinds to responses: a user-safe message and a status code. Show an error id the user can quote; keep details in the logs.\n7. Add a test for each expected error path.\n\n## Rules\n\n- Never catch just to rethrow the same error.\n- Never return a default that hides a failure unless the caller documents it.\n- Clean up resources in `finally`, `defer` or a context manager.\n- Messages say what failed and what to do next, without internals.\n\n## Report\n\nTable of changes by file, with the smell found and the replacement, plus any place the right behavior needs a product decision.",
+  "example": {
+    "prompt": "Clean up error handling in src/services/",
+    "result": "Found 11 problems: 4 empty catch blocks, 3 rethrows that dropped the cause, 2 functions returning null on network failure, 2 raw messages sent to the client. Added AppError with `code` and `cause`, wrapped the two upstream calls once each, and mapped errors to responses in one handler. 6 tests added. One decision needed: should a failed email send block signup?"
+  },
+  "faq": [
+    {
+      "question": "Should every function catch errors?",
+      "answer": "No. Most should let errors pass. Catch only where you can recover, translate the error at a boundary or must release a resource."
+    },
+    {
+      "question": "Does it change my language idioms?",
+      "answer": "It follows them: exceptions in Java or Python, error values in Go, Result types in Rust. The policy stays the same."
+    }
+  ],
+  "access": [
+    "Reads source files",
+    "Edits code and adds tests",
+    "Runs your test command"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

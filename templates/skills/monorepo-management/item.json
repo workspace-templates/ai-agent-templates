@@ -1,0 +1,46 @@
+{
+  "slug": "monorepo-management",
+  "title": "Monorepo Management",
+  "kind": "skill",
+  "category": "git",
+  "summary": "Sets up and maintains a TypeScript monorepo with workspaces, shared configs, task caching and CI that builds only the packages a change affects.",
+  "description": [
+    "A monorepo helps when packages share code and hurts when every pull request rebuilds everything. This skill sets the boundaries first: what is a package, who may import whom, and which tasks run where.",
+    "It then wires workspaces, one shared TypeScript base config and a task runner with caching, so CI time follows the size of the change rather than the size of the repository."
+  ],
+  "stacks": [
+    "typescript"
+  ],
+  "topics": [
+    "ci",
+    "typescript"
+  ],
+  "useWhen": [
+    "You are splitting one app into apps and shared packages",
+    "CI takes longer every month because it rebuilds all packages",
+    "Packages import each other through relative paths into src folders",
+    "Versions of the same dependency differ between packages"
+  ],
+  "body": "# Monorepo management\n\nStructure decides cost. Fix the graph before the tooling.\n\n## Layout\n\n- `apps/*` for deployables, `packages/*` for libraries. Apps depend on packages; packages never depend on apps; a package depending on another package is declared, never reached by a relative path.\n- Use the package manager's workspaces (pnpm, npm or yarn) with the `workspace:*` protocol for internal dependencies. One lockfile at the root.\n\n## Steps\n\n1. Map the current graph: each package's name, its internal dependencies and its scripts. Report cycles and fix them by extracting the shared part into a third package.\n2. Shared config goes in packages: `tsconfig.base.json` extended by each package, one ESLint config, one formatter config. Packages use TypeScript project references (`composite: true`) when builds are separate, or point `exports` at built output.\n3. Every package exposes the same scripts: `build`, `test`, `lint`, `typecheck`. Add a task runner (Turborepo or Nx): declare `dependsOn: [\"^build\"]`, list inputs and outputs per task, and enable the cache.\n4. Dependencies: keep versions aligned across packages (a `catalog` in pnpm, or syncpack). Put tools in the root only when every package uses them.\n5. CI: run only affected tasks, for example `turbo run build test --filter=...[origin/main]`, and cache between runs. Keep a full run on the default branch.\n6. Releases: use changesets or similar so each package versions on its own when it needs to.\n\n## Rules\n\n- Never add a path alias that reaches into another package's `src`.\n- Verify with a clean install and `build` from scratch before you finish.\n\n## Report\n\nThe graph before and after, config added, and CI time with and without the cache.",
+  "example": {
+    "prompt": "Split our web app into a monorepo with a shared ui package and an api package",
+    "result": "Created apps/web and apps/api, packages/ui and packages/config with pnpm workspaces. Removed 14 relative imports into other src folders. Turborepo runs build and test with caching; a ui-only change now rebuilds 2 of 4 packages. Clean install plus full build passes."
+  },
+  "faq": [
+    {
+      "question": "Which tools does it pick?",
+      "answer": "It keeps whatever you already use. For a fresh setup it suggests pnpm workspaces with Turborepo, and asks before installing."
+    },
+    {
+      "question": "Is a monorepo always the right choice?",
+      "answer": "No. With no shared code and separate release schedules, separate repositories are simpler. The skill says so when the graph shows that."
+    }
+  ],
+  "access": [
+    "Reads package manifests and configs across the repository",
+    "Edits workspace config, tsconfigs and CI files; runs install and build"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

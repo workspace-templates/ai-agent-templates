@@ -1,0 +1,61 @@
+{
+  "slug": "supabase-mcp",
+  "title": "Supabase MCP Server",
+  "kind": "mcp",
+  "category": "database",
+  "summary": "Connect your agent to Supabase's hosted MCP server to inspect tables, run read-only SQL and manage a project from your editor.",
+  "description": [
+    "Supabase runs an official MCP server that lets an agent list tables, read schemas, run SQL and look up the docs for one project. It is useful when the agent needs the real schema, not a guess.",
+    "This config pins the server to a single project and turns on read-only mode. Remove the read-only flag only when you want the agent to change data, and keep it away from production."
+  ],
+  "stacks": [],
+  "topics": [
+    "sql",
+    "migrations"
+  ],
+  "useWhen": [
+    "Write queries against your real schema",
+    "Review table structure and indexes",
+    "Debug a failing row-level security policy",
+    "Draft a migration after reading the current tables"
+  ],
+  "mcp": {
+    "name": "supabase",
+    "transport": "http",
+    "url": "https://mcp.supabase.com/mcp?project_ref=${SUPABASE_PROJECT_REF}&read_only=true",
+    "env": [],
+    "headers": [
+      {
+        "name": "Authorization",
+        "value": "Bearer ${SUPABASE_ACCESS_TOKEN}",
+        "description": "A Supabase personal access token"
+      }
+    ],
+    "source": "https://supabase.com/docs/guides/getting-started/mcp",
+    "access": [
+      "Reads schema and data of the one project in the URL",
+      "Read-only SQL because of read_only=true"
+    ]
+  },
+  "example": {
+    "prompt": "List the tables in my project and tell me which have no row-level security policy.",
+    "result": "public has 9 tables. Without RLS enabled: audit_log, feature_flags. orders and profiles have policies for select and insert only."
+  },
+  "faq": [
+    {
+      "question": "Where do I find the project ref?",
+      "answer": "In the Supabase dashboard under project settings, or in the dashboard URL after /project/."
+    },
+    {
+      "question": "Can I let it write?",
+      "answer": "Delete read_only=true from the URL. Do that on a development project only."
+    }
+  ],
+  "access": [
+    "Reads your Supabase project through the token",
+    "Read-only by default"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

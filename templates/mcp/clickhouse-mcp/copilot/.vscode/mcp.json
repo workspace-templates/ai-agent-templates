@@ -1,0 +1,48 @@
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "clickhouse_host",
+      "description": "Hostname of the ClickHouse server.",
+      "password": true
+    },
+    {
+      "type": "promptString",
+      "id": "clickhouse_user",
+      "description": "A database user. Use one granted SELECT only.",
+      "password": true
+    },
+    {
+      "type": "promptString",
+      "id": "clickhouse_password",
+      "description": "Password for that user.",
+      "password": true
+    },
+    {
+      "type": "promptString",
+      "id": "clickhouse_secure",
+      "description": "Set to true to connect over HTTPS, which is the default.",
+      "password": true
+    }
+  ],
+  "servers": {
+    "clickhouse": {
+      "type": "stdio",
+      "command": "uv",
+      "args": [
+        "run",
+        "--with",
+        "mcp-clickhouse",
+        "--python",
+        "3.12",
+        "mcp-clickhouse"
+      ],
+      "env": {
+        "CLICKHOUSE_HOST": "${input:clickhouse_host}",
+        "CLICKHOUSE_USER": "${input:clickhouse_user}",
+        "CLICKHOUSE_PASSWORD": "${input:clickhouse_password}",
+        "CLICKHOUSE_SECURE": "${input:clickhouse_secure}"
+      }
+    }
+  }
+}

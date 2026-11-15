@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "pagerduty": {
+      "command": "uvx",
+      "args": [
+        "pagerduty-mcp"
+      ],
+      "env": {
+        "PAGERDUTY_USER_API_KEY": "${env:PAGERDUTY_USER_API_KEY}"
+      }
+    }
+  }
+}

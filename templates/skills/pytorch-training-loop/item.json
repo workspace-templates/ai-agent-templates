@@ -1,0 +1,48 @@
+{
+  "slug": "pytorch-training-loop",
+  "title": "PyTorch Training Loop",
+  "kind": "skill",
+  "category": "data",
+  "summary": "Writes a correct PyTorch training loop with seeding, mixed precision, clipping and resumable checkpoints. Use it to start or fix a training script.",
+  "description": [
+    "Training loops fail in small, silent ways: eval mode left off, gradients accumulating, a seed that only covers half the randomness. This skill writes the loop in the order PyTorch expects and adds the pieces that make a run reproducible and recoverable.",
+    "The agent first overfits a handful of batches to prove the loop learns, and only then scales it up."
+  ],
+  "stacks": [
+    "python",
+    "pytorch"
+  ],
+  "topics": [
+    "python",
+    "debugging"
+  ],
+  "useWhen": [
+    "You are writing a new training script and want the boring parts right",
+    "Loss does not go down and you cannot tell if it is the model or the loop",
+    "A long run crashed and you had nothing to resume from",
+    "You want to add mixed precision without breaking numerical stability"
+  ],
+  "body": "# PyTorch training loop\n\nGet the loop right on tiny data before spending hours on big data.\n\n## Steps\n\n1. Seed everything from one function: `random`, `numpy`, `torch.manual_seed`, and `torch.cuda.manual_seed_all`. For a worker-based `DataLoader`, pass a `worker_init_fn` and a seeded `generator`.\n2. Pick the device once and move the model and each batch with `.to(device, non_blocking=True)`. Use `pin_memory=True` on CUDA.\n3. Per step, in this order: `optimizer.zero_grad(set_to_none=True)`, forward, loss, backward, gradient clipping with `clip_grad_norm_`, `optimizer.step()`, then `scheduler.step()` at the interval the scheduler expects.\n4. Mixed precision: wrap the forward and loss in `torch.autocast`, use `GradScaler` for float16 (not needed for bfloat16), and unscale before clipping.\n5. Call `model.train()` before training and `model.eval()` with `torch.no_grad()` for validation. Switch back afterwards.\n6. Checkpoint model, optimizer, scheduler, scaler, epoch and RNG state to a temp file, then rename it over the last one, so a crash never leaves a half-written file. Keep the best by validation metric.\n7. Log training loss, validation metric, learning rate and gradient norm every N steps.\n8. Sanity check first: overfit 8 samples to near zero loss. If it cannot, fix the loop before touching hyperparameters.\n\n## Rules\n\n- Never call `.item()` on every step in a hot loop; accumulate tensors and sync periodically.\n- Never evaluate on the training split.\n\n## Report\n\nThe files written, the overfit test result, and how to resume from a checkpoint.",
+  "example": {
+    "prompt": "Write the training script for my ResNet fine-tune on the pets dataset.",
+    "result": "Wrote train.py with a single seed_everything(), bfloat16 autocast, cosine schedule, grad clipping at 1.0 and atomic checkpoints every epoch, last.pt and best.pt. Overfit test on 8 images reached loss 0.003 in 60 steps. Resume with: python train.py --resume runs/pets/last.pt, which restores optimizer and RNG state."
+  },
+  "faq": [
+    {
+      "question": "Does it work on CPU only?",
+      "answer": "Yes. Autocast and the scaler turn themselves off when there is no CUDA device, and the rest of the loop is unchanged."
+    },
+    {
+      "question": "Why overfit a tiny batch first?",
+      "answer": "If a model cannot memorize eight samples, the problem is in the loop or the loss, and no amount of data or tuning will fix it."
+    }
+  ],
+  "access": [
+    "Reads your model and dataset code",
+    "Writes a training script and checkpoint folder",
+    "Runs short training smoke tests on your machine"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

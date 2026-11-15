@@ -1,0 +1,45 @@
+{
+  "slug": "organize-imports",
+  "title": "Organize Imports",
+  "kind": "command",
+  "category": "code-quality",
+  "summary": "Sorts, groups and prunes imports in your changed files to match the project convention, then proves nothing broke.",
+  "description": [
+    "Import blocks drift: unused names, mixed ordering, relative paths where an alias exists. This command learns the convention the project already follows and applies it to the files you changed, not the whole repo.",
+    "It prefers the formatter or linter the project has configured, falls back to hand edits only where needed, and shows the diff before anything else happens."
+  ],
+  "stacks": [],
+  "topics": [
+    "refactoring",
+    "code-review"
+  ],
+  "useWhen": [
+    "Before opening a pull request with many touched files",
+    "After a merge left import blocks messy",
+    "When a new teammate keeps using a different import style",
+    "After deleting a module and leaving dead imports behind"
+  ],
+  "body": "Organize the imports in the changed files. Scope or extra rules: $ARGUMENTS\n\n1. Run `git diff --name-only HEAD` to get the files. Limit yourself to source files in that list.\n2. Find the project's convention: look for an ESLint import/order rule, isort or ruff config, goimports, a Prettier plugin, or `.editorconfig`. If a tool exists, run it in fix mode on those files only. Otherwise infer the order from three untouched files.\n3. Typical order: standard library, third-party, project aliases, relative paths, with a blank line between groups and alphabetical inside each.\n4. Remove imports that nothing uses. Check for side-effect imports and type-only imports before deleting.\n5. Never reorder imports whose order matters, such as polyfills or CSS that must load first. Leave a comment-marked block alone.\n\nRun the type checker or build and the tests. Show `git diff --stat` and mention any file you skipped and why. Do not commit.",
+  "argumentHint": "[optional folder or extra rule]",
+  "example": {
+    "prompt": "/organize-imports",
+    "result": "6 changed files. Used the project's eslint import/order rule.\nRemoved 4 unused imports, regrouped 5 files, skipped src/polyfills.ts (order matters).\nTypecheck and 38 tests pass. Diff is 6 files, +22 -31, not committed."
+  },
+  "faq": [
+    {
+      "question": "Will it touch files I have not changed?",
+      "answer": "No. It starts from the current git diff and stays inside that list unless you pass a folder."
+    },
+    {
+      "question": "What if the repo has no import tooling?",
+      "answer": "It copies the order seen in a few untouched files and tells you which pattern it inferred."
+    }
+  ],
+  "access": [
+    "Reads the git diff and tool configuration",
+    "Edits import lines in changed files and runs the linter, type check and tests"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

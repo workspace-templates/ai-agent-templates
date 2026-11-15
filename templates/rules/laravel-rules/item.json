@@ -1,0 +1,46 @@
+{
+  "slug": "laravel-rules",
+  "title": "Laravel Rules",
+  "kind": "rules",
+  "category": "backend",
+  "summary": "Project rules for Laravel apps: form request validation, Eloquent query hygiene, queued jobs, policies for authorization and Pest feature tests.",
+  "description": [
+    "Laravel offers a built-in place for almost everything, and these rules make the agent use those places: form requests for input, policies for permissions, jobs for slow work.",
+    "The goal is controllers that stay short and queries that stay cheap, with tests that describe behavior in plain Pest syntax."
+  ],
+  "stacks": [
+    "php",
+    "laravel"
+  ],
+  "topics": [
+    "api-design",
+    "testing"
+  ],
+  "useWhen": [
+    "You are adding features to a Laravel application",
+    "Controllers validate and authorize inline",
+    "Pages run hundreds of queries",
+    "Slow work such as email blocks the request"
+  ],
+  "body": "# Project rules: Laravel\n\n## Structure\n- Controllers stay thin: authorize, call an action or service class, return a resource or redirect. Put reusable business steps in `app/Actions` or `app/Services`.\n- Use `declare(strict_types=1)`, typed properties and return types.\n\n## Input and output\n- Validate in a Form Request class, never with inline `$request->validate` in long controllers. Use `$request->validated()` only; do not pass `$request->all()` to a model.\n- Return API Resources, not raw models. Define `$fillable` explicitly.\n\n## Authorization\n- One Policy per model, called with `$this->authorize` or the `can` middleware. Do not compare user ids by hand.\n\n## Eloquent\n- Eager load with `with()` and catch lazy loading in development using `Model::preventLazyLoading()`. Select needed columns, use `chunkById` or `lazy` for large sets.\n- Wrap multi-step writes in `DB::transaction`. Use scopes for repeated conditions.\n- Every schema change is a migration with a working `down`. Use factories and seeders for sample data.\n\n## Queues\n- Move email, exports and API calls into queued jobs and notifications. Make jobs idempotent and set `tries` and `backoff`.\n\n## Config\n- Call `env()` only inside config files; use `config()` elsewhere. Secrets stay in `.env`.\n\n## Tests\n- Pest feature tests with `RefreshDatabase`, factories, `Queue::fake()` and `Mail::fake()`.\n\n## Before finishing\nRun `./vendor/bin/pint`, `php artisan test` and `./vendor/bin/phpstan analyse`.",
+  "example": {
+    "prompt": "Send a receipt email after a purchase completes",
+    "result": "The agent dispatches a queued notification from the purchase action, makes it safe to retry, and adds a Pest test using Notification::fake to assert it was sent once."
+  },
+  "faq": [
+    {
+      "question": "Does it require Pest?",
+      "answer": "It prefers Pest, but the structure, validation and queue rules also hold for PHPUnit if that is what the project uses."
+    },
+    {
+      "question": "Why restrict env() to config files?",
+      "answer": "After config caching, env() outside config returns null, so values vanish in production while working locally."
+    }
+  ],
+  "access": [
+    "Instructions only; no files are read or commands run by it"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

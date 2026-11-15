@@ -1,0 +1,45 @@
+{
+  "slug": "dead-dependency-cleanup",
+  "title": "Dead Dependency Cleanup",
+  "kind": "skill",
+  "category": "code-quality",
+  "summary": "Finds unused and duplicated packages in your manifests and removes them one at a time, running the build and tests after each removal so nothing breaks.",
+  "description": [
+    "Dependencies pile up: libraries nobody imports anymore, two packages doing the same job, a dev tool listed as a runtime need. Each one adds install time, attack surface and update noise.",
+    "This skill finds candidates with a real scan, checks the ones that tools often miss, and removes them in separate steps so any breakage points to a single package."
+  ],
+  "stacks": [],
+  "topics": [
+    "refactoring",
+    "ci"
+  ],
+  "useWhen": [
+    "npm install or pip install takes longer every month",
+    "A security alert names a package you never use directly",
+    "You inherit a project and the manifest looks bloated",
+    "Two libraries cover the same task, such as two date or HTTP packages"
+  ],
+  "body": "# Dead dependency cleanup\n\nRemove one package at a time. A green build after each removal is the only proof.\n\n## Steps\n\n1. Identify the ecosystem and manifests (package.json, requirements.txt, pyproject.toml, go.mod, Cargo.toml, Gemfile). Run the baseline build and tests; if they fail now, stop and report.\n2. Find candidates with the ecosystem's tool when available: `npx depcheck`, `npx knip`, `deptry`, `go mod tidy`, `cargo machete`. Otherwise search the source for each package's import name; note that import names can differ from package names.\n3. Check what scanners miss before deleting: use in config files (babel, eslint, jest, webpack plugins), CLI use in scripts and CI files, peer dependencies required by another package, dynamic `require`, and type-only `@types/*` packages.\n4. Find duplicates: two packages for one purpose, the same package at several versions in the lockfile (`npm ls <name>`), and runtime dependencies that belong in dev dependencies.\n5. For each candidate: remove it with the package manager (`npm uninstall`, `pip uninstall` plus manifest edit), then run build, lint and tests. If anything fails, restore it and mark it as used.\n6. Keep one commit per removal or small group.\n\n## Rules\n\n- Never hand-edit a lockfile.\n- Do not upgrade anything in the same change.\n- Do not remove a package that only a script or config references without reading that file.\n\n## Report\n\nRemoved packages with size saved, kept packages with the reason they are still needed, and duplicates that need a decision from the team.",
+  "example": {
+    "prompt": "Clean up unused dependencies in this repo.",
+    "result": "Baseline build and tests passed. depcheck flagged 11 packages. Removed 7 (moment, lodash.get, two unused babel presets, three @types). Kept 4: `sass` used by the build config, `husky` used by the prepare script, `tslib` and `ajv` required as peers. Install size down 38 MB. Duplicate date libraries (moment and date-fns) need a decision."
+  },
+  "faq": [
+    {
+      "question": "Can it break my project?",
+      "answer": "Each removal is followed by a build and test run, and a failing one is put back. Packages loaded only at runtime by name may still escape, so it checks configs and scripts."
+    },
+    {
+      "question": "Does it update versions too?",
+      "answer": "No. Updates are a separate task with different risks, and mixing them makes a failure hard to trace."
+    }
+  ],
+  "access": [
+    "Reads manifests, configs, scripts and source files",
+    "Runs the package manager, build and tests",
+    "Edits manifest files and lockfiles through the package manager"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

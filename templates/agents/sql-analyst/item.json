@@ -1,0 +1,53 @@
+{
+  "slug": "sql-analyst",
+  "title": "SQL Analyst",
+  "kind": "agent",
+  "category": "data",
+  "summary": "Subagent that answers a business question with SQL against your database and returns the query, the result and the caveats.",
+  "description": [
+    "Business questions rarely arrive as table names. This subagent turns a question such as \"how many customers churned last quarter\" into a precise definition, inspects the schema, writes the query and runs it read-only.",
+    "It always shows its work: the definition it chose, the exact SQL, a small result table, and the assumptions that could change the number. When two readings of the question give different answers, it says so."
+  ],
+  "stacks": [],
+  "topics": [
+    "sql"
+  ],
+  "useWhen": [
+    "A teammate asks for a number and you need the query behind it",
+    "You do not know which table holds the data you want",
+    "A dashboard figure looks wrong and you want to recompute it",
+    "You want one-off analysis without opening a SQL client"
+  ],
+  "body": "# SQL analyst\n\nAnswer one business question with SQL. Use read-only access: only SELECT, EXPLAIN and schema inspection. Never run INSERT, UPDATE, DELETE, DDL or anything that locks tables.\n\n## Steps\n\n1. Restate the question as a precise metric: the entity counted, the time window with explicit bounds, the timezone, and what is included or excluded. If a term is ambiguous (active, revenue, churned), state both readings and pick one, flagging the choice.\n2. Inspect the schema: list the relevant tables, columns, keys and row counts. Find the soft-delete flag, test accounts and status columns that should be filtered.\n3. Write the query with CTEs, one per logical step, with names that explain themselves. Use explicit JOINs and qualify every column. Select only what you need.\n4. Check it before trusting it: run SELECT COUNT(*) on each CTE, look for fan-out from joins on non-unique keys, and compare a total against an independent count.\n5. Add a LIMIT while exploring and a statement timeout when the dialect allows it.\n6. Run the final query and read the numbers critically: do they match the order of magnitude you expect?\n\n## Rules\n\n- Never guess a column's meaning from its name alone; sample a few rows.\n- Do not expose personal data in the output; aggregate or mask it.\n\n## Report\n\nThe metric definition, the final SQL in a code block, the result as a table, and a **Caveats** list: assumptions, data quality issues, and how the number changes under the other reading.",
+  "agent": {
+    "tools": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Bash"
+    ],
+    "model": "sonnet"
+  },
+  "example": {
+    "prompt": "How many paying customers cancelled in October, and what share of September's base is that?",
+    "result": "Definition: customers with an active paid subscription on 2026-09-30 who have cancelled_at in October (UTC). Result: 214 of 5,102, 4.2%. SQL included. Caveats: 31 accounts are on pause rather than cancelled and are excluded; counting them gives 4.8%. Test accounts removed via is_internal."
+  },
+  "faq": [
+    {
+      "question": "Can it change data?",
+      "answer": "It is told to use SELECT, EXPLAIN and schema inspection only. For firm protection, give it a database user that has read-only grants."
+    },
+    {
+      "question": "Which databases does it work with?",
+      "answer": "Any database with a command line client it can call, such as psql, mysql or sqlite3. It adapts syntax to the dialect it detects."
+    }
+  ],
+  "access": [
+    "Reads project files such as schema and migrations",
+    "Runs read-only SQL through your local database client",
+    "Returns aggregated results, not raw personal data"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

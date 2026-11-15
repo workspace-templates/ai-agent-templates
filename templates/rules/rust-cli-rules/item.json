@@ -1,0 +1,44 @@
+{
+  "slug": "rust-cli-rules",
+  "title": "Rust CLI Rules",
+  "kind": "rules",
+  "category": "productivity",
+  "summary": "Project rules for Rust command line tools: clap derive, thiserror and anyhow errors, exit codes, tracing logs and assert_cmd tests.",
+  "description": [
+    "These rules shape a Rust command line tool into a small binary over a testable library. Parsing, domain logic and error reporting each get a clear home.",
+    "They help an agent avoid common slips such as panicking on bad input, printing diagnostics to stdout or burying logic in main."
+  ],
+  "stacks": [
+    "rust"
+  ],
+  "topics": [
+    "logging"
+  ],
+  "useWhen": [
+    "You start a Rust command line tool",
+    "The agent uses unwrap on user input",
+    "Logs and results share stdout",
+    "You need integration tests for the compiled binary"
+  ],
+  "body": "# Project rules: Rust CLI\n\n## Layout\n- Split a library crate (`src/lib.rs`) from a thin `src/main.rs`. Put commands in modules; `main` parses, calls the library and maps the result to an exit code.\n- Pin `rust-version`, commit `Cargo.lock` for binaries and keep dependencies few.\n\n## Arguments\n- Define arguments with `clap` derive (`Parser`, `Subcommand`, `ValueEnum`). Document every flag with doc comments so `--help` is useful. Support `--json` for machine output.\n\n## Errors and exit codes\n- Library errors are typed with `thiserror`; the binary may wrap them with `anyhow` and `.context(...)`.\n- No `unwrap`, `expect` or indexing on user data outside tests. Return `Result` and let `main` print one line to stderr.\n- Exit `0` on success, `1` on failure, `2` for usage errors. Handle broken pipes quietly.\n\n## Output and logging\n- Results go to stdout; diagnostics go to stderr through `tracing` with an `EnvFilter` and `-v` flags.\n- Prefer borrowing (`&str`, `&Path`) in signatures and `PathBuf` for owned paths.\n\n## Quality\n- Unit-test logic in the library. Test the binary with `assert_cmd` and `predicates`, using `tempfile` for files.\n- Run `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings` and `cargo test` before finishing.",
+  "example": {
+    "prompt": "Add a stats subcommand that counts lines per file",
+    "result": "The agent adds a clap subcommand, a library function returning a typed result, stderr-only logging and an assert_cmd test with a temp file."
+  },
+  "faq": [
+    {
+      "question": "Why both thiserror and anyhow?",
+      "answer": "Typed errors suit the library where callers match on them; anyhow is convenient in the binary where you only report."
+    },
+    {
+      "question": "Does it cover async?",
+      "answer": "It assumes a synchronous tool. Add tokio rules to the file if your command needs a runtime."
+    }
+  ],
+  "access": [
+    "Instructions only; it does not read or run anything by itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

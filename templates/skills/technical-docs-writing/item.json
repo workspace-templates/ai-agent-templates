@@ -1,0 +1,43 @@
+{
+  "slug": "technical-docs-writing",
+  "title": "Technical Docs Writing",
+  "kind": "skill",
+  "category": "docs",
+  "summary": "Writes READMEs and how-to guides a stranger can follow, by running every step itself and cutting anything the reader does not need on first use.",
+  "description": [
+    "Documentation fails when it describes what the author remembers, not what a new reader must do. This skill writes from the reader side: who they are, what they want done, and the shortest path from nothing to a working result.",
+    "It runs the commands it documents. A step that fails on a clean checkout gets fixed or removed before the doc is delivered."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation"
+  ],
+  "useWhen": [
+    "A project has no README, or one nobody trusts",
+    "You are adding a feature that needs a how-to",
+    "Onboarding takes a week because setup steps are missing",
+    "An API or CLI needs a reference and a quick start"
+  ],
+  "body": "# Technical docs writing\n\nWrite for one reader, who is new and in a hurry.\n\n## Steps\n\n1. Decide the reader and the goal in one line (\"a backend developer who wants the API running locally in ten minutes\"). Choose one doc type: tutorial (learn by doing), how-to (solve one task), reference (look things up) or explanation (why). Do not mix them in one page.\n2. Read the code, config and existing docs. Collect the real commands, versions, ports and environment variable names. Never invent a flag or path.\n3. For a README, use this order: one sentence on what it is and who it is for; a minimal quick start (install, configure, run, expected output); usage with two or three real examples; configuration table; how to test and contribute; license. Put the quick start above the fold.\n4. Write steps as numbered imperatives with one action each, the exact command in a code block, and the expected result. Say where to run it. State prerequisites with versions up front.\n5. Run every command from a clean clone or container. Fix the doc, or the code, wherever it fails. Paste real output, not imagined output.\n6. Edit: short sentences, active voice, same word for the same thing, no \"simply\" or \"just\", define a term at first use, link instead of repeating.\n7. Add a troubleshooting section for the two or three errors you actually hit.\n\n## Rules\n\n- Do not document unreleased or unverified behavior.\n- Keep the diff to docs unless you found a bug; report bugs separately.\n\n## Report\n\nThe files written, which steps you verified by running them, and what you could not verify.",
+  "example": {
+    "prompt": "Write a README for this CLI",
+    "result": "Wrote README.md: a one-line description, install via npm, a three-step quick start with the real output of \"mytool init\", a flag table generated from --help, and a troubleshooting section for the two errors hit during testing (missing Node 20, port 8080 in use). Ran every command in a fresh clone. Unverified: Windows paths."
+  },
+  "faq": [
+    {
+      "question": "Why does it run the commands?",
+      "answer": "Docs that were never executed drift from the code. Running each step on a clean checkout is the quickest way to catch missing prerequisites."
+    },
+    {
+      "question": "Will it rewrite my existing docs?",
+      "answer": "Only the pages you name. For others it lists what is outdated and leaves the text alone."
+    }
+  ],
+  "access": [
+    "Reads files in your project",
+    "Creates or edits documentation files and runs the commands it documents"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

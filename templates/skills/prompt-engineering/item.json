@@ -1,0 +1,44 @@
+{
+  "slug": "prompt-engineering",
+  "title": "Prompt Engineering",
+  "kind": "skill",
+  "category": "data",
+  "summary": "Writes and iterates production prompts with clear structure, examples and failure tests. Use it when a prompt behind a feature must work every time.",
+  "description": [
+    "A prompt that works on three examples can still fail on the fourth hundred. This skill treats a production prompt as code: written with a clear structure, tested against a fixed set of inputs including awkward ones, and changed one thing at a time.",
+    "The agent separates instructions from data, specifies the output format precisely, and keeps a log of each revision with its test results so you know why the prompt reads the way it does."
+  ],
+  "stacks": [],
+  "topics": [
+    "testing",
+    "documentation"
+  ],
+  "useWhen": [
+    "A feature depends on a model following a format every single time",
+    "Outputs vary between runs and you cannot say which version of the prompt is better",
+    "Users paste unexpected input and the model drifts or ignores instructions",
+    "You are porting a prompt to a different model and need to keep behavior"
+  ],
+  "body": "# Prompt engineering\n\nA prompt is a specification. Make it precise, then try to break it.\n\n## Steps\n\n1. Write down the task, the input, the exact output you need, and who consumes the output (a person or a parser). Parser output must be strict.\n2. Collect 15 to 30 test inputs from real data: typical, long, empty, ambiguous, in another language, and adversarial (text that tries to give the model new orders). Save them as a file with the expected result or a pass rule for each.\n3. Draft the prompt with sections in this order: role and goal, rules, the output format, examples, then the input last. Wrap the variable input in delimiters such as `<document>` tags and tell the model it is data, not instructions.\n4. State rules positively and concretely (\"return at most 3 bullets\") instead of vague ones (\"be concise\"). Give the model a way out, such as `{\"answer\": null}` when the information is missing.\n5. Add 2 to 4 examples that cover the hard cases, not only the easy ones. Vary them so the model does not copy one.\n6. For structured output, use the provider's schema or tool mode if available, and validate the result in code anyway.\n7. Run the tests. Read the failures, change one thing, rerun, and keep the score for each version in a log.\n8. Set temperature low for extraction and classification.\n\n## Rules\n\n- Never put secrets in a prompt.\n- Do not tune on the same inputs you report on; hold some out.\n\n## Report\n\nThe final prompt, the score per version, the failures still open, and the cases that need a code-side guard.",
+  "example": {
+    "prompt": "Improve the prompt that extracts invoice fields, it sometimes returns prose.",
+    "result": "Rewrote with delimited input, a strict JSON schema, null for missing fields and 3 examples including a credit note. Test set of 24 invoices: valid JSON went from 19 to 24, correct totals from 17 to 22. Two failures remain, both handwritten scans; added a confidence field and a code check that routes low-confidence results to review."
+  },
+  "faq": [
+    {
+      "question": "Does it work with any model?",
+      "answer": "The structure applies to any chat model. The test set is what tells you whether a particular model follows it, so rerun the tests when you switch."
+    },
+    {
+      "question": "Why keep inputs separate from instructions?",
+      "answer": "Input that sits inside the instructions can override them. Clear delimiters and a stated rule make injected commands much less likely to work."
+    }
+  ],
+  "access": [
+    "Reads and edits prompt files and test inputs",
+    "Can run your prompt against a model if an API key is set in your environment"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

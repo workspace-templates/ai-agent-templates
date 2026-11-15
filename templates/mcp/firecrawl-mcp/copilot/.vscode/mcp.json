@@ -1,0 +1,23 @@
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "firecrawl_api_key",
+      "description": "Your Firecrawl API key",
+      "password": true
+    }
+  ],
+  "servers": {
+    "firecrawl": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "firecrawl-mcp"
+      ],
+      "env": {
+        "FIRECRAWL_API_KEY": "${input:firecrawl_api_key}"
+      }
+    }
+  }
+}

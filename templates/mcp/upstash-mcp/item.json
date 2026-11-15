@@ -1,0 +1,55 @@
+{
+  "slug": "upstash-mcp",
+  "title": "Upstash MCP Server",
+  "kind": "mcp",
+  "category": "database",
+  "summary": "Use Upstash's hosted MCP server to manage Redis databases, QStash and Workflow from your coding agent with OAuth sign-in and no local install.",
+  "description": [
+    "Upstash offers a remote MCP server that exposes its serverless products to an agent: Redis databases, QStash messaging, Workflow, Vector, Search and Blob. The older npm package is no longer maintained, so this setup uses the hosted URL.",
+    "Sign-in is OAuth in the browser. For a headless machine, Upstash accepts a Basic authorization header built from your email and API key instead. A read-only API key turns off every tool that changes state."
+  ],
+  "stacks": [],
+  "topics": [
+    "performance",
+    "debugging"
+  ],
+  "useWhen": [
+    "Spin up a free Redis database for a prototype",
+    "Run a Redis command against a staging database",
+    "List QStash schedules that are failing",
+    "Audit which Upstash databases an account has"
+  ],
+  "mcp": {
+    "name": "upstash",
+    "transport": "http",
+    "url": "https://mcp.upstash.com/mcp",
+    "env": [],
+    "headers": [],
+    "source": "https://github.com/upstash/mcp-server",
+    "access": [
+      "Upstash databases and queues on the account you sign in with",
+      "Can create and delete databases unless you sign in with a read-only API key"
+    ]
+  },
+  "example": {
+    "prompt": "Which of my Upstash Redis databases is the largest, and what region is it in?",
+    "result": "cache-prod is the largest at 412 MB, in eu-west-1. The next is jobs-queue at 96 MB in us-east-1."
+  },
+  "faq": [
+    {
+      "question": "Can I keep it read-only?",
+      "answer": "Yes. Upstash supports read-only API keys, and with one the server disables all tools that modify state."
+    },
+    {
+      "question": "What about CI or servers without a browser?",
+      "answer": "Send an Authorization header of the form Basic base64(email:api_key) instead of using OAuth. Keep that value out of the repo."
+    }
+  ],
+  "access": [
+    "Reads and manages Upstash resources on your account",
+    "Runs Redis commands on databases you choose"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

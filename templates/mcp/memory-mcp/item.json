@@ -1,0 +1,68 @@
+{
+  "slug": "memory-mcp",
+  "title": "Memory MCP Server",
+  "kind": "mcp",
+  "category": "productivity",
+  "summary": "Give your agent a persistent knowledge graph of people, projects and decisions that survives between sessions, stored in one local JSONL file.",
+  "description": [
+    "The memory server keeps a graph made of entities, the observations attached to them, and directed relations between them. Tools such as create_entities, add_observations, search_nodes and read_graph let the agent write and recall facts.",
+    "Everything lives in a single JSONL file on your disk. Point MEMORY_FILE_PATH at a folder you own, because a file inside the npx cache can be wiped when packages update.",
+    "It needs Node.js 24 or later and no account."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation"
+  ],
+  "useWhen": [
+    "Remember team conventions from one session to the next",
+    "Track which services depend on each other",
+    "Keep a running list of decisions and why they were made",
+    "Store preferences so you stop repeating them"
+  ],
+  "mcp": {
+    "name": "memory",
+    "transport": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "@modelcontextprotocol/server-memory"
+    ],
+    "env": [
+      {
+        "name": "MEMORY_FILE_PATH",
+        "description": "Absolute path of the JSONL file that holds the graph; the folder must already exist"
+      }
+    ],
+    "headers": [],
+    "source": "https://github.com/modelcontextprotocol/servers/tree/main/src/memory",
+    "access": [
+      "Reads and rewrites one memory file at the path you set",
+      "Can delete entities, relations and observations in that file"
+    ]
+  },
+  "example": {
+    "prompt": "Remember that the billing service owns the invoices table and is maintained by the payments team.",
+    "result": "Created entities billing-service and payments-team, added the observation that billing-service owns the invoices table, and linked the two with a maintained_by relation."
+  },
+  "faq": [
+    {
+      "question": "Where is my data kept?",
+      "answer": "In the JSONL file named by MEMORY_FILE_PATH. Nothing is sent to a cloud service, and you can open the file in any editor or back it up."
+    },
+    {
+      "question": "Can two agents share it?",
+      "answer": "Yes, if both use the same file path. Writes take a lock file next to the memory file, so they do not corrupt each other."
+    },
+    {
+      "question": "How do I start over?",
+      "answer": "Delete or move the JSONL file, or ask the agent to remove entities with delete_entities."
+    }
+  ],
+  "access": [
+    "Reads and writes the memory file you configure",
+    "No network access"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

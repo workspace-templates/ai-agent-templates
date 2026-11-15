@@ -1,0 +1,3 @@
+[mcp_servers.gcloud]
+command = "npx"
+args = ["-y","@google-cloud/gcloud-mcp"]

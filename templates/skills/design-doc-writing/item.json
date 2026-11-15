@@ -1,0 +1,44 @@
+{
+  "slug": "design-doc-writing",
+  "title": "Design Doc Writing",
+  "kind": "skill",
+  "category": "docs",
+  "summary": "Drafts a design doc with goals, non-goals, alternatives considered and a rollout plan, grounded in the current code before proposing anything.",
+  "description": [
+    "A design doc earns its keep by forcing the hard questions before the code exists. This skill makes the agent study the present system first, then lay out the problem, the options and the cost of each, instead of defending the first idea.",
+    "The draft names what it will not do, shows at least two real alternatives, and ends with a rollout and rollback plan a reviewer can poke at."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation",
+    "api-design"
+  ],
+  "useWhen": [
+    "A change touches several services or a public interface",
+    "You must pick between two approaches and need to show the reasoning",
+    "A project needs sign-off before work starts",
+    "You want reviewers to argue about the plan, not the pull request"
+  ],
+  "body": "# Design doc writing\n\nA design doc is a decision record, not a sales pitch. Make the trade-offs visible.\n\n## Steps\n\n1. Restate the problem in two sentences with who is affected and the evidence it is real (an incident, a metric, a support count). Ask the user for anything you cannot find.\n2. Read the current implementation of the area. Summarize how it works today with file references; do not propose from assumptions.\n3. Write **Goals** and **Non-goals**. Non-goals must be things a reader might reasonably expect, such as \"no migration of historical data\".\n4. Write **Proposal**: the design in enough detail to estimate it. Cover data model, interfaces, failure modes, security and privacy impact, and effect on performance and cost.\n5. Write **Alternatives considered**: at least two real options, including \"do nothing\", each with the reason it lost.\n6. Write **Rollout**: phases, feature flag, migration steps, how to measure success, the rollback trigger and the rollback steps.\n7. Close with **Open questions** and **Risks**, each with an owner or a way to resolve it.\n\n## Rules\n\n- Quantify where possible (requests per second, rows, latency, cost).\n- Keep it to 2 to 4 pages; move detail into an appendix.\n- Do not hide a weakness; state it and say how you would handle it.\n- Never mark a question as resolved without evidence.\n\n## Report\n\nThe doc path, the decisions you need from the user, and the claims you could not verify.",
+  "example": {
+    "prompt": "Write a design doc for moving session storage from cookies to Redis",
+    "result": "Drafted docs/design/session-store.md (3 pages). Goals: revocable sessions, under 5 ms lookup. Non-goals: moving to JWT. Alternatives: signed cookies, Postgres table, do nothing. Rollout: dual-write for one week behind a flag. Needs your input: expected peak concurrent sessions, which I could not find."
+  },
+  "faq": [
+    {
+      "question": "Does it pick the winning option for me?",
+      "answer": "It recommends one and shows why, but the alternatives stay in the doc so reviewers can disagree with the reasoning."
+    },
+    {
+      "question": "How long will the document be?",
+      "answer": "Two to four pages by default. Longer detail goes to an appendix so the decision stays readable."
+    }
+  ],
+  "access": [
+    "Reads the repository to understand the current design",
+    "Writes one design document"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

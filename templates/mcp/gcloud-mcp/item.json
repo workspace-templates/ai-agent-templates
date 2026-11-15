@@ -1,0 +1,59 @@
+{
+  "slug": "gcloud-mcp",
+  "title": "Google Cloud MCP Server",
+  "kind": "mcp",
+  "category": "devops",
+  "summary": "Let the agent run gcloud commands through Google's MCP server (npx), under your own account or a limited service account.",
+  "description": [
+    "Google's gcloud MCP server exposes a single tool that runs gcloud commands. It lets an agent list projects, inspect resources and run the same operations you would type in a terminal, minus a deny list of interactive or arbitrary-input commands.",
+    "It has no credentials of its own: it uses the account active in your gcloud CLI. To narrow what it can do, authorize gcloud as a service account with a restricted role and use impersonation."
+  ],
+  "stacks": [],
+  "topics": [
+    "debugging",
+    "security"
+  ],
+  "useWhen": [
+    "List Compute Engine instances across a project",
+    "Check which APIs are enabled before deploying",
+    "Look at Cloud Run service revisions",
+    "Inspect IAM bindings on a project"
+  ],
+  "mcp": {
+    "name": "gcloud",
+    "transport": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "@google-cloud/gcloud-mcp"
+    ],
+    "env": [],
+    "headers": [],
+    "source": "https://github.com/googleapis/gcloud-mcp",
+    "access": [
+      "Runs gcloud commands with the active gcloud account permissions",
+      "Can change cloud resources if that account is allowed to"
+    ]
+  },
+  "example": {
+    "prompt": "List my Cloud Run services in europe-west1 and show which have more than one revision serving traffic.",
+    "result": "4 services. checkout-api splits traffic 90/10 across two revisions; the other 3 serve a single revision."
+  },
+  "faq": [
+    {
+      "question": "What do I need installed?",
+      "answer": "Node.js 20 or newer and the gcloud CLI, already signed in."
+    },
+    {
+      "question": "How do I keep it safe?",
+      "answer": "Authorize gcloud as a service account that has a narrow role, since the server's rights equal those of the active account."
+    }
+  ],
+  "access": [
+    "Runs gcloud commands on your machine",
+    "Permissions equal the active gcloud account"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

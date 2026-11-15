@@ -1,0 +1,44 @@
+{
+  "slug": "code-comments-docstrings",
+  "title": "Code Comments Docstrings",
+  "kind": "skill",
+  "category": "docs",
+  "summary": "Writes docstrings and comments that explain why the code is the way it is, and removes stale or noisy ones, without changing behavior.",
+  "description": [
+    "Most comments restate the next line, and the useful ones rot after the first refactor. This skill sends the agent through a file with a different test: would a maintainer lose something if this comment vanished?",
+    "It adds docstrings to public functions, records the reasons behind surprising code, deletes comments that lie, and leaves the executable code byte for byte alone."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation",
+    "code-review"
+  ],
+  "useWhen": [
+    "A module has public functions with no docstrings",
+    "You inherited code full of comments like \"increment i\"",
+    "A refactor left comments that describe the old behavior",
+    "Before releasing a library whose API doc is built from docstrings"
+  ],
+  "body": "# Code comments and docstrings\n\nComments explain why. The code already shows what.\n\n## Steps\n\n1. Pick the scope (a file, a folder or the diff) and detect the project's docstring style from existing code: Google or NumPy for Python, JSDoc or TSDoc for JavaScript, rustdoc, Javadoc. Follow it; do not mix styles.\n2. Read each function fully before writing about it. For public APIs, write a docstring with: a one-line summary in the imperative, parameters, return value, raised errors, and one short example when behavior is not obvious.\n3. Add a comment only where the reason is not visible: a workaround and the bug it avoids, a performance choice, a unit or invariant, a surprising order of operations, a link to a spec.\n4. Check every existing comment against the code. Fix it if it is wrong, delete it if it only repeats the code, keep it if it carries a reason.\n5. Convert TODOs without owner or issue into either a concrete issue reference or a deletion proposal.\n\n## Rules\n\n- Never change executable code, formatting or imports in the same pass.\n- Do not write a docstring you cannot support after reading the body. If behavior is unclear, say \"unclear\" in the report and skip it.\n- No commented-out code; remove it, git remembers.\n- Keep comments under 3 lines; longer thoughts go to docs.\n\n## Report\n\nCounts of docstrings added, comments rewritten and removed, plus the places where the code itself needs renaming instead of a comment.",
+  "example": {
+    "prompt": "Clean up the comments in src/billing/",
+    "result": "Added 14 docstrings (TSDoc) to exported functions. Removed 31 comments that repeated the code and 6 that described removed behavior. Added 4 why-comments, for example the 3-day grace period in prorate.ts and the Stripe rounding workaround. Suggested rename: calc2() to calculateProration(). No code changed."
+  },
+  "faq": [
+    {
+      "question": "Will it change how my code behaves?",
+      "answer": "No. Only comment and docstring text is edited, so the diff should contain nothing else."
+    },
+    {
+      "question": "Why does it delete comments?",
+      "answer": "A wrong or redundant comment costs readers more than no comment. Each deletion appears in the diff for you to veto."
+    }
+  ],
+  "access": [
+    "Reads source files",
+    "Edits comments and docstrings only"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

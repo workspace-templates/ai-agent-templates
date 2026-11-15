@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "qdrant": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-qdrant"
+      ],
+      "env": {
+        "QDRANT_URL": "${env:QDRANT_URL}",
+        "QDRANT_API_KEY": "${env:QDRANT_API_KEY}",
+        "COLLECTION_NAME": "${env:COLLECTION_NAME}",
+        "QDRANT_READ_ONLY": "${env:QDRANT_READ_ONLY}"
+      }
+    }
+  }
+}

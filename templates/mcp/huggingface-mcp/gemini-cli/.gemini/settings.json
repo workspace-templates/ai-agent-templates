@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "huggingface": {
+      "httpUrl": "https://huggingface.co/mcp",
+      "headers": {
+        "Authorization": "Bearer $HF_TOKEN"
+      }
+    }
+  }
+}

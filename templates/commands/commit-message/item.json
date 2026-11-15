@@ -1,0 +1,45 @@
+{
+  "slug": "commit-message",
+  "title": "Commit Message",
+  "kind": "command",
+  "category": "git",
+  "summary": "Writes a Conventional Commits message from your staged changes, shows it to you and commits only after you say yes.",
+  "description": [
+    "Good commit messages explain why a change exists, and that is the part people skip when they are tired. This command reads what is staged, works out the one thing the change does and drafts a message in the Conventional Commits format.",
+    "It never stages files for you and never commits without an answer. If the staged diff mixes unrelated work, it says so and suggests how to split it."
+  ],
+  "stacks": [],
+  "topics": [
+    "git",
+    "documentation"
+  ],
+  "useWhen": [
+    "Right after you stage a change and want a clear message",
+    "When a diff touches several files and you are unsure of the type",
+    "On a team that uses Conventional Commits for changelogs",
+    "When you want a body that explains why, not what"
+  ],
+  "body": "Write a commit message for the staged changes. Extra context from the user: $ARGUMENTS\n\n1. Run `git diff --staged --stat` and then `git diff --staged`. If nothing is staged, stop and say so. Do not stage anything yourself.\n2. Run `git log -n 10 --oneline` and copy the project's habits for scope names and tense.\n3. Pick one type: feat, fix, refactor, perf, docs, test, build, ci, chore. If two types fit, the diff is probably two commits: say so and propose the split by file.\n4. Write the subject as `type(scope): summary`, imperative mood, lower case, no period, at most 72 characters. Use the scope or ticket id from the user's text when given.\n5. Add a body only when the reason is not obvious from the subject. Explain why the change was needed and any trade-off, wrapped at 72 columns. Add `BREAKING CHANGE:` in the footer if a public interface changed.\n\nShow the message in a code block, then ask: \"Commit with this message?\" Run `git commit` only after a clear yes. Never use --no-verify and never amend an existing commit.",
+  "argumentHint": "[optional scope or ticket id]",
+  "example": {
+    "prompt": "/commit-message PAY-214",
+    "result": "fix(checkout): reject expired coupons before totals are computed\n\nExpired coupons were applied and then removed on the confirm step, so the\ncart total jumped. Validate the expiry date in applyCoupon() instead.\n\nRefs: PAY-214\n\nCommit with this message?"
+  },
+  "faq": [
+    {
+      "question": "Will it stage my files?",
+      "answer": "No. It only reads what you have already staged and stops if the index is empty."
+    },
+    {
+      "question": "What if my changes are unrelated?",
+      "answer": "It tells you the diff covers two concerns and lists which files belong to each, so you can split the commit."
+    }
+  ],
+  "access": [
+    "Reads the staged diff and recent commit subjects",
+    "Runs git commit only after you confirm"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,48 @@
+{
+  "slug": "swiftui-patterns",
+  "title": "SwiftUI Patterns",
+  "kind": "skill",
+  "category": "mobile",
+  "summary": "Structures SwiftUI views, state and navigation around observable models so screens stay small, previewable and free of stale-state bugs.",
+  "description": [
+    "SwiftUI code drifts into giant views with a dozen property wrappers and navigation that breaks on the second tap. This skill gives the agent a fixed way to split a screen into a model, a thin view and a navigation path, using the modern Observation framework.",
+    "It also covers the quiet mistakes: state owned by the wrong view, identity that changes on every refresh, and work started in the body instead of a task."
+  ],
+  "stacks": [
+    "swift"
+  ],
+  "topics": [
+    "refactoring",
+    "api-design"
+  ],
+  "useWhen": [
+    "A SwiftUI view file passes 300 lines",
+    "A list resets its scroll position or loses focus on every update",
+    "Navigation behaves oddly after going back or deep linking",
+    "You are moving from ObservableObject to the Observation framework",
+    "A new screen needs loading, error and content states"
+  ],
+  "body": "# SwiftUI patterns\n\nSmall views, one source of truth, navigation as data.\n\n## Steps\n\n1. Check the deployment target. On iOS 17 and later use `@Observable` classes. On older targets keep `ObservableObject` and `@Published`, and say so.\n2. Split each screen into a model and a view. The model is an `@Observable` `@MainActor` class holding state and async methods. The view reads it and sends actions. No networking or formatting logic in `body`.\n3. Ownership: the view that creates a model holds it with `@State`. Children receive it as a plain property, or `@Bindable` when they need bindings. Use `@Environment` for app-wide services only. Never create a model inside `body`.\n4. Represent screen state as an enum such as `idle`, `loading`, `loaded(Items)`, `failed(Error)`, and switch over it in the view.\n5. Navigation: use `NavigationStack` with a `path` array of `Hashable` route values and `navigationDestination(for:)`. Keep the path in one place so deep links and \"pop to root\" are one assignment.\n6. Lists: give `ForEach` stable `Identifiable` ids from the data, never `\\.self` on mutable values or array indices.\n7. Async work goes in `.task` or `.task(id:)`, which cancels itself. Never start `Task {}` from `onAppear` without cancellation.\n8. Extract subviews when a section has its own state or exceeds about 40 lines. Add a `#Preview` for each state of the enum.\n\n## Rules\n\n- No force unwraps in views.\n- Do not mark whole views `@MainActor` to silence warnings. Mark the model.\n- Build with strict concurrency warnings on and fix them.\n\n## Report\n\nFiles created or split, the route type, and any ownership bugs found.",
+  "example": {
+    "prompt": "Refactor ProfileView. It is 520 lines and the avatar flickers when I refresh.",
+    "result": "Split into ProfileModel (@Observable, @MainActor), ProfileView (92 lines) and AvatarHeader, StatsRow and SettingsList subviews. Flicker cause: ForEach used \\.self on structs that change on refresh, so every row got a new identity. Switched to id: \\.id. Added previews for loading, loaded and failed. Build clean with strict concurrency."
+  },
+  "faq": [
+    {
+      "question": "Does it require iOS 17?",
+      "answer": "No. It checks your deployment target and falls back to ObservableObject patterns when Observation is not available, keeping the same split of model and view."
+    },
+    {
+      "question": "Why a path array for navigation?",
+      "answer": "Navigation held as plain data can be saved, restored, tested and driven from a link. Scattered NavigationLink destinations cannot."
+    }
+  ],
+  "access": [
+    "Reads Swift files and project settings",
+    "Runs xcodebuild or swift build and your tests",
+    "Edits Swift source files"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

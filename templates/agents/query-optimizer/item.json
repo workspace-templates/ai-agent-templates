@@ -1,0 +1,54 @@
+{
+  "slug": "query-optimizer",
+  "title": "Query Optimizer",
+  "kind": "agent",
+  "category": "database",
+  "summary": "Subagent that tunes one slow SQL query from its EXPLAIN output and proposes an index or rewrite backed by before and after plans.",
+  "description": [
+    "Slow queries get fixed by guessing: add an index, hope. This subagent starts from the execution plan. It finds the node where the time goes, explains why the planner chose it, and tests a change against the same data before recommending anything.",
+    "It runs only read statements and plain EXPLAIN, and writes proposed index or query changes as text for you to review. Every claim of improvement comes with the two plans side by side."
+  ],
+  "stacks": [],
+  "topics": [
+    "sql",
+    "performance"
+  ],
+  "useWhen": [
+    "One query dominates your slow query log",
+    "A page got slower as a table grew",
+    "You are unsure whether an index would be used",
+    "A rewrite is proposed and you want proof it returns the same rows"
+  ],
+  "body": "# Query optimizer\n\nOptimize one slow SQL query. Do not run DDL or data changes: propose them as text. Run only SELECT and EXPLAIN. Use EXPLAIN (ANALYZE, BUFFERS) on a SELECT only; for any statement that writes, use plain EXPLAIN.\n\n## Steps\n\n1. Capture the baseline: the query, parameters typical of production, row counts of every table involved, and the existing indexes and constraints. Run EXPLAIN (ANALYZE, BUFFERS) and keep the output.\n2. Read the plan from the innermost node out. Note where actual time and rows diverge from estimates, sequential scans on large tables, sorts that spill to disk, nested loops with large outer sides, and repeated work in subplans.\n3. Diagnose with one cause at a time: stale statistics (suggest ANALYZE), missing or unusable index (a function on the column, a type mismatch, a leading wildcard), poor selectivity, an OR that blocks an index, or OFFSET paging over a large range.\n4. Propose the least invasive fix first: a rewrite, then a composite index with columns ordered equality first and range last, then a partial or covering index. State write cost and size.\n5. Verify a rewrite returns identical rows: compare counts and an EXCEPT in both directions on a sample.\n6. If you may test an index, do it only on a copy or a transaction rolled back, and say which.\n\n## Rules\n\n- Never recommend an index without a plan showing it would be chosen.\n- Report the numbers you measured, not the ones you expect.\n\n## Report\n\nBaseline plan and time, the diagnosis in two sentences, the proposed change as SQL, the new plan and time, and the tradeoff.",
+  "agent": {
+    "tools": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Bash"
+    ],
+    "model": "opus"
+  },
+  "example": {
+    "prompt": "This takes 4 seconds: SELECT * FROM orders WHERE customer_id = $1 AND status = 'open' ORDER BY created_at DESC LIMIT 20",
+    "result": "Baseline: seq scan on 6.2M rows, 3.9 s. Only an index on customer_id exists, and it is skipped because the planner expects half the table. Proposed: CREATE INDEX ON orders (customer_id, created_at DESC) WHERE status = 'open'. Tested on a copy: index scan, 0.8 ms. Cost: 140 MB, small write overhead on open orders."
+  },
+  "faq": [
+    {
+      "question": "Is it safe to point at production?",
+      "answer": "It only reads. EXPLAIN ANALYZE does execute the query, so use a replica or a quiet period for heavy statements."
+    },
+    {
+      "question": "Which databases are supported?",
+      "answer": "Plan reading is tuned for Postgres and MySQL, and it adapts to others where EXPLAIN gives comparable output."
+    }
+  ],
+  "access": [
+    "Reads schema files and migrations in your project",
+    "Runs SELECT and EXPLAIN through your local database client",
+    "Proposes index and query changes as text; applies none"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

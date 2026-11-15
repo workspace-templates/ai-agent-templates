@@ -1,0 +1,64 @@
+{
+  "slug": "docker-mcp",
+  "title": "Docker MCP Gateway",
+  "kind": "mcp",
+  "category": "devops",
+  "summary": "Route your agent through Docker's MCP gateway so each tool server runs in its own isolated container with secrets kept out of env variables.",
+  "description": [
+    "The Docker MCP gateway sits between your coding agent and a set of MCP servers. Instead of starting each server yourself, you pick them in a profile and the gateway runs the local ones in separate containers, with minimal access to your machine.",
+    "Your agent sees one server and the gateway handles the rest. You can also turn individual tools on or off per profile, which is a simple way to keep a risky tool out of reach. It needs Docker Desktop 4.59 or later with the MCP Toolkit enabled."
+  ],
+  "stacks": [],
+  "topics": [
+    "docker",
+    "security"
+  ],
+  "useWhen": [
+    "Use several MCP servers without wiring each into every agent",
+    "Keep third-party MCP servers off your host by running them in containers",
+    "Restrict an agent to a short list of approved tools",
+    "Share one tool set between Claude Code and Cursor"
+  ],
+  "mcp": {
+    "name": "docker",
+    "transport": "stdio",
+    "command": "docker",
+    "args": [
+      "mcp",
+      "gateway",
+      "run"
+    ],
+    "env": [],
+    "headers": [],
+    "source": "https://github.com/docker/mcp-gateway",
+    "access": [
+      "Starts containers for the MCP servers in your active profile",
+      "Exposes whichever tools those servers offer to your agent"
+    ]
+  },
+  "example": {
+    "prompt": "List the tools you can reach through the Docker gateway and say which server each one comes from.",
+    "result": "12 tools from 3 servers in the default profile: fetch (1 tool), github (9 tools) and duckduckgo (2 tools). Each runs in its own container."
+  },
+  "faq": [
+    {
+      "question": "Which servers does the agent get?",
+      "answer": "Those in the profile you run. With no flag it uses the default profile. Add --profile name to the args to pick another."
+    },
+    {
+      "question": "Does it work without Docker Desktop?",
+      "answer": "Outside Docker Desktop you first run docker mcp feature enable profiles, as the repository describes."
+    },
+    {
+      "question": "Where do server secrets go?",
+      "answer": "The gateway uses Docker Desktop's secrets handling, so you do not put tokens in the agent config."
+    }
+  ],
+  "access": [
+    "Runs containers on your machine",
+    "Reach depends on the servers in your profile"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

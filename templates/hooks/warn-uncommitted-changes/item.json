@@ -1,0 +1,47 @@
+{
+  "slug": "warn-uncommitted-changes",
+  "title": "Warn Uncommitted Changes",
+  "kind": "hook",
+  "category": "git",
+  "summary": "A Claude Code hook that shows which files are still uncommitted whenever the agent finishes a turn, so finished work is not left unsaved.",
+  "description": [
+    "It is easy to close a terminal with edits that never reached a commit. This Stop hook checks the working tree at the end of every turn and, when files are modified or untracked, shows you a short list of them.",
+    "The notice goes to you as a system message and never blocks the agent, so it cannot cause a loop. A clean tree or a folder without Git produces no output."
+  ],
+  "stacks": [],
+  "topics": [
+    "git"
+  ],
+  "useWhen": [
+    "Finish a task and want a reminder to commit",
+    "Run long agent sessions that touch many files",
+    "Avoid losing work when you close the terminal",
+    "Check that a turn left only the files you expected"
+  ],
+  "hook": {
+    "event": "Stop",
+    "command": "node -e \"let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{let j={};try{j=JSON.parse(d)}catch(e){}const cp=require('child_process');try{const o=cp.execFileSync('git',['status','--porcelain'],{cwd:j.cwd||process.cwd(),encoding:'utf8',stdio:['ignore','pipe','ignore']});const l=o.split(String.fromCharCode(10)).filter(Boolean);if(l.length){const s=l.slice(0,10).map(x=>x.slice(3)).join(', ');console.log(JSON.stringify({systemMessage:l.length+' uncommitted file'+(l.length>1?'s':'')+' left in the working tree: '+s+(l.length>10?', and '+(l.length-10)+' more':'')+'.'}))}}catch(e){}process.exit(0)})\"",
+    "timeout": 15
+  },
+  "example": {
+    "prompt": "Rename the helper and update its imports.",
+    "result": "When the turn ends you see '4 uncommitted files left in the working tree: src/util.ts, src/api.ts and two more.'"
+  },
+  "faq": [
+    {
+      "question": "Does it stop Claude from finishing?",
+      "answer": "No. It exits with code 0 and only prints a notice for you, so the turn ends as usual."
+    },
+    {
+      "question": "How many files does it list?",
+      "answer": "The first ten paths, followed by the number of any others."
+    }
+  ],
+  "access": [
+    "Runs git status in the project folder",
+    "Prints a notice; changes no files"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

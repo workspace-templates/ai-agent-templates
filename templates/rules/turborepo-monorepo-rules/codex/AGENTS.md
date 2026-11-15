@@ -1,0 +1,21 @@
+# Project rules: Turborepo monorepo
+
+## Layout
+- `apps/` holds deployable things, `packages/` holds libraries. Apps may depend on packages; packages never depend on apps, and packages avoid cycles.
+- Every package has its own `package.json` with a scoped name such as `@acme/ui`, an explicit `exports` map and a `workspace:*` dependency on siblings.
+- Import across packages by package name only. Never use relative paths that leave the package folder.
+
+## Shared config
+- Put TypeScript, ESLint and formatter settings in packages like `@acme/tsconfig` and `@acme/eslint-config`, and extend them. Do not copy config files.
+- Declare a dependency in the package that imports it, not in the root, except for repo-wide tooling.
+
+## Tasks
+- Define tasks in `turbo.json`: `build` depends on `^build`, lists `outputs` (`dist/**`), and `test` and `lint` depend on what they need.
+- List environment variables a task reads under `env` so the cache key is correct. Mark long-running tasks like `dev` as `persistent` and `cache: false`.
+- Keep scripts named alike in every package (`build`, `test`, `lint`, `typecheck`) so `turbo run` works everywhere.
+
+## Versioning
+- Use one package manager and one lockfile. Use Changesets for versioned, published packages; private apps need no version bumps.
+
+## Before finishing
+- Run `turbo run lint typecheck test build --filter=...[origin/main]` to check only what changed, and fix cache misses you introduced.

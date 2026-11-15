@@ -1,0 +1,61 @@
+{
+  "slug": "azure-mcp",
+  "title": "Azure MCP Server",
+  "kind": "mcp",
+  "category": "devops",
+  "summary": "Start Microsoft's Azure MCP server via npx and let the agent work with Azure storage, Monitor logs and Cosmos DB using your az login.",
+  "description": [
+    "The Azure MCP server gives an agent tools for Azure Blob storage, Azure Monitor queries and metrics, and Cosmos DB NoSQL data. The old Azure/azure-mcp repository is archived; development moved to microsoft/mcp, which is where this setup comes from.",
+    "It authenticates with the Azure Identity SDK, so run az login first and the server acts as you. It has no documented read-only flag, so use an Azure role that only grants read access."
+  ],
+  "stacks": [],
+  "topics": [
+    "logging",
+    "debugging"
+  ],
+  "useWhen": [
+    "Run a Log Analytics query while chasing an incident",
+    "List blobs in a storage container",
+    "Query a Cosmos DB container for sample documents",
+    "Check metrics for a misbehaving app"
+  ],
+  "mcp": {
+    "name": "azure",
+    "transport": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "@azure/mcp@latest",
+      "server",
+      "start"
+    ],
+    "env": [],
+    "headers": [],
+    "source": "https://github.com/microsoft/mcp/blob/main/servers/Azure.Mcp.Server/README.md",
+    "access": [
+      "Azure resources your signed-in identity can reach",
+      "Can write data and run queries according to that identity's roles"
+    ]
+  },
+  "example": {
+    "prompt": "Query the app-prod Log Analytics workspace for errors in the last hour and group them by operation name.",
+    "result": "214 errors: POST /checkout 131, GET /cart 58, POST /login 25. The checkout errors started at 14:12."
+  },
+  "faq": [
+    {
+      "question": "How does it sign in?",
+      "answer": "Through the Azure Identity SDK. Log in with the Azure CLI first; for containers, tenant, client ID and client secret variables are used."
+    },
+    {
+      "question": "How do I stop it from changing things?",
+      "answer": "Give the identity a reader-style Azure RBAC role. The project recommends least-privilege roles rather than a server flag."
+    }
+  ],
+  "access": [
+    "Reads and may change Azure resources your identity can use",
+    "Runs locally through npx"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

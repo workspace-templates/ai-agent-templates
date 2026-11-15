@@ -1,0 +1,46 @@
+{
+  "slug": "python-data-science-rules",
+  "title": "Python Data Science Rules",
+  "kind": "rules",
+  "category": "data",
+  "summary": "Project rules for Python data science repos: notebooks kept thin, logic in modules, fixed seeds, tidy pandas code and versioned data.",
+  "description": [
+    "Data science repos drift into notebooks nobody can rerun. These rules push reusable logic into a package, keep notebooks for exploration and reporting, and make each result traceable to code, data and a seed.",
+    "They also say how to write pandas without hidden mutation, pin environments, and keep large data out of git."
+  ],
+  "stacks": [
+    "python",
+    "pandas"
+  ],
+  "topics": [
+    "python",
+    "refactoring"
+  ],
+  "useWhen": [
+    "A notebook has grown past a few hundred lines",
+    "Results change between runs and nobody knows why",
+    "Pandas code relies on chained assignment and loops",
+    "Data files are being committed to git"
+  ],
+  "body": "# Project rules: Python data science\n\n## Layout\n- Put reusable code in a package under `src/` with tests in `tests/`. Notebooks go in `notebooks/`, numbered, and only import from the package. Strip outputs before commit with `nbstripout`.\n- Never copy functions between notebooks. Move them into a module the moment a second notebook needs them.\n\n## Reproducibility\n- Pin the environment with `pyproject.toml` and a lock file (uv or pip-tools). Record the Python version.\n- Set seeds in one place for `random`, NumPy and any model library, and pass a `random_state` to splitters and estimators.\n- Keep raw data read-only. Version data and models with DVC or an equivalent, and commit only the pointer files. Never commit credentials or personal data.\n\n## Pandas style\n- Prefer vectorized operations and method chaining with `.assign`, `.query` and `.pipe`. Do not loop over rows or modify a frame in place.\n- Be explicit: set dtypes on load, name columns in snake_case, use `merge(..., validate=...)` and assert row counts after joins.\n- Avoid `SettingWithCopyWarning` by working on copies deliberately.\n\n## Evaluation\n- Split before any fitting or scaling to avoid leakage. Report metrics with the split, seed and data version.\n\n## Checks\n- Run `ruff check`, `ruff format` and `pytest`. Tests cover transform functions with small hand-made frames.",
+  "example": {
+    "prompt": "Clean the sales export and add a monthly revenue feature",
+    "result": "The agent writes a typed function in src/sales/features.py, loads with explicit dtypes, validates the join, adds a pytest case with a three-row frame and calls it from a numbered notebook."
+  },
+  "faq": [
+    {
+      "question": "Should notebooks be banned?",
+      "answer": "No. They are good for exploring and presenting. The rule is only that real logic does not live in them."
+    },
+    {
+      "question": "Which data versioning tool is required?",
+      "answer": "None in particular. DVC is named as an example; any tool that keeps data out of git and records versions works."
+    }
+  ],
+  "access": [
+    "Instructions only; it does not read or run anything by itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

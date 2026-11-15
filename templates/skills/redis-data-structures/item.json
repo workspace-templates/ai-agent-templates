@@ -1,0 +1,45 @@
+{
+  "slug": "redis-data-structures",
+  "title": "Redis Data Structures",
+  "kind": "skill",
+  "category": "database",
+  "summary": "Picks the right Redis structure, key naming and expiry for queues, counters, leaderboards, rate limits and sessions.",
+  "description": [
+    "Redis does well when the structure matches the job, and badly when everything is a string holding JSON. This skill maps each use case to the proper type and adds the expiry and memory care that keep an instance healthy.",
+    "It includes safe patterns for atomic updates, so two clients cannot corrupt a counter or double-process a job."
+  ],
+  "stacks": [
+    "redis"
+  ],
+  "topics": [
+    "performance"
+  ],
+  "useWhen": [
+    "You are adding a cache, queue or rate limiter backed by Redis",
+    "A leaderboard or counter is slow or inconsistent",
+    "Redis memory keeps growing",
+    "Keys are named inconsistently across services"
+  ],
+  "body": "# Redis data structures\n\nChoose by operation, set expiry by default, and make updates atomic.\n\n## Steps\n\n1. For each feature, state the operations needed (increment, pop oldest, top 10, check membership).\n2. Match the structure:\n   - Counter or rate limit: `INCR` with `EXPIRE` on first write, or a fixed window key like `rl:{user}:{minute}`.\n   - Object with fields: `HASH` (`HSET`, `HINCRBY`), not a JSON string you rewrite whole.\n   - Leaderboard: `ZSET` with `ZADD`, `ZREVRANGE` and `ZRANK`.\n   - Unique items and membership: `SET`; counting huge uniques cheaply: `HyperLogLog`.\n   - Work queue: `STREAM` with consumer groups and `XACK` rather than `LIST` when a lost job matters.\n   - Session: `HASH` or string with a sliding `EXPIRE`.\n3. Name keys as `app:entity:id:field`. Use hash tags (`{user42}`) when several keys must live on one cluster slot.\n4. Give every cache and session key a TTL, with a little random jitter to avoid a stampede at expiry. Plan for eviction by choosing a `maxmemory-policy` (`allkeys-lru` for a cache, `noeviction` for a queue).\n5. Make multi-step changes atomic with a Lua script or `MULTI`/`EXEC`. A lock uses `SET key value NX PX 30000` and releases only if the value matches.\n6. Never use `KEYS *` in production; use `SCAN`. Watch for big keys with `MEMORY USAGE`.\n\n## Rules\n\n- Do not store data you cannot rebuild unless persistence is configured and tested.\n- Bound the size of every list, set and stream (`XTRIM`, `LTRIM`).\n\n## Report\n\nA table of feature, structure, key pattern, TTL and the commands used.",
+  "example": {
+    "prompt": "Add a per-user rate limit of 100 requests per minute and a daily top-10 board",
+    "result": "Rate limit uses INCR on rl:{userId}:{epochMinute} with EXPIRE 70 set via a Lua script so the pair is atomic. The board is a ZSET lb:daily:2026-11-15 using ZINCRBY, trimmed to the top 1000 and expiring after 3 days."
+  },
+  "faq": [
+    {
+      "question": "Redis list or stream for a job queue?",
+      "answer": "A list is fine for disposable work. Streams add acknowledgements and retries, so use them when losing or double-running a job has a cost."
+    },
+    {
+      "question": "Why does my Redis memory not shrink after deleting keys?",
+      "answer": "The allocator may not return memory to the OS and big keys fragment it. Check fragmentation ratio and consider active defrag or a restart window."
+    }
+  ],
+  "access": [
+    "Reads and edits code in your project",
+    "Does not connect to a Redis server unless you run its suggested commands"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

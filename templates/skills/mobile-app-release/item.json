@@ -1,0 +1,45 @@
+{
+  "slug": "mobile-app-release",
+  "title": "Mobile App Release",
+  "kind": "skill",
+  "category": "mobile",
+  "summary": "Prepares an iOS or Android store release: version and build bump, signing check, changelog, screenshots list and review notes, without uploading anything.",
+  "description": [
+    "Store rejections and last-minute surprises usually come from small things nobody checked: a build number reused, a debug flag left on, a permission with no usage string. This skill walks the agent through a release checklist against the actual project files.",
+    "It prepares everything and stops before any upload or submission. You get a ready list of what changed, what is missing and what to paste into the store forms."
+  ],
+  "stacks": [],
+  "topics": [
+    "ci",
+    "documentation"
+  ],
+  "useWhen": [
+    "You are about to cut a release build for TestFlight or Play internal testing",
+    "A store review was rejected and you need to check the usual causes",
+    "You want release notes written from the commits since the last tag",
+    "You are handing a release to a teammate and need a clear checklist"
+  ],
+  "body": "# Mobile app release\n\nPrepare, verify and report. Never upload, submit or change store settings.\n\n## Steps\n\n1. Detect the project: Xcode project or workspace, Gradle app module, Flutter, React Native or Expo. Find the last release tag with `git describe --tags --abbrev=0` and list commits since it.\n2. Versions. Show the current marketing version and build number (`CFBundleShortVersionString` and `CFBundleVersion`, or `versionName` and `versionCode`). Propose the next values: build numbers only go up and must never repeat. Apply them only after the user agrees.\n3. Configuration audit. Confirm release builds have debugging off, no staging API URLs, no test keys, analytics set to production, and minification enabled on Android. Search shipped code for unfinished-work markers, `localhost` and `10.0.2.2`.\n4. Signing. Verify that the signing config exists and names a keystore or profile by reference. Check the provisioning profile and certificate expiry dates where visible. Never print or copy secrets.\n5. Permissions and privacy. List every requested permission, check each has a usage description on iOS or a stated reason on Android, and flag any that no code uses.\n6. Build a release artifact locally (`xcodebuild archive`, `./gradlew bundleRelease` or the framework equivalent) and report success or the first error.\n7. Draft materials: release notes from the commit list, in user language and under 500 characters, plus a list of screenshots that need refreshing because their screens changed.\n8. Reviewer notes: demo account steps, anything that needs hardware or a region, and the reason for sensitive permissions.\n\n## Report\n\nA checklist with pass, fail or unknown for each step, then the draft notes. Mark anything you could not verify.",
+  "example": {
+    "prompt": "Get the Android app ready for version 2.8.0 on the Play internal track.",
+    "result": "versionName 2.7.3 to 2.8.0, versionCode 143 to 144 (applied). Fail: BASE_URL still points at staging in release flavor, src/release/config.kt:6. Warning: READ_CONTACTS is requested but never used. Release bundle builds. Draft notes (212 chars) and 3 screens to re-shoot: onboarding, settings, checkout. Not verified: signing key expiry, kept in the Play console."
+  },
+  "faq": [
+    {
+      "question": "Does it upload the build for me?",
+      "answer": "No. Uploads and submissions stay with you. The skill stops once the artifact builds and the checklist and notes are ready."
+    },
+    {
+      "question": "What about my signing keys?",
+      "answer": "It checks that signing is configured and when a certificate expires, but it never reads key passwords or writes secrets into files or into its report."
+    }
+  ],
+  "access": [
+    "Reads project files, manifests and git history",
+    "Runs local release builds and read-only git commands",
+    "Edits version numbers only after you confirm"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

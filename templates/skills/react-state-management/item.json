@@ -1,0 +1,46 @@
+{
+  "slug": "react-state-management",
+  "title": "React State Management",
+  "kind": "skill",
+  "category": "frontend",
+  "summary": "Chooses local state, context, a reducer or a store for each piece of React state and removes prop drilling without adding a library by habit.",
+  "description": [
+    "Teams reach for a global store on day one, then wonder why every change touches five files. This skill puts each piece of state where it belongs: as close to its users as possible, and in the server cache if it came from a server.",
+    "The agent sorts the state it finds into kinds, picks the lightest tool for each, and migrates one slice at a time so the app keeps working between commits."
+  ],
+  "stacks": [
+    "react"
+  ],
+  "topics": [
+    "refactoring"
+  ],
+  "useWhen": [
+    "Props pass through four components that do not use them",
+    "A context provider re-renders the whole app on every change",
+    "Server data is copied into Redux and goes out of date",
+    "You are deciding between Context, Zustand and Redux Toolkit"
+  ],
+  "body": "# React state management\n\nPut state in the lowest place that works. Add machinery only when that fails.\n\n## Steps\n\n1. Inventory the state. List each piece with its owner, readers and source. Classify it: server data (from an API), URL state (filters, page, tab), form state, UI state (open, hover), or true app state (session, theme, cart).\n2. Choose the home for each kind:\n   - Server data goes to a query library such as TanStack Query or SWR, not to a store. Cache, refetch and invalidate there.\n   - URL state lives in the router or search params so links and the back button work.\n   - Form state stays in the form, or a form library for large forms.\n   - UI state stays local with `useState`, lifted only to the nearest common parent.\n   - Complex transitions with several related values use `useReducer` with a typed action union.\n   - App state shared by distant components goes to context for rarely changing values, or a small store (Zustand, Jotai, Redux Toolkit) when many components read changing values.\n3. Remove prop drilling by composition first: pass components or `children` instead of data through layers. Add context after that.\n4. Split contexts by concern and by update rate. Memoize the provider value. Expose a custom hook that throws outside the provider.\n5. Do not store derived data; compute it. Keep state normalized and minimal.\n6. Migrate one slice per commit and run the tests after each.\n\n## Rules\n\n- No new dependency without saying what it replaces.\n- Never mirror props into state.\n\n## Report\n\nA table of state, old home, new home and reason, plus what was left alone.",
+  "example": {
+    "prompt": "Cart data is passed through 5 components and our Redux store holds fetched products",
+    "result": "Moved products to TanStack Query (3 hooks, cache time 5 minutes) and deleted the products slice. Cart stays global: a 40-line Zustand store with selectors, since 6 distant components read it. Filters moved to search params. Drilled props removed from 5 components; all 58 tests pass."
+  },
+  "faq": [
+    {
+      "question": "Will it install a state library?",
+      "answer": "Only if no lighter option fits, and it says which dependency it adds and what it replaces. Many apps need none."
+    },
+    {
+      "question": "Does it rewrite everything at once?",
+      "answer": "No. It migrates one slice per commit so you can review and revert each step."
+    }
+  ],
+  "access": [
+    "Reads and edits React source and tests",
+    "Runs your tests",
+    "May change package.json if you approve a new library"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

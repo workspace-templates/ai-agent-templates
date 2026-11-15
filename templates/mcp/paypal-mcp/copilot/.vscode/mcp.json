@@ -1,0 +1,31 @@
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "paypal_access_token",
+      "description": "A PayPal API access token for your app. Sandbox tokens last a few hours, so refresh it when calls start failing.",
+      "password": true
+    },
+    {
+      "type": "promptString",
+      "id": "paypal_environment",
+      "description": "SANDBOX or PRODUCTION. Leave it as SANDBOX while testing.",
+      "password": true
+    }
+  ],
+  "servers": {
+    "paypal": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@paypal/mcp",
+        "--tools=all"
+      ],
+      "env": {
+        "PAYPAL_ACCESS_TOKEN": "${input:paypal_access_token}",
+        "PAYPAL_ENVIRONMENT": "${input:paypal_environment}"
+      }
+    }
+  }
+}

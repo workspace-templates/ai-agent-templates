@@ -1,0 +1,46 @@
+{
+  "slug": "vue-composition-api",
+  "title": "Vue Composition API",
+  "kind": "skill",
+  "category": "frontend",
+  "summary": "Writes Vue 3 script setup components and composables with typed props, typed emits and reactivity that does not leak. Use it for any new or ported component.",
+  "description": [
+    "Vue 3 code written by an agent tends to mix Options API habits with refs, destructure reactive props until they stop updating, and bury logic in components that should live in composables. This skill sets one clear style for the whole file.",
+    "It leans on type-based defineProps and defineEmits, extracts stateful logic into small use-functions, and cleans up every listener and timer it starts."
+  ],
+  "stacks": [
+    "vue"
+  ],
+  "topics": [
+    "typescript",
+    "refactoring"
+  ],
+  "useWhen": [
+    "You are writing a new Vue 3 component with script setup",
+    "A component has grown past 200 lines of mixed state and template logic",
+    "You are porting an Options API component to Vue 3",
+    "Props lose reactivity after destructuring and you cannot see why"
+  ],
+  "body": "# Vue Composition API\n\nWrite Vue 3 with `<script setup lang=\"ts\">` and nothing else. No Options API, no `defineComponent` wrappers, no mixins.\n\n## Component rules\n\n1. Declare props with the type form: `const props = defineProps<{ id: string; items: Item[]; dense?: boolean }>()`. Use `withDefaults` only for real defaults.\n2. Declare events with named payload types: `const emit = defineEmits<{ select: [id: string]; close: [] }>()`. Never emit an event that is not declared.\n3. Use `v-model` through `defineModel<string>()` instead of a prop plus an update event.\n4. Never destructure `props` into plain variables. Use `toRefs(props)`, `toRef(() => props.id)`, or read `props.id` inside a `computed`.\n\n## Reactivity\n\n- `ref` for primitives and replaceable objects, `reactive` only for a local object that never gets reassigned.\n- Derived values are `computed`, never a `watch` that writes to another ref.\n- `watch` is for side effects (fetching, storage). Give it an explicit source, and `{ immediate: true }` only when the first run matters.\n- Anything started in the component (`addEventListener`, `setInterval`, subscriptions) is stopped in `onScopeDispose` or `onUnmounted`.\n\n## Composables\n\nMove logic out when two components need it or the script block passes 80 lines. A composable is named `useThing`, takes plain values or refs (accept `MaybeRefOrGetter` and unwrap with `toValue`), and returns an object of refs and functions, not a reactive object.\n\n## Before you finish\n\nRun `vue-tsc --noEmit` and the component tests. Report which logic you extracted and why.",
+  "example": {
+    "prompt": "Port UserTable.vue from the Options API and pull the sorting out into a composable",
+    "result": "Rewrote UserTable.vue with script setup, a typed `defineProps` and a `select` emit. Extracted `useSortedRows(rows, key)` into composables/useSortedRows.ts, which takes `MaybeRefOrGetter` arguments. Replaced a watcher that wrote `sorted` with a `computed`. `vue-tsc` passes."
+  },
+  "faq": [
+    {
+      "question": "Does it work with Nuxt?",
+      "answer": "Yes. Auto-imports are fine; the skill only decides how components and composables are shaped, so it applies to a Nuxt app and a plain Vite one alike."
+    },
+    {
+      "question": "Why ban reactive for most state?",
+      "answer": "A reactive object cannot be reassigned or destructured safely, and both mistakes silently break updates. A ref makes the replacement point obvious."
+    }
+  ],
+  "access": [
+    "Reads and edits .vue and .ts files in the project",
+    "Runs vue-tsc and your test command"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

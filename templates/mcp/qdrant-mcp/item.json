@@ -1,0 +1,81 @@
+{
+  "slug": "qdrant-mcp",
+  "title": "Qdrant MCP Server",
+  "kind": "mcp",
+  "category": "data",
+  "summary": "Give your agent a semantic memory in Qdrant: store notes and code snippets, then find them again by meaning with the official mcp-server-qdrant.",
+  "description": [
+    "The official Qdrant server exposes two tools. One stores a piece of text with optional metadata in a collection, and the other finds the stored entries closest in meaning to a query. It suits a long-lived memory for an agent, or a searchable index of snippets.",
+    "It runs through uvx, so you need uv installed. Point it at a Qdrant instance with a URL and key, or at a local folder for a file-based database. Embeddings are made locally with fastembed by default, so no embedding API key is involved.",
+    "Setting QDRANT_READ_ONLY to true removes the store tool and leaves lookup only."
+  ],
+  "stacks": [],
+  "topics": [
+    "vector-search",
+    "data"
+  ],
+  "useWhen": [
+    "Keep project decisions where the agent can recall them in later sessions",
+    "Index code snippets and ask for the closest match to a description",
+    "Query an existing collection without allowing writes",
+    "Prototype retrieval before adopting a larger vector pipeline"
+  ],
+  "mcp": {
+    "name": "qdrant",
+    "transport": "stdio",
+    "command": "uvx",
+    "args": [
+      "mcp-server-qdrant"
+    ],
+    "env": [
+      {
+        "name": "QDRANT_URL",
+        "description": "URL of your Qdrant server, for example http://localhost:6333"
+      },
+      {
+        "name": "QDRANT_API_KEY",
+        "description": "API key for Qdrant Cloud; leave unset for a local server"
+      },
+      {
+        "name": "COLLECTION_NAME",
+        "description": "Default collection to store into and search"
+      },
+      {
+        "name": "QDRANT_READ_ONLY",
+        "description": "Set to true to disable the store tool"
+      }
+    ],
+    "headers": [],
+    "source": "https://github.com/qdrant/mcp-server-qdrant",
+    "access": [
+      "Searches the collection you configure",
+      "Writes new entries to it unless QDRANT_READ_ONLY is true",
+      "Downloads an embedding model on first run"
+    ]
+  },
+  "example": {
+    "prompt": "Store this: 'Invoices are rounded per line, not per total.' Then find what we decided about rounding.",
+    "result": "Stored one entry in the 'decisions' collection. Closest match: 'Invoices are rounded per line, not per total.'"
+  },
+  "faq": [
+    {
+      "question": "How do I keep it from writing?",
+      "answer": "Set QDRANT_READ_ONLY=true. The qdrant-store tool is then disabled and only qdrant-find remains."
+    },
+    {
+      "question": "Can I use a local database instead of a server?",
+      "answer": "Yes. Set QDRANT_LOCAL_PATH to a folder instead of QDRANT_URL. The two cannot be combined."
+    },
+    {
+      "question": "Does it call an embedding API?",
+      "answer": "Not by default. The fastembed provider and the all-MiniLM-L6-v2 model run on your machine."
+    }
+  ],
+  "access": [
+    "Reads one Qdrant collection",
+    "Writes entries to it unless read-only is set"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

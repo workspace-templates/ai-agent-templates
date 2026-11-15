@@ -1,0 +1,45 @@
+{
+  "slug": "tailwind-design-system",
+  "title": "Tailwind Design System",
+  "kind": "skill",
+  "category": "frontend",
+  "summary": "Sets up Tailwind theme tokens, component classes and typed variants so a UI stays consistent without piles of repeated utility strings.",
+  "description": [
+    "Tailwind projects drift: five shades of gray, three button paddings, and a 40-class string copied into ten files. This skill pulls those decisions into theme tokens and a few real components, so a color or spacing change happens in one place.",
+    "It audits what exists before it adds anything, and it keeps Tailwind in charge instead of wrapping it in custom CSS."
+  ],
+  "stacks": [
+    "tailwind"
+  ],
+  "topics": [
+    "accessibility"
+  ],
+  "useWhen": [
+    "A project has inconsistent colors, radii or spacing",
+    "The same long class string appears in many files",
+    "You are adding dark mode or a second brand theme",
+    "A new component needs variants such as size and intent"
+  ],
+  "body": "# Tailwind design system\n\nMake the design decisions explicit, then make the code follow them.\n\n## Steps\n\n1. Audit first. Search the markup for arbitrary values (`bg-[#1a2b3c]`, `w-[13px]`) and list the most used raw colors, font sizes and radii. Show the counts before changing anything.\n2. Define tokens in the theme, not in components. Tailwind v4: `@theme { --color-brand-500: ...; --radius-card: ...; }` in the main CSS file. v3: `theme.extend` in the config. Name tokens by role (`surface`, `text-muted`, `brand`), not by value (`blue-dark`).\n3. Support dark mode through semantic variables that switch under `.dark` or `prefers-color-scheme`, so components never write `dark:` pairs for ordinary colors.\n4. Extract a component only when a pattern appears three or more times. Prefer a framework component (React, Vue, Svelte) over `@apply`.\n5. Build variants with a typed helper such as `cva` (class-variance-authority) and merge overrides with `tailwind-merge`. Variants are named by intent: `intent: primary | quiet | danger`, `size: sm | md`.\n6. Replace the raw values you found in step 1 with tokens, one file group at a time.\n\n## Rules\n\n- No new arbitrary values without a comment saying why a token does not fit.\n- Never build class names by string concatenation: Tailwind cannot see a class that only exists at runtime. Map each option to a full class string.\n- Keep focus rings and contrast intact: body text at least 4.5:1.\n\n## Report\n\nTokens added, components extracted, raw values removed (before and after counts).",
+  "example": {
+    "prompt": "Our buttons are all slightly different. Fix the design system.",
+    "result": "Found 14 button class strings with 6 padding combos. Added tokens `--color-brand-500` and `--radius-control`, one `Button` component with `cva` variants (`intent`, `size`), and replaced 41 call sites. Arbitrary values dropped from 58 to 9; each remaining one has a comment."
+  },
+  "faq": [
+    {
+      "question": "Does it work with Tailwind v3 and v4?",
+      "answer": "Yes. It checks which version is installed and writes tokens in the matching format."
+    },
+    {
+      "question": "Why avoid apply?",
+      "answer": "It hides utilities in a second stylesheet and loses the benefit of reading styles next to the markup. A component in your framework does the same job with better tooling."
+    }
+  ],
+  "access": [
+    "Reads markup and CSS across the project",
+    "Edits the Tailwind config, theme CSS and components"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

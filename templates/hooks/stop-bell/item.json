@@ -1,0 +1,47 @@
+{
+  "slug": "stop-bell",
+  "title": "Stop Bell",
+  "kind": "hook",
+  "category": "productivity",
+  "summary": "Sounds a bell in your terminal at the end of every Claude turn, which lets you look away while a long task runs in the background.",
+  "description": [
+    "Waiting on a long refactor wastes attention. This Stop hook writes the bell character straight to your terminal when Claude ends its turn, which most terminals turn into a sound or a flashing tab.",
+    "It writes to the terminal device directly, because hook output is otherwise captured, and falls back to standard error when no terminal is available. It reads no files and has no side effects."
+  ],
+  "stacks": [],
+  "topics": [
+    "refactoring"
+  ],
+  "useWhen": [
+    "Run long builds or refactors in the background",
+    "Work in another window while the agent thinks",
+    "Hear when a big task is finished",
+    "Pair with a terminal that flashes on bell"
+  ],
+  "hook": {
+    "event": "Stop",
+    "command": "node -e \"let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{let j={};try{j=JSON.parse(d)}catch(e){}const B=String.fromCharCode(7);const w=process.platform==='win32';try{require('fs').writeFileSync(w?'CON':'/dev/tty',B)}catch(e){try{process.stderr.write(B)}catch(x){}}process.exit(0)})\"",
+    "timeout": 5
+  },
+  "example": {
+    "prompt": "Migrate every test from Jest to Vitest.",
+    "result": "You switch to your browser, and a few minutes later the terminal beeps because Claude has finished the migration."
+  },
+  "faq": [
+    {
+      "question": "I hear nothing. What now?",
+      "answer": "Check that your terminal has the bell enabled. Some set it to visual only, and a muted tab shows nothing."
+    },
+    {
+      "question": "Does it ring for every reply?",
+      "answer": "It rings when each turn ends, including short answers. Use the Notification variant if you only want to hear about permission prompts."
+    }
+  ],
+  "access": [
+    "Writes one bell character to the terminal",
+    "Reads nothing from the project"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

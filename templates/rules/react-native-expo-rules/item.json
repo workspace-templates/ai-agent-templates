@@ -1,0 +1,47 @@
+{
+  "slug": "react-native-expo-rules",
+  "title": "React Native Expo Rules",
+  "kind": "rules",
+  "category": "mobile",
+  "summary": "Project rules for Expo and React Native apps: Expo Router, typed navigation, safe storage, list performance and builds through EAS.",
+  "description": [
+    "Mobile code has constraints that web habits miss: small screens, slow lists, flaky networks and secrets that must not ship in the bundle. These rules give the agent the defaults a mobile team would apply by hand.",
+    "They fix file-based routing, state and data handling, and the checks to run, so each screen the agent adds is consistent and works on both iOS and Android."
+  ],
+  "stacks": [
+    "react-native",
+    "expo",
+    "typescript"
+  ],
+  "topics": [
+    "typescript",
+    "performance"
+  ],
+  "useWhen": [
+    "You start an Expo project with Expo Router",
+    "Lists stutter or the app feels slow on older phones",
+    "Agents add packages that need a custom native build",
+    "You need one convention for navigation, state and storage"
+  ],
+  "body": "# Project rules: React Native with Expo\n\n## Structure\n- Expo Router with the `app/` directory for screens. Shared UI in `components/`, hooks in `hooks/`, API code in `lib/`. TypeScript strict, no `any`; use typed routes.\n- Prefer Expo SDK packages (`expo-image`, `expo-secure-store`, `expo-file-system`) over community modules. Install with `npx expo install` so versions match the SDK. Do not add a library that needs native code without asking.\n\n## UI\n- Use `StyleSheet.create` or the project's styling library, never inline style objects in hot paths. Wrap screens in `SafeAreaView`, handle the keyboard, and respect dark mode through `useColorScheme`.\n- Every touch target is at least 44 by 44 points, with `accessibilityLabel` and `accessibilityRole`.\n- Check both iOS and Android; use `Platform.select` only when behavior truly differs.\n\n## Performance\n- Long lists use `FlatList` or FlashList with stable `keyExtractor`, memoized row components and no anonymous functions in `renderItem`. Never map a long array inside a `ScrollView`.\n- Use `expo-image` with sizes; avoid re-renders by keeping state local.\n\n## Data and secrets\n- Tokens go in `expo-secure-store`, never AsyncStorage. Anything in `EXPO_PUBLIC_` variables ships in the app, so never put secrets there.\n- Fetch with TanStack Query; show loading, error and offline states.\n\n## Done means\n`npx tsc --noEmit`, `npx expo lint` and `npx expo-doctor` pass. Builds use EAS profiles from eas.json.",
+  "example": {
+    "prompt": "Add a screen that shows saved articles and works offline",
+    "result": "The agent creates app/saved.tsx with a FlatList, caches the query with TanStack Query persistence, stores the token in SecureStore, adds an offline banner and checks tsc and expo-doctor."
+  },
+  "faq": [
+    {
+      "question": "Does it work for bare React Native?",
+      "answer": "Some parts do, but the rules assume Expo Router and the Expo SDK, so a bare project needs edits."
+    },
+    {
+      "question": "Why ban secrets in EXPO_PUBLIC variables?",
+      "answer": "Those values are bundled into the app, so anyone can extract them from the downloaded package."
+    }
+  ],
+  "access": [
+    "Instructions only; it does not read or run anything by itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

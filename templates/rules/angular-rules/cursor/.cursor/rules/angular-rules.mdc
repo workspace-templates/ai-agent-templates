@@ -1,0 +1,28 @@
+---
+description: "Project rules for Angular: standalone components, signals, typed reactive forms, safe RxJS subscriptions and TestBed component tests."
+alwaysApply: true
+---
+
+# Project rules: Angular
+
+## Components
+- Standalone components only; do not create new NgModules. Set `changeDetection: ChangeDetectionStrategy.OnPush` on every component.
+- Use `input()`, `output()` and `model()` for the component API, `signal` and `computed` for state, and `effect` rarely and only for side effects.
+- Write templates with `@if`, `@for` (always with `track`) and `@switch`. Keep logic out of templates; do not call methods that do work from bindings.
+- Keep components presentational where possible. Smart containers talk to services; dumb ones take inputs and emit outputs.
+
+## Services and DI
+- Use `inject()` and `providedIn: 'root'` for singletons. One service per concern; do not put HTTP calls in components.
+- Use `HttpClient` with typed responses and interceptors for auth and error handling. Define API models as interfaces.
+
+## RxJS
+- Prefer `async` pipe or `toSignal` over manual `subscribe`. When you must subscribe, end it with `takeUntilDestroyed()`.
+- Flatten with `switchMap` for search and `concatMap` for ordered writes. Never nest subscribes.
+
+## Forms
+- Use typed reactive forms (`FormBuilder.nonNullable`) with validators; show errors only after touch.
+
+## Structure and tests
+- Group by feature with lazy-loaded routes (`loadComponent`, `loadChildren`). Strict mode stays on.
+- Test with TestBed or a component harness, query the DOM, and mock services with `provideHttpClientTesting`.
+- Run `ng lint`, `ng test --watch=false` and `ng build` before finishing.

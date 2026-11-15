@@ -1,0 +1,63 @@
+{
+  "slug": "git-mcp",
+  "title": "Git MCP Server",
+  "kind": "mcp",
+  "category": "git",
+  "summary": "Give your agent structured git tools for status, diffs, logs, branches and commits through the reference mcp-server-git, fenced to one repository.",
+  "description": [
+    "mcp-server-git is the reference Git server from the Model Context Protocol project. It exposes tools such as git_status, git_diff, git_log, git_show, git_branch and git_commit, so an agent can inspect and stage work without shelling out.",
+    "It runs locally through uvx and needs no account. The --repository flag confines it to the working tree you name, which is worth setting so the agent cannot wander into other clones on the disk."
+  ],
+  "stacks": [],
+  "topics": [
+    "git"
+  ],
+  "useWhen": [
+    "Ask what changed since the last release tag",
+    "Have the agent draft a commit message from the staged diff",
+    "Compare a feature branch with main before opening a pull request",
+    "Find which commit touched a file in the last two weeks"
+  ],
+  "mcp": {
+    "name": "git",
+    "transport": "stdio",
+    "command": "uvx",
+    "args": [
+      "mcp-server-git",
+      "--repository",
+      "."
+    ],
+    "env": [],
+    "headers": [],
+    "source": "https://github.com/modelcontextprotocol/servers/tree/main/src/git",
+    "access": [
+      "Reads status, diffs, history and branches of the repository you point it at",
+      "Can stage files, commit, create branches, check out and merge (fast-forward only by default)"
+    ]
+  },
+  "example": {
+    "prompt": "Show the staged diff and write a one-line commit message in the imperative.",
+    "result": "Staged: 3 files, +42 -7, all in src/billing. Suggested message: \"Round invoice totals before applying tax\". Nothing was committed."
+  },
+  "faq": [
+    {
+      "question": "Do I need Python installed?",
+      "answer": "You need uv, which provides uvx. It fetches mcp-server-git on first run. Git 2.31 or newer must be on the PATH."
+    },
+    {
+      "question": "Can it push to a remote?",
+      "answer": "The tool list has no push. It lists remotes with credentials hidden, and commits stay local until you push yourself."
+    },
+    {
+      "question": "Why keep the --repository flag?",
+      "answer": "Without it the server can act on any repository it can reach. Pinning it to the current folder limits what a bad prompt can touch."
+    }
+  ],
+  "access": [
+    "Local git repository: reads history, writes commits and branches",
+    "No network calls of its own"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

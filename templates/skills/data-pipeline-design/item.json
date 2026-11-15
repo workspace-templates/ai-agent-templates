@@ -1,0 +1,44 @@
+{
+  "slug": "data-pipeline-design",
+  "title": "Data Pipeline Design",
+  "kind": "skill",
+  "category": "data",
+  "summary": "Designs idempotent, testable batch pipelines with safe backfills and data quality checks. Use it when planning or reviewing a scheduled data job.",
+  "description": [
+    "A pipeline that cannot be rerun safely will eventually double-count a day of revenue. This skill designs batch jobs around three properties: the same input always yields the same output, any date range can be reprocessed, and bad data is stopped before it reaches consumers.",
+    "The agent produces a design with named stages, partition keys, checks and a backfill procedure, or reviews an existing job against those properties."
+  ],
+  "stacks": [],
+  "topics": [
+    "migrations",
+    "documentation"
+  ],
+  "useWhen": [
+    "You are about to schedule a new daily or hourly batch job",
+    "A job failed halfway and rerunning it produced duplicate rows",
+    "You need to reprocess three months after a bug fix",
+    "A downstream report broke because upstream data arrived late or malformed"
+  ],
+  "body": "# Data pipeline design\n\nDesign for the rerun. Assume every job will fail midway and be started again.\n\n## Steps\n\n1. Define the contract: source, destination, schedule, the grain of the output, and who consumes it. Write the output schema with types and a unique key.\n2. Partition by processing window (usually a date). Each run takes the window as a parameter and never reads \"now\" or \"latest\" implicitly.\n3. Make writes idempotent: overwrite the partition, or `MERGE`/upsert on the key. Write to a staging location, validate, then swap or publish atomically. Never append blindly.\n4. Separate stages: extract (raw, immutable copy), transform (pure functions of raw data), load. Keep transform code free of I/O so it can be unit tested with a tiny fixture.\n5. Add quality checks between stages: row count against the source within a tolerance, non-null keys, unique keys, value ranges, and freshness. A failed check stops the run and alerts; it does not warn and continue.\n6. Plan late and changed data: reprocess a trailing window (for example 3 days) or key on event time with a watermark.\n7. Document the backfill: the command, the date range parameters, the expected runtime, and how to verify afterwards.\n\n## Rules\n\n- No hidden state: no files in local temp directories, no global counters.\n- Secrets come from the environment, never from the repo.\n- Prefer boring tools already in the stack over a new orchestrator.\n\n## Report\n\nA stage diagram in text, the key and partition choices, the checks with thresholds, the failure modes considered, and the backfill steps.",
+  "example": {
+    "prompt": "Design the nightly job that loads orders from the shop API into the warehouse.",
+    "result": "Three stages: extract writes raw JSON per order date to raw/orders/dt=YYYY-MM-DD, transform builds a typed table, load MERGEs on order_id. Reprocesses the last 3 days each run to catch edits. Checks: row count within 2% of the API total, order_id unique, amount at least 0. Backfill: run.py --from 2026-08-01 --to 2026-08-31, safe to repeat."
+  },
+  "faq": [
+    {
+      "question": "Is this tied to Airflow or any other scheduler?",
+      "answer": "No. The design is about the job itself. It maps cleanly onto cron, Airflow, Dagster or a cloud scheduler, and says which parameters each needs."
+    },
+    {
+      "question": "Why stop on a failed check instead of warning?",
+      "answer": "Warnings get ignored, and bad rows then spread to every table built on top. Stopping early is cheaper than cleaning up downstream."
+    }
+  ],
+  "access": [
+    "Reads the existing job code and configuration",
+    "Writes design notes and pipeline code when asked"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

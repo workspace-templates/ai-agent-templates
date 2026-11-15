@@ -1,0 +1,49 @@
+{
+  "slug": "ensure-final-newline",
+  "title": "Ensure Final Newline",
+  "kind": "hook",
+  "category": "code-quality",
+  "summary": "A Claude Code hook that makes sure each edited text file ends with exactly one newline, matching the line endings the file already uses.",
+  "description": [
+    "Many tools complain when a file has no newline at the end, and extra blank lines at the end show up in review. This PostToolUse hook fixes both after every Edit or Write.",
+    "It keeps CRLF for files that already use it, leaves empty and binary files alone, and skips diff, patch and minified files."
+  ],
+  "stacks": [],
+  "topics": [
+    "code-review",
+    "documentation"
+  ],
+  "useWhen": [
+    "Stop \"no newline at end of file\" warnings in diffs",
+    "Keep POSIX tools happy with agent-written files",
+    "Remove stacked blank lines at the end of a file",
+    "Match the line endings of an existing file"
+  ],
+  "hook": {
+    "event": "PostToolUse",
+    "matcher": "Edit|Write",
+    "command": "node -e \"process.on('uncaughtException',()=>process.exit(0));let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{let j={};try{j=JSON.parse(d)||{}}catch(e){process.exit(0)}const i=j.tool_input||{};const f=String(i.file_path||'');const fs=require('fs');const rd=()=>{try{return fs.readFileSync(f,'utf8')}catch(e){return null}};const e=require('path').extname(f).toLowerCase();if(['.diff','.patch'].includes(e)||f.includes('.min.'))process.exit(0);const t=rd();if(t===null||t.includes(String.fromCharCode(0)))process.exit(0);let k=t.length;while(k>0&&(t[k-1]==='\\n'||t[k-1]==='\\r'))k--;if(k===0)process.exit(0);const o=t.slice(0,k)+(t.includes('\\r\\n')?'\\r\\n':'\\n');if(o!==t)fs.writeFileSync(f,o);process.exit(0)})\"",
+    "timeout": 15
+  },
+  "example": {
+    "prompt": "Create a .gitignore for a Node project.",
+    "result": "The file was saved without a final newline. The hook adds one so the diff shows a clean last line."
+  },
+  "faq": [
+    {
+      "question": "What if my file uses Windows line endings?",
+      "answer": "If the file already contains CRLF pairs the added ending is CRLF too. Otherwise a plain newline is used."
+    },
+    {
+      "question": "Does it change the middle of a file?",
+      "answer": "No. It only trims blank lines after the last real content and adds one ending."
+    }
+  ],
+  "access": [
+    "Reads the edited file",
+    "Rewrites it only when the ending differs"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

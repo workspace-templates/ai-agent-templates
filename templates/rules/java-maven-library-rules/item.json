@@ -1,0 +1,45 @@
+{
+  "slug": "java-maven-library-rules",
+  "title": "Java Maven Library Rules",
+  "kind": "rules",
+  "category": "backend",
+  "summary": "Project rules for Java libraries built with Maven: a small public API, semantic versions, null contracts, Javadoc and a repeatable release.",
+  "description": [
+    "A library is judged by what it exposes, not by how it works inside. These rules make an agent treat every public type as a promise to users and keep the surface as small as it can be.",
+    "They also set up versioning, documentation and a release routine, so a change never breaks a downstream build by accident."
+  ],
+  "stacks": [
+    "java"
+  ],
+  "topics": [
+    "api-design",
+    "documentation"
+  ],
+  "useWhen": [
+    "You maintain a Java library published to Maven Central or an internal repository",
+    "An agent keeps making internal classes public",
+    "You want a consistent policy for nullability and exceptions",
+    "Release steps differ every time someone cuts a version"
+  ],
+  "body": "# Project rules: Java Maven library\n\n## API surface\n- Keep implementation in a `internal` package that is not exported. Default to package-private, then public only what users need. Prefer interfaces, final classes and static factories or builders.\n- If you use JPMS, export only the API packages in `module-info.java`.\n- Never change or remove a public signature in a minor release. Deprecate with `@Deprecated(since=..., forRemoval=...)` and a Javadoc `@deprecated` pointing to the replacement.\n\n## Contracts\n- Parameters and returns are non-null unless documented. Use `Objects.requireNonNull` with a message at entry points, `Optional` for absent return values and never for fields or parameters.\n- Throw unchecked exceptions for programming errors. Use a small checked or custom hierarchy for expected failures, with the cause attached.\n- Make types immutable where possible and document thread safety.\n\n## Documentation\n- Every public type and method has Javadoc with the behavior, parameters, exceptions and an example. Build with `-Xdoclint` and fail on warnings.\n\n## Build and versions\n- Follow semantic versioning. Pin plugin versions, declare dependencies with the narrowest scope and keep them few. Never leak third-party types in the API.\n- Run a binary compatibility check, such as japicmp, against the last release.\n\n## Done checks\n- Run `mvn -B verify` with tests, Javadoc and the compatibility check. Releases go through `mvn release:prepare` or the CI workflow, with a changelog entry and a signed tag.",
+  "example": {
+    "prompt": "Add a retry option to our HttpClient wrapper",
+    "result": "The agent adds a RetryPolicy interface and a builder method in the API package, keeps the implementation in internal, documents it with Javadoc and an example, and confirms japicmp reports no breaking change."
+  },
+  "faq": [
+    {
+      "question": "Is this meant for applications too?",
+      "answer": "No. Applications can expose more freely; these rules assume other people compile against your jar."
+    },
+    {
+      "question": "Do I need JPMS?",
+      "answer": "Not required. The internal package rule works with or without module descriptors."
+    }
+  ],
+  "access": [
+    "Instructions only; it does not read or run anything by itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,21 @@
+# Project rules: MongoDB
+
+## Schema design
+- Model for the access pattern. Embed data that is read together and changes together; reference data that is shared or large. Write down each collection's read and write queries in a comment or doc.
+- Never let an array grow without bound. Cap it, bucket it by time, or move the items to their own collection with a reference. Keep documents far below the 16 MB limit.
+- Use consistent field names in camelCase, store dates as `Date`, money as integer minor units or `Decimal128`, and ids as `ObjectId`.
+
+## Validation
+- Define a `$jsonSchema` validator for each collection, with required fields and types. Version documents with a `schemaVersion` field and migrate lazily or with scripts.
+
+## Indexes
+- Create an index for every query that matters, following equality, sort, range order. Prefer compound indexes over many single ones, and drop unused ones. Confirm with `explain("executionStats")` that the plan uses an index and examines few documents.
+- Add a TTL index for expiring data.
+
+## Queries
+- Always project only the fields you need and limit results. Use cursor pagination on an indexed field instead of large `skip` values.
+- Do not build filters from raw request objects; allow-list fields to prevent operator injection.
+- Use transactions only when several documents must change together.
+
+## Checks
+- Run tests against a real MongoDB instance, not a mock, and run the migration scripts twice to prove they are idempotent.

@@ -1,0 +1,55 @@
+{
+  "slug": "type-safety-auditor",
+  "title": "Type Safety Auditor",
+  "kind": "agent",
+  "category": "code-quality",
+  "summary": "Read-only subagent that finds any-casts, unchecked assertions and unsafe narrowing in TypeScript and proposes properly typed replacements.",
+  "description": [
+    "TypeScript only protects the code that it can see. A single `as any`, a non-null assertion or a JSON.parse result used as a typed value turns the checker off for everything downstream. This subagent finds those holes and shows how to close them.",
+    "It sorts findings by what they can break at runtime, not by how ugly they look. The proposed fix for each is real typed code: a type guard, a schema parse at the boundary, a discriminated union, or a tighter generic."
+  ],
+  "stacks": [
+    "typescript"
+  ],
+  "topics": [
+    "typescript",
+    "code-review"
+  ],
+  "useWhen": [
+    "You are turning on strict mode and need to know the cost",
+    "A runtime error slipped past the compiler",
+    "You want to review data boundaries such as API responses and JSON input",
+    "The codebase accumulated casts to silence errors"
+  ],
+  "body": "# Type safety auditor\n\nFind places where the type system is bypassed or lied to. You are read-only.\n\n## Steps\n\n1. Read tsconfig.json (and any extended configs). Report which strict flags are off: strict, noImplicitAny, strictNullChecks, noUncheckedIndexedAccess, exactOptionalPropertyTypes.\n2. Search for escape hatches and read each in context:\n   - `any` in annotations, `as any`, `as unknown as T`, and generic defaults of any.\n   - Type assertions `value as T` on data that was not validated.\n   - Non-null assertions `value!` on values that can really be missing.\n   - `@ts-ignore` and `@ts-expect-error` and what they hide.\n   - Function overloads or index signatures wider than the data.\n   - `JSON.parse`, `response.json()`, `req.body`, `process.env`, localStorage and URL params typed without a runtime check.\n   - Narrowing that trusts `in` or truthiness where `0`, empty string or `null` are valid.\n   - Enums and switch statements without an exhaustiveness check.\n3. Rank by blast radius: values crossing a trust boundary come first, internal casts last. A cast of already-validated data is low.\n4. Write the fix for each finding: a type predicate, a schema parse (use the validation library the project already has, or hand-written guard if none), a discriminated union, `satisfies`, or an `assertNever` default.\n5. You may run `npx tsc --noEmit` to count errors under stricter flags. Do not edit config.\n\n## Report\n\nStrict flags status, counts per escape hatch, then findings ranked High, Medium, Low with `file:line`, the risk and the typed replacement.",
+  "agent": {
+    "tools": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Bash"
+    ],
+    "model": "sonnet"
+  },
+  "example": {
+    "prompt": "Audit type safety in src/api and src/hooks.",
+    "result": "strictNullChecks is on, noUncheckedIndexedAccess is off. 41 escape hatches. High: api/client.ts:27 returns res.json() as User[] with no validation; add a zod parse and a User schema. High: hooks/useCart.ts:63 uses cart.items[0]! on possibly empty arrays. Low: 19 test-file casts."
+  },
+  "faq": [
+    {
+      "question": "Will it turn on strict mode for me?",
+      "answer": "No. It reports which flags are off and can count the errors each would add with a no-emit compile, but config changes stay yours."
+    },
+    {
+      "question": "Is every any a bug?",
+      "answer": "No. It separates casts of validated data and test helpers, which are low risk, from unvalidated values at trust boundaries, which it flags first."
+    }
+  ],
+  "access": [
+    "Reads TypeScript source and tsconfig files",
+    "Runs the TypeScript compiler with no output to count errors"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

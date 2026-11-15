@@ -1,0 +1,43 @@
+{
+  "slug": "unit-test-writing",
+  "title": "Unit Test Writing",
+  "kind": "skill",
+  "category": "testing",
+  "summary": "Writes focused unit tests for a function or class, covering boundaries and failures without testing mocks. Use it when code lacks tests or a bug needs one.",
+  "description": [
+    "Generated tests tend to repeat the implementation, mock everything and pass no matter what the code does. This skill starts from the behavior a caller depends on, picks the inputs that matter, and checks that each test can actually fail.",
+    "You get a few readable tests per function, named after the behavior, in the style your project already uses."
+  ],
+  "stacks": [],
+  "topics": [
+    "testing"
+  ],
+  "useWhen": [
+    "A new function has no tests yet",
+    "A bug was fixed and needs a regression test",
+    "Coverage is high but bugs still slip through",
+    "You inherit a module and want its behavior pinned down"
+  ],
+  "body": "# Unit test writing\n\nTest what the code promises, not how it does it.\n\n## Steps\n\n1. Find the test framework, file layout, naming and helpers already used (look at two existing test files) and copy their style. Do not add a new framework.\n2. Read the target and list its observable behaviors: return values, thrown errors, state changes, calls to collaborators that matter.\n3. Choose cases per behavior: one typical input, each boundary (0, 1, max, empty, null, whitespace, duplicate), each documented error, and one case per branch you can name. Skip cases that repeat another.\n4. Write one test per behavior. Name it as a sentence (\"returns the first match when two items tie\"). Use arrange, act, assert with one logical assertion each. Prefer literal expected values over recomputing them with the same logic.\n5. Fake only what crosses a process boundary: network, disk, clock, randomness. Use real objects for everything inside the module. Never assert that a mock was called when you can assert the result.\n6. Prove each test can fail: change the code (flip a condition, drop a line), see red, then revert. Report any test that stayed green.\n7. Run the file and the full suite.\n\n## Rules\n\n- No sleeps, no test order dependence, no shared mutable state, no snapshots of large objects.\n- Do not edit the code under test, except to report that it is untestable.\n\n## Report\n\nTests added with their names, behaviors left uncovered, and the mutations you tried.",
+  "example": {
+    "prompt": "Write tests for parseDuration in src/time.ts",
+    "result": "Added 9 tests in src/time.test.ts: \"1h30m\" and \"90m\" give the same value, empty string throws, negative values throw, \"0s\" returns 0, units out of order are rejected, overflow above 365 days throws. Mutation check: 8 of 9 failed when I changed the code; the whitespace test stayed green, so I tightened it. Not covered: locale-specific input."
+  },
+  "faq": [
+    {
+      "question": "Why does it break the code on purpose?",
+      "answer": "A test that never fails proves nothing. Flipping a condition for a moment shows whether the test is watching the right thing."
+    },
+    {
+      "question": "Does it use mocks?",
+      "answer": "Only at the edges, such as HTTP, disk and the clock. Mocking your own classes makes tests that pass while the real code is broken."
+    }
+  ],
+  "access": [
+    "Reads files in your project",
+    "Creates or edits test files and runs your test command"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,44 @@
+{
+  "slug": "security-headers-csp",
+  "title": "Security Headers CSP",
+  "kind": "skill",
+  "category": "security",
+  "summary": "Adds a Content Security Policy and the other protective HTTP headers, starting in report-only mode so nothing breaks before you tighten it.",
+  "description": [
+    "A strict Content Security Policy is the best second line against cross-site scripting, and the one most often abandoned after a site breaks. This skill avoids that by shipping the policy in report-only mode first and tightening it from real violation data.",
+    "Alongside it, the skill sets the smaller headers that cost nothing, such as HSTS, frame protection and referrer rules, using your framework or server config rather than patches in each handler."
+  ],
+  "stacks": [],
+  "topics": [
+    "security",
+    "api-design"
+  ],
+  "useWhen": [
+    "A scanner gives your site a poor header grade",
+    "You want XSS to be harder even if a template bug slips in",
+    "Third-party scripts and inline code make a policy look impossible",
+    "You are moving to HTTPS only and need HSTS"
+  ],
+  "body": "# Security headers and CSP\n\nRoll out in stages. Never enforce a new CSP before you have seen its reports.\n\n## Steps\n\n1. Inventory what the pages load: scripts, styles, fonts, images, frames, fetch and websocket targets, analytics and widgets. Note every inline script and style.\n2. Remove inline code where it is cheap. For what remains, use a per-response nonce (`script-src 'nonce-...' 'strict-dynamic'`) or hashes. Do not rely on `'unsafe-inline'` or `'unsafe-eval'` for scripts.\n3. Draft the policy: `default-src 'self'`, then explicit `script-src`, `style-src`, `img-src`, `connect-src`, `font-src`, plus `object-src 'none'`, `base-uri 'none'`, `frame-ancestors 'self'` and `form-action 'self'`.\n4. Ship it as `Content-Security-Policy-Report-Only` with a `report-to` endpoint or a log of violations. Run through the main user journeys and read the reports. Fix or allow each legitimate source narrowly. Wait for a representative period.\n5. Switch to enforcing `Content-Security-Policy` only when reports are clean. Keep a report-only copy of the next stricter version.\n6. Add the companions through the framework's middleware or server config:\n   - `Strict-Transport-Security: max-age=31536000; includeSubDomains` (add `preload` only after confirming every subdomain serves HTTPS)\n   - `X-Content-Type-Options: nosniff`\n   - `Referrer-Policy: strict-origin-when-cross-origin`\n   - `Permissions-Policy` turning off unused features\n7. Test with a header scanner and a browser console check.\n\n## Rules\n\n- Do not paste a policy found online; build it from what the pages actually load.\n- Keep policy in one place, in config.\n\n## Report\n\nThe policy, the sources allowed and why, where it is set, and the steps remaining to enforce it.",
+  "example": {
+    "prompt": "Add a CSP to our Next.js app without breaking checkout.",
+    "result": "Added middleware that sets a nonce per request and a report-only policy: default-src self, script-src nonce with strict-dynamic, frame-ancestors none. Reports flagged Stripe js and the chat widget; both allowed by exact origin. Also added HSTS, nosniff, Referrer-Policy and Permissions-Policy. Enforce after a week of clean reports; reminder noted in docs/security.md."
+  },
+  "faq": [
+    {
+      "question": "Why report-only first?",
+      "answer": "It shows exactly what an enforced policy would block, with no effect on users. You fix the gaps before anything breaks."
+    },
+    {
+      "question": "Can CSP replace output escaping?",
+      "answer": "No. It limits the damage if escaping fails, but escaping must still be correct."
+    }
+  ],
+  "access": [
+    "Reads templates, build output and server configuration",
+    "Edits header configuration or middleware"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

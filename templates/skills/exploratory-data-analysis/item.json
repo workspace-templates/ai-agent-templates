@@ -1,0 +1,47 @@
+{
+  "slug": "exploratory-data-analysis",
+  "title": "Exploratory Data Analysis",
+  "kind": "skill",
+  "category": "data",
+  "summary": "Profiles a new dataset, finds quality problems and summarizes findings with plots. Use it before modeling or reporting on data you have not seen yet.",
+  "description": [
+    "Jumping straight into a model or dashboard on unfamiliar data is how wrong conclusions ship. This skill walks the agent through a fixed pass: shape, types, missing values, distributions, relationships and oddities, with a plot where a plot says more than a number.",
+    "The output is a short written summary with the three or four things that matter, the problems that must be fixed first, and the questions the data can and cannot answer."
+  ],
+  "stacks": [
+    "python"
+  ],
+  "topics": [
+    "python",
+    "documentation"
+  ],
+  "useWhen": [
+    "You received a new dataset and know nothing about its quality",
+    "A stakeholder asks what the data says and you need a defensible first answer",
+    "Before choosing features or a model, to learn what is actually in the table",
+    "A metric looks off and you want to find out whether the data is the reason"
+  ],
+  "body": "# Exploratory data analysis\n\nUnderstand the data before drawing a conclusion from it. Report what you saw, separate from what you suspect.\n\n## Steps\n\n1. State the unit of a row (\"one order line\", \"one user per day\") and the target question. If you cannot name the row unit, find out before going on.\n2. Inspect structure: row and column counts, dtypes, memory, a random sample of 10 rows (not just `head`), and the date range if any.\n3. Check quality: nulls per column as a percentage, duplicate rows and duplicate keys, constant columns, impossible values (negative ages, future dates), and inconsistent categories.\n4. Describe each numeric column: min, quartiles, max, skew, and outliers by the 1.5 IQR rule. Draw a histogram or box plot for the important ones.\n5. Describe categoricals: cardinality, top values, and rare levels. Use a bar chart for the leading categories.\n6. Look at relationships: a correlation matrix for numerics, group means against the target, and a time series plot for anything dated. Remember correlation is not cause.\n7. Check for leakage: any column that would not exist at prediction time.\n8. Save plots to `eda/` as PNG files with titles and axis labels.\n\n## Rules\n\n- Never modify the source data; work on a copy.\n- Report numbers with their denominators.\n\n## Report\n\nOpen with the 3 findings that change what you will do next, then data quality problems ranked by impact, then plots with one sentence each, then open questions.",
+  "example": {
+    "prompt": "Explore sales_2025.parquet and tell me if it is safe to forecast from.",
+    "result": "412,300 rows, one per order line, Jan 2024 to Oct 2025. Findings: 3.1% of unit_price is zero (free samples, exclude); 14 duplicate order_line_id; March 2025 has no rows for store 17. Revenue is strongly seasonal with a weekly cycle. Not safe to forecast store 17 until the gap is explained. Six plots saved to eda/."
+  },
+  "faq": [
+    {
+      "question": "Does it need a notebook?",
+      "answer": "No. It runs as scripts and saves PNG files, though you can paste the code into a notebook if you prefer."
+    },
+    {
+      "question": "Can it handle files too large for memory?",
+      "answer": "It samples or reads columns selectively and says when a conclusion rests on a sample rather than the whole file."
+    }
+  ],
+  "access": [
+    "Reads the dataset files you point it at",
+    "Writes plot images and a summary into an eda folder",
+    "Runs Python for analysis"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

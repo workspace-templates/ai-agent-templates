@@ -1,0 +1,44 @@
+{
+  "slug": "database-connection-pooling",
+  "title": "Database Connection Pooling",
+  "kind": "skill",
+  "category": "database",
+  "summary": "Sizes and configures database connection pools, and diagnoses exhausted pools, leaked connections and idle-in-transaction sessions.",
+  "description": [
+    "When an app hangs under load with a healthy database, the cause is often the pool: too small, too large, or full of connections that were never returned. This skill finds out which.",
+    "It gives a sizing method based on cores and query time instead of a round number, and covers serverless and multi-instance setups where pools multiply."
+  ],
+  "stacks": [],
+  "topics": [
+    "performance",
+    "debugging"
+  ],
+  "useWhen": [
+    "Requests time out waiting for a connection",
+    "The database reports too many connections",
+    "Sessions sit idle in transaction and hold locks",
+    "You deploy many app instances or serverless functions against one database"
+  ],
+  "body": "# Database connection pooling\n\nA pool protects the database. Bigger is rarely better.\n\n## Steps\n\n1. Collect facts: database max connections, number of app instances and workers, pool settings per process, and typical query time. Total possible connections = instances x workers x pool max. Compare to the database limit with headroom for admin and migrations.\n2. Size it. A database does best with roughly (cores x 2) + disk spindles active connections. For most apps a pool of 10 to 20 per instance is plenty; if you need more, queries are too slow or transactions too long.\n3. Set the pool knobs deliberately: max size, min idle, acquire timeout (fail in a few seconds, not minutes), max connection lifetime (shorter than any proxy or firewall idle timeout), and validation or keepalive.\n4. Diagnose exhaustion: log pool wait time and active count. Look at the database view (`pg_stat_activity` or `SHOW PROCESSLIST`) for state, `xact_start` age and the query of sessions that are idle in transaction.\n5. Find leaks: connections acquired and not released on error paths. Use the language's scoped form (context manager, try-with-resources, `using`, `defer`) everywhere.\n6. Shorten transactions: no HTTP calls, file work or user waits between BEGIN and COMMIT. Set `idle_in_transaction_session_timeout` and a statement timeout.\n7. For many instances or serverless, put an external pooler (PgBouncer in transaction mode, or a managed proxy) in front, and check that session features such as prepared statements and advisory locks still work.\n\n## Rules\n\n- Never fix exhaustion by only raising max size.\n- Report the arithmetic, not just the numbers.\n\n## Report\n\nThe current and proposed settings, the evidence for the cause, and the code fixes.",
+  "example": {
+    "prompt": "Our API times out under load but the database CPU is at 15%",
+    "result": "Pool max was 5 per worker with 30 s acquire timeout, and a webhook handler held a transaction open during an HTTP call to a payment provider. Moved the call outside the transaction, set pool max 12, acquire timeout 3 s and idle-in-transaction timeout 15 s. Waits dropped from 8 s to under 20 ms."
+  },
+  "faq": [
+    {
+      "question": "Why is a huge pool bad?",
+      "answer": "Too many active queries compete for CPU and locks, so each runs slower and total throughput can fall. A modest pool with a queue behaves better."
+    },
+    {
+      "question": "Does PgBouncer replace an in-app pool?",
+      "answer": "No, use both. The app pool avoids connect cost per request, and the external one caps total server connections across instances."
+    }
+  ],
+  "access": [
+    "Reads application and configuration files",
+    "Suggests read-only statements to run against the database"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

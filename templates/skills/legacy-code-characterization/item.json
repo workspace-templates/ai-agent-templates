@@ -1,0 +1,45 @@
+{
+  "slug": "legacy-code-characterization",
+  "title": "Legacy Code Characterization",
+  "kind": "skill",
+  "category": "code-quality",
+  "summary": "Records what untested legacy code actually does by writing characterization tests first, so you can change or refactor it without guessing at behavior.",
+  "description": [
+    "You cannot refactor code if you do not know what it does today, and old code rarely has a spec. A characterization test asks the code itself: it runs real inputs, records the output and fails when that output changes.",
+    "This skill builds that safety net around one function or module before any edit. The tests describe current behavior, bugs included, and the bugs are listed separately so you decide what to fix."
+  ],
+  "stacks": [],
+  "topics": [
+    "testing",
+    "refactoring"
+  ],
+  "useWhen": [
+    "You must change a function that has no tests and no owner",
+    "A refactor is planned for code you do not fully understand",
+    "Behavior depends on odd data formats found only in production",
+    "You want to upgrade a framework under code nobody dares to touch"
+  ],
+  "body": "# Legacy code characterization\n\nDescribe what the code does, not what it should do. Do not fix anything in this step.\n\n## Steps\n\n1. Choose the seam: one function, class or endpoint. Read it and list its inputs, outputs, side effects (database, files, network, clock, randomness) and callers.\n2. Make it testable without changing behavior. Replace time, randomness and network with test doubles at the edge, and use a temporary database or fixtures. If the code cannot be called without a rewrite, use the smallest wrapper or an extracted-but-identical function, and say so.\n3. Collect realistic inputs: from existing fixtures, logs, call sites and sample data. Add boundaries: empty, zero, null, maximum length, unusual encodings and error cases.\n4. Write a test per input that asserts the current output. If you do not know the output, run the code, read the result and paste it in as the expected value. Snapshot tests are fine for large outputs.\n5. Run the suite three times to catch flaky tests. A test that fails randomly is not a safety net; find the hidden dependency.\n6. Check coverage for the target (`--coverage`) and add inputs until each branch runs at least once.\n7. Mark suspicious results. When the output looks wrong, keep the test, add a comment `// current behavior, looks like a bug` and list it.\n\n## Rules\n\n- Change no production logic in this step, except the minimal seam from step 2.\n- Name tests after the input, not the expected value.\n- Never delete a failing characterization test; ask first.\n\n## Report\n\nTests added, branch coverage reached, the seams introduced, and a list of suspected bugs with their inputs.",
+  "example": {
+    "prompt": "We need to change calcLateFee() in billing/fees.php but it has no tests. Pin it down first.",
+    "result": "Wrapped the clock behind a `$now` parameter (default unchanged). Wrote 23 characterization tests: weekend due dates, leap days, zero balances, negative credit, and the 90-day cap. Branch coverage of the function 100%, stable over 3 runs. Suspected bugs: fee is charged on credit balances (test line 140) and rounds down at exactly 0.5."
+  },
+  "faq": [
+    {
+      "question": "Do these tests mean the behavior is correct?",
+      "answer": "No, only that it is current. Suspected bugs are listed apart so you can change the expected value on purpose once you decide."
+    },
+    {
+      "question": "What if the code cannot be tested at all?",
+      "answer": "The skill makes the smallest behavior-neutral change that opens a seam and reports exactly what it changed before going on."
+    }
+  ],
+  "access": [
+    "Reads source files, fixtures and logs you point to",
+    "Adds test files and small seams",
+    "Runs your test command with coverage"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

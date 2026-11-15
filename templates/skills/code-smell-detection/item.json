@@ -1,0 +1,45 @@
+{
+  "slug": "code-smell-detection",
+  "title": "Code Smell Detection",
+  "kind": "skill",
+  "category": "code-quality",
+  "summary": "Scans a diff or folder for long methods, feature envy and god classes, and proposes the smallest change that removes each smell. It reports before editing.",
+  "description": [
+    "A smell list is only useful if it is short and each item comes with a way out. This skill reads the changed code, names the smells it can point to, and ties each one to a small refactoring with a clear before and after.",
+    "It does not rewrite your design. Large moves are listed as suggestions, and only the cheap, safe ones are offered to apply."
+  ],
+  "stacks": [],
+  "topics": [
+    "refactoring",
+    "code-review"
+  ],
+  "useWhen": [
+    "A pull request adds another 80-line function to a file that is already crowded",
+    "You inherit a module and want to know where to start cleaning",
+    "A class keeps gaining unrelated methods",
+    "Reviewers keep saying \"this is hard to follow\" without saying why"
+  ],
+  "body": "# Code smell detection\n\nLook at changed code first; scan the rest only if asked. Report evidence, not taste.\n\n## Steps\n\n1. Get the scope: `git diff main...HEAD --stat` for a branch, or the folder the user named. Read each changed file in full.\n2. Check for these, with the threshold that makes each a finding:\n   - Long method: over about 40 lines, or more than one level of abstraction in one body.\n   - Feature envy: a method that reads another object's fields more than its own.\n   - God class: many unrelated fields and methods, or a name ending in Manager or Helper that everything depends on.\n   - Long parameter list: more than four, or booleans that switch behavior.\n   - Shotgun surgery: one change forcing edits in many files.\n   - Primitive obsession: the same string or number pair passed around with rules attached.\n3. For every finding, locate the exact lines and pick the smallest fix: extract method, move method, introduce parameter object, replace flag with two functions.\n4. Rank by how often the code changes (use `git log --oneline -- <file>` to count). A smell in cold code is low priority.\n5. Do not edit. Present the list and ask which items to apply. Apply only the ones approved, one at a time, running tests after each.\n\n## Rules\n\n- Never propose a smell without a line reference.\n- Do not flag style, naming or formatting.\n- Behavior stays identical; if tests are missing, say so before refactoring.\n\n## Report\n\nA ranked list: location, smell, why it hurts here, smallest fix, estimated risk (low, medium, high).",
+  "example": {
+    "prompt": "Check my branch for code smells.",
+    "result": "1. src/billing/Invoice.ts:20-96 long method, 76 lines, mixes tax and layout. Extract calculateTax(). Risk low. 2. src/billing/Report.ts:12 feature envy: reads 7 fields of Customer. Move formatAddress() to Customer. Risk low. 3. src/billing/BillingManager.ts god class, 14 deps. Suggest splitting by use case; not a small fix."
+  },
+  "faq": [
+    {
+      "question": "Does it change code on its own?",
+      "answer": "Not by default. It lists the findings first and edits only the items you approve."
+    },
+    {
+      "question": "Why rank by change frequency?",
+      "answer": "A messy file nobody touches costs little. The same mess in a file edited weekly costs time every week."
+    }
+  ],
+  "access": [
+    "Reads source files and git history",
+    "Runs read-only git commands",
+    "Edits code only after you approve a finding"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

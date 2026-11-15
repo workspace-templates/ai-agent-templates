@@ -1,0 +1,44 @@
+{
+  "slug": "readme-writing",
+  "title": "README Writing",
+  "kind": "skill",
+  "category": "docs",
+  "summary": "Writes or rewrites a README so a new developer goes from clone to a running app in minutes, with every command tested against the repo.",
+  "description": [
+    "A README fails when its first screen is a logo and a paragraph of vision. This skill makes the agent start from what a stranger needs: what the project is, the exact commands to run it, and how to know it worked.",
+    "It reads the manifest, scripts, env examples and CI config to find the real setup, then runs the install and start commands where it can. Anything it cannot verify is marked, not guessed."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation"
+  ],
+  "useWhen": [
+    "A repository has no README or only the generated stub",
+    "New teammates keep asking the same setup questions in chat",
+    "The README mentions scripts or versions that no longer exist",
+    "You are about to open source an internal project"
+  ],
+  "body": "# README writing\n\nWrite for someone who has never seen this repository and wants it running before their coffee cools.\n\n## Steps\n\n1. Gather facts first. Read package.json, pyproject.toml, Makefile, Dockerfile, .env.example, the CI workflow and the existing README. The real install and test commands live there, not in your memory.\n2. Note the prerequisites with exact versions (runtime, database, system packages) from lockfiles, `.nvmrc`, `.tool-versions` or CI.\n3. Run the quick start yourself in order: install, configure, start, test. Record the command that actually worked and what a healthy start prints.\n4. Draft in this order: one sentence on what it is and for whom; a screenshot or sample output if the project has any; Quick start; Configuration (a table of env variables with default and purpose); Common tasks (test, lint, build, migrate); Project layout (five to ten lines, top-level folders only); Contributing and license.\n5. Keep every command in a fenced block that can be pasted as is. No prompt characters, no placeholders without a note on where the value comes from.\n\n## Rules\n\n- Never describe a feature you did not find in the code.\n- Do not paste the whole API or architecture; link to docs instead.\n- Delete badges that point to dead services.\n- If a step failed on your machine, write the fix or the known issue under Troubleshooting.\n\n## Report\n\nReturn the new README, the commands you verified, and a list of anything you could not run.",
+  "example": {
+    "prompt": "Our README is out of date. Rewrite it so a new hire can run the app.",
+    "result": "Rewrote README.md. Verified: pnpm install, cp .env.example .env, pnpm dev (serves on :3000), pnpm test (42 passing). Fixed: Node 16 changed to 20 per .nvmrc, removed the dead yarn instructions. Not verified: pnpm db:seed needs a running Postgres, noted under Prerequisites."
+  },
+  "faq": [
+    {
+      "question": "Does it run the commands in the README?",
+      "answer": "It tries the install, start and test commands in your project and records the result. Steps that need outside services are flagged instead of faked."
+    },
+    {
+      "question": "Will it overwrite my current README?",
+      "answer": "It edits the file in place, so review the diff in git. Sections that are still accurate are kept as they are."
+    }
+  ],
+  "access": [
+    "Reads project files and CI config",
+    "Edits README.md",
+    "Runs your install, start and test commands"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

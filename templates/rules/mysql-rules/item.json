@@ -1,0 +1,45 @@
+{
+  "slug": "mysql-rules",
+  "title": "MySQL Rules",
+  "kind": "rules",
+  "category": "database",
+  "summary": "Project rules for MySQL 8: InnoDB and utf8mb4 defaults, careful indexes, online migrations, short transactions and parameterized queries.",
+  "description": [
+    "MySQL has a few old defaults that cause trouble later, such as weak character sets and loose handling of bad data. These rules set the safe choices up front so an agent does not repeat them.",
+    "They also describe how to change tables that are in use and how to write queries that the optimizer can serve from an index."
+  ],
+  "stacks": [
+    "mysql"
+  ],
+  "topics": [
+    "sql",
+    "migrations"
+  ],
+  "useWhen": [
+    "You are creating tables or migrations for MySQL or MariaDB",
+    "Emoji or accented text is being stored incorrectly",
+    "A schema change locked a busy table",
+    "Queries are slow and nobody has looked at the plan"
+  ],
+  "body": "# Project rules: MySQL\n\n## Engine and encoding\n- Use InnoDB for every table. Set the database and tables to `utf8mb4` with `utf8mb4_0900_ai_ci` (or the server's modern default). Keep `sql_mode` strict so bad data raises errors instead of being truncated.\n- Store times in UTC with `DATETIME` or `TIMESTAMP` and convert in the application. Use `DECIMAL` for money, `BIGINT UNSIGNED` auto-increment keys or ordered UUIDs stored as `BINARY(16)`.\n\n## Schema\n- Use snake_case names. Declare `NOT NULL`, defaults, unique keys and foreign keys. Keep the primary key short, because every secondary index repeats it.\n- Prefer `VARCHAR` with a sensible length. Avoid `ENUM` for values that will change.\n\n## Indexes and queries\n- Index columns used in `WHERE`, `JOIN` and `ORDER BY`, with the most selective equality column first in composite indexes. Do not wrap an indexed column in a function or compare mismatched types.\n- Check each new query with `EXPLAIN ANALYZE`. List columns instead of `SELECT *`. Use keyset pagination instead of large `OFFSET` values.\n- Always use prepared statements and bound parameters.\n\n## Transactions and migrations\n- Keep transactions short and access rows in a consistent order to limit deadlocks; retry on deadlock errors.\n- Apply schema changes with `ALGORITHM=INPLACE` or a tool such as gh-ost or pt-online-schema-change for large tables. One change per migration, tested on a copy with production-sized data.\n\n## Checks\n- Run the migrations from scratch and the test suite against a real MySQL 8 container.",
+  "example": {
+    "prompt": "Add a last_login column and an index for inactive-user reports",
+    "result": "The agent writes an online migration adding a nullable column, backfills in batches, creates the index with a stated algorithm, and shows the EXPLAIN output for the report query."
+  },
+  "faq": [
+    {
+      "question": "Does this work for MariaDB?",
+      "answer": "Mostly. Collation names and some online DDL options differ, so check the ones your version supports."
+    },
+    {
+      "question": "Why avoid ENUM columns?",
+      "answer": "Changing the allowed values requires a table alteration, while a lookup table or a check constraint changes more easily."
+    }
+  ],
+  "access": [
+    "Instructions only; it does not read or run anything by itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

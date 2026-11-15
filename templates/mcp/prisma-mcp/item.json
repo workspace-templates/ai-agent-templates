@@ -1,0 +1,55 @@
+{
+  "slug": "prisma-mcp",
+  "title": "Prisma MCP Server",
+  "kind": "mcp",
+  "category": "database",
+  "summary": "Connect your agent to Prisma's hosted MCP server to manage Prisma Postgres databases, run SQL, restore backups and search the Prisma docs.",
+  "description": [
+    "Prisma runs a hosted MCP server for the Prisma Data Platform. Through it an agent can create and inspect Prisma Postgres databases, run SQL, restore automated backups, manage object storage buckets and read logs of Prisma Compute deployments.",
+    "There is nothing to install. You add the URL, sign in with your Prisma account in the browser, choose a workspace and approve access."
+  ],
+  "stacks": [],
+  "topics": [
+    "sql",
+    "migrations"
+  ],
+  "useWhen": [
+    "Create a throwaway Prisma Postgres database for a branch",
+    "Run a quick SQL check against a staging database",
+    "Restore a database from an automated backup after a bad migration",
+    "Look up Prisma docs without leaving the editor"
+  ],
+  "mcp": {
+    "name": "prisma",
+    "transport": "http",
+    "url": "https://mcp.prisma.io/mcp",
+    "env": [],
+    "headers": [],
+    "source": "https://www.prisma.io/docs/postgres/integrations/mcp-server",
+    "access": [
+      "Databases, buckets and deployments in the workspace you approve",
+      "Can run SQL and restore backups, so approve only the workspace you intend"
+    ]
+  },
+  "example": {
+    "prompt": "Create a database called shop-staging and list the tables it has.",
+    "result": "Created shop-staging in your workspace. It is empty: no tables yet. The connection string is available in the Prisma Console."
+  },
+  "faq": [
+    {
+      "question": "How does it sign in?",
+      "answer": "With OAuth. Your client opens Prisma Console, you pick a workspace and approve; no key is stored in the config."
+    },
+    {
+      "question": "Does it run migrations on my project?",
+      "answer": "The hosted server manages databases and SQL on the platform. Your schema files stay in your repo and are changed by the agent through normal edits."
+    }
+  ],
+  "access": [
+    "Reads and changes Prisma Postgres databases in the approved workspace",
+    "Searches the public Prisma documentation"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

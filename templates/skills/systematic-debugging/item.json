@@ -1,0 +1,43 @@
+{
+  "slug": "systematic-debugging",
+  "title": "Systematic Debugging",
+  "kind": "skill",
+  "category": "code-quality",
+  "summary": "Finds the root cause of a bug by reproducing it, isolating it and testing hypotheses before any fix. Use it when something fails and the cause is unclear.",
+  "description": [
+    "Agents often jump from an error message straight to an edit, and the edit hides the symptom while the cause stays. This skill forces a different order: make the failure repeatable, shrink it, name a cause, and prove that cause before touching the code.",
+    "The fix that follows is small and comes with a regression test that failed first. If the evidence points somewhere else than the first guess, the agent says so and changes course."
+  ],
+  "stacks": [],
+  "topics": [
+    "debugging"
+  ],
+  "useWhen": [
+    "A test fails and the stack trace does not explain why",
+    "A bug appears only sometimes, or only in production",
+    "Someone proposes a fix that you suspect treats the symptom",
+    "You have been changing code for an hour and the bug is still there"
+  ],
+  "body": "# Systematic debugging\n\nDo not edit production code until you can name the cause and show evidence for it.\n\n## Steps\n\n1. Restate the failure: expected result, actual result, exact error text. Ask for missing details only if you cannot proceed.\n2. Reproduce it. Write the smallest command or failing test that triggers it, and run it. If it only fails sometimes, run it in a loop (`for i in $(seq 50); do ...; done`) and record the failure rate.\n3. Isolate. Bisect the input, the config, or the history (`git bisect run <test command>`). Remove code and data until the failure disappears, then put back the last piece.\n4. Write two or three hypotheses, each with a prediction: \"if X is the cause, then logging Y at line Z will show W\". Test the cheapest one first with a log line, a debugger breakpoint or an assertion. Never test two at once.\n5. Confirm the root cause. Ask \"why\" until you reach the line or assumption that is wrong, not the place where it crashed.\n6. Fix it with the smallest change. Keep the failing test from step 2 and see it pass. Run the nearby tests.\n7. Remove all temporary logging.\n\n## Rules\n\n- Read the whole error, including the first frame in your own code and any \"caused by\" chain.\n- Never wrap the failure in try/catch, add a retry or a sleep, or loosen an assertion to make it pass.\n- If three hypotheses fail, stop and re-read the code you assumed was fine.\n\n## Report\n\nCause in one sentence, the evidence, the fix with file and line, the test added, and anything related you noticed but did not change.",
+  "example": {
+    "prompt": "The checkout test fails about one run in five. Find out why.",
+    "result": "Reproduced with 40 runs: 8 failures. Cause: orderTotal() in src/cart.ts:57 reads the tax rate from a cache that the previous test mutates, so the result depends on test order. Evidence: forcing that test first fails every time. Fix: copy the rates object on load, plus a regression test. Not changed: two other tests share the same cache."
+  },
+  "faq": [
+    {
+      "question": "Why does it refuse to guess a fix right away?",
+      "answer": "A fix made before the cause is known often passes once and returns later. Spending ten minutes on evidence usually costs less than the second round of debugging."
+    },
+    {
+      "question": "Will it add logging to my code?",
+      "answer": "Briefly, yes, to test a hypothesis. It removes every temporary line before it reports."
+    }
+  ],
+  "access": [
+    "Reads files in your project",
+    "Runs your test and build commands, and read-only git commands"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

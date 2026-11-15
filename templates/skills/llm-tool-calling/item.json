@@ -1,0 +1,44 @@
+{
+  "slug": "llm-tool-calling",
+  "title": "LLM Tool Calling",
+  "kind": "skill",
+  "category": "data",
+  "summary": "Designs tool schemas and the call loop for LLM function calling, with argument validation, error feedback and a hard step limit.",
+  "description": [
+    "Tool calling fails in boring ways: a vague tool name, a schema that allows nonsense, a loop that never ends. This skill has the agent design the tools first, then the loop around them, so the model gets fewer and clearer choices.",
+    "It covers schema wording, validating every argument before it runs, returning errors the model can act on, and capping steps and spend so a confused model stops instead of looping."
+  ],
+  "stacks": [],
+  "topics": [
+    "api-design",
+    "debugging"
+  ],
+  "useWhen": [
+    "You are adding function calling to a chatbot or agent",
+    "The model keeps picking the wrong tool or inventing arguments",
+    "A tool loop runs too long or repeats the same call",
+    "You are reviewing someone else's tool definitions"
+  ],
+  "body": "# LLM tool calling\n\nDesign the tool surface before writing the loop. The model only sees names, descriptions and schemas, so those are the interface.\n\n## Steps\n\n1. List the real actions the app needs. Merge near-duplicates; five sharp tools beat fifteen overlapping ones.\n2. Name each tool as verb plus object (`search_orders`, not `orderTool`). Write the description as when to use it and when not to, with one example.\n3. Give every parameter a type, an enum or range where possible, and a description. Mark only truly required fields as required. Prefer IDs the model got from an earlier result over free text.\n4. Validate arguments on the server with a schema library before running anything. Never trust the model's JSON, and never build SQL or shell commands from it.\n5. Return failures as tool results, not exceptions: say what was wrong and what a valid call looks like, so the model can retry once.\n6. Write the loop with a maximum step count (6 to 10 is typical), a total token budget and a repeat check that aborts when the same call with the same arguments appears twice.\n7. Require confirmation in code, not in the prompt, before any tool that writes, sends or deletes.\n\n## Rules\n\n- Tool results must be short. Trim, paginate and strip fields the model does not need.\n- Log every call with arguments, result size and latency.\n- Test with adversarial prompts: missing information, two tools that fit, a request no tool covers.\n\n## Report\n\nShow the final tool list with schemas, the loop code, and the limits chosen with a reason for each.",
+  "example": {
+    "prompt": "Add tool calling to our support bot so it can look up orders and issue refunds",
+    "result": "Defined three tools: `find_order` (read only), `get_refund_policy` and `request_refund`. The last one validates amount <= order total and returns a pending approval instead of paying out. The loop stops after 6 steps or 20k tokens, and a repeated identical call aborts with a message to the user."
+  },
+  "faq": [
+    {
+      "question": "How many tools is too many?",
+      "answer": "Accuracy usually drops once a model sees more than a dozen similar tools. Group related actions into one tool with an enum, or route to a smaller tool set first."
+    },
+    {
+      "question": "Should the model retry after a validation error?",
+      "answer": "Yes, once or twice. Send back a specific message naming the bad field. Then stop and tell the user rather than burning more steps."
+    }
+  ],
+  "access": [
+    "Reads and edits code in your project",
+    "Does not call any model API itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

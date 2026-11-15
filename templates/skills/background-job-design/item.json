@@ -1,0 +1,45 @@
+{
+  "slug": "background-job-design",
+  "title": "Background Job Design",
+  "kind": "skill",
+  "category": "backend",
+  "summary": "Moves slow or unreliable work off the request path into queues, with idempotent handlers, bounded retries with backoff and a dead-letter queue.",
+  "description": [
+    "Sending email or calling a payment provider inside a web request makes pages slow and failures visible. Moving it to a queue fixes that but creates new problems: duplicates, lost jobs and poison messages that retry forever.",
+    "This skill has the agent decide what belongs in a job, make each handler safe to run twice, and set retry and dead-letter behavior on purpose. It also leaves you a way to see and replay failed jobs."
+  ],
+  "stacks": [],
+  "topics": [
+    "api-design",
+    "logging"
+  ],
+  "useWhen": [
+    "A request handler calls a slow third-party service",
+    "Emails or webhooks are sometimes sent twice",
+    "Failed jobs vanish and nobody notices",
+    "You are choosing what should be a job and what should stay inline"
+  ],
+  "body": "# Background job design\n\nAssume every job runs twice and sometimes never gets its turn.\n\n## Steps\n\n1. Decide what moves. Move work that is slow, calls an external service, or can wait: email, exports, image processing, webhooks out. Keep inline anything the user must see the result of in the same response.\n2. Enqueue after the database commit, or write the job in the same transaction (outbox table) so a rollback cannot leave a job pointing at nothing.\n3. Pass identifiers, not objects: `{ orderId: 812 }`. The handler loads fresh state, which also lets it notice that the order was cancelled meanwhile.\n4. Make the handler idempotent. Use a natural key or an idempotency key for the side effect (for example the payment provider's idempotency header, or an `email_sent_at` check inside a transaction). Running twice must produce one effect.\n5. Classify errors. Permanent errors (validation, 4xx other than 408 and 429) go straight to the dead-letter queue. Transient errors retry with exponential backoff and jitter, for example 10 s, 1 min, 10 min, 1 h, capped at 5 attempts.\n6. Set a visibility timeout longer than the longest job run, and a per-job timeout shorter than it.\n7. Add a dead-letter queue with an alert on its depth, and a command to inspect and replay one job.\n8. Log job id, attempt number, duration and outcome.\n\n## Rules\n\n- Never retry without a cap.\n- Never put secrets or full personal records in a payload.\n- One job does one thing.\n\n## Report\n\nJobs added, idempotency approach per job, retry policy, dead-letter handling and how to replay.",
+  "example": {
+    "prompt": "Sending the receipt email in the checkout request is slow and sometimes duplicates. Move it to a job.",
+    "result": "Added send-receipt job enqueued through the outbox table. Payload: orderId only. Handler locks the order row, skips if receipt_sent_at is set, sends, then sets it. Retries: 5 attempts with backoff; 4xx from the mail API goes to the dead-letter queue. Checkout p95 dropped from 1.9 s to 310 ms. Added npm run jobs:replay."
+  },
+  "faq": [
+    {
+      "question": "Which queue library should I use?",
+      "answer": "Whatever your stack already runs. The skill follows the queue in your project and only recommends a new one if none exists."
+    },
+    {
+      "question": "How do I stop duplicates?",
+      "answer": "Queues deliver at least once, so the handler itself must be safe to repeat. The skill adds a check or idempotency key to every side effect."
+    }
+  ],
+  "access": [
+    "Reads source files and queue configuration",
+    "Edits handlers and adds a migration for an outbox table when approved",
+    "Runs your tests"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

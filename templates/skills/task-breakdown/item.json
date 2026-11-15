@@ -1,0 +1,43 @@
+{
+  "slug": "task-breakdown",
+  "title": "Task Breakdown",
+  "kind": "skill",
+  "category": "productivity",
+  "summary": "Splits a feature request into small, ordered tasks that each have a clear acceptance check, so work ships in reviewable steps.",
+  "description": [
+    "A feature written as one paragraph becomes one enormous change that nobody can review. This skill has the agent read the code first and then cut the work into slices that each leave the project working, ordered by dependency and risk.",
+    "Every task states what changes, where, and how you will know it is done. The output is a plan you can hand to a teammate, an agent or an issue tracker as it stands."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation"
+  ],
+  "useWhen": [
+    "A ticket says 'add team accounts' and nothing more",
+    "You want to hand pieces of a feature to several people or agents",
+    "A branch is already huge and needs to be cut into pull requests",
+    "You need an estimate you can defend with a list of steps"
+  ],
+  "body": "# Task breakdown\n\nPlan only. Do not implement anything unless the user asks afterward.\n\n## Steps\n\n1. Restate the goal in one sentence and list what is out of scope. If the request is ambiguous in a way that changes the plan, ask at most three questions, then continue with stated assumptions.\n2. Explore the code the feature touches: entry points, data model, existing patterns to copy, and tests that will need updating. Name real files and functions.\n3. Find the riskiest unknown, such as an unfamiliar API or a migration, and put a task that removes it first.\n4. Cut vertically, not by layer. Prefer \"user can create a team with a name\" over \"build the database layer\". Each task must leave the build green and be mergeable alone. Hide unfinished behavior behind a flag when needed.\n5. Size each task so one person finishes it in at most a day. If you cannot describe the diff in three sentences, split it.\n6. Order by dependency, then by risk, then by value. Mark which tasks can run in parallel.\n7. Write each task in this shape:\n   - Title: a verb phrase\n   - Change: files and functions involved\n   - Done when: an observable check, such as a test name, a command and its output, or a screen behavior\n   - Depends on: task numbers\n8. Finish with a list of open questions and risks.\n\n## Rules\n\n- No task called \"refactor\", \"cleanup\" or \"misc\" without a named target.\n- No task without a done check.\n- Include tests and data migration as part of the task they belong to, not as a final task.\n\n## Report\n\nThe numbered task list, a parallelism note, and open questions.",
+  "example": {
+    "prompt": "Break down: let customers save multiple shipping addresses.",
+    "result": "Goal: customers keep several addresses and pick one at checkout. Out of scope: address validation APIs. 1. Add addresses table and migration; done when migrate up and down both run. 2. Move the single address into the new table for existing users; done when a backfill test passes. 3. API: list, create, delete addresses; done when 6 handler tests pass. 4. Account page list with add and delete. 5. Checkout selector with default. Tasks 3 and 4 can run in parallel. Open: address limit per user?"
+  },
+  "faq": [
+    {
+      "question": "Why does it read the code before planning?",
+      "answer": "Plans written from the ticket alone miss the existing helpers, shared tables and tests that decide how big each step really is."
+    },
+    {
+      "question": "Will it start coding the first task?",
+      "answer": "No. It stops at the plan. You review and reorder it, then ask for any task to be built."
+    }
+  ],
+  "access": [
+    "Reads files in your project",
+    "Runs read-only search and git commands"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

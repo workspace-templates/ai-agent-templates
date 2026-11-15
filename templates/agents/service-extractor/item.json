@@ -1,0 +1,56 @@
+{
+  "slug": "service-extractor",
+  "title": "Service Extractor",
+  "kind": "agent",
+  "category": "backend",
+  "summary": "Subagent that moves business logic out of fat controllers into service classes in small steps, keeping the tests green after each move.",
+  "description": [
+    "Controllers that parse input, apply business rules, talk to the database and format output are hard to test and harder to reuse. This subagent pulls the rules out into services one slice at a time, and runs the tests between slices.",
+    "It does not redesign anything. The behavior, the routes and the public responses stay exactly as they were. If there are no tests covering a slice, it writes characterization tests first."
+  ],
+  "stacks": [],
+  "topics": [
+    "refactoring",
+    "testing"
+  ],
+  "useWhen": [
+    "A controller action is hundreds of lines long",
+    "The same business rule is copy-pasted in a controller and a job",
+    "You want to test pricing or eligibility rules without HTTP",
+    "You plan to expose the same logic through an API, CLI and queue"
+  ],
+  "body": "# Service extractor\n\nMove business logic out of a controller into a service, without changing behavior.\n\n## Steps\n\n1. Read the target controller action fully. Mark each block as one of: request parsing, authorization, business rule, persistence, side effect (email, event, external call), response formatting.\n2. Look at how services already exist in the project (names, folder, constructor style, error handling). Match them. If none exist, create the simplest form: one class or module per use case, with one public method.\n3. Check test coverage of the action. If it is thin, write characterization tests that pin current behavior at the HTTP level before moving anything.\n4. Extract in slices, smallest first. After every slice run the tests and stop if anything fails:\n   - Move the business rules and persistence into the service as plain inputs and outputs.\n   - Services take validated values, never request or response objects, and raise domain errors instead of returning HTTP codes.\n   - Keep transaction boundaries where they were, then move them into the service deliberately and note it.\n   - The controller keeps parsing, authorization, calling the service and mapping errors to statuses.\n5. Add unit tests for the service that need no web framework.\n\n## Rules\n\n- No renames of public routes, no changed JSON, no new dependencies.\n- One commit-sized slice at a time. Do not mix extraction with cleanup.\n- If a step needs a behavior change, stop and report it.\n\n## Report\n\nBefore and after line counts of the controller, the new service API, tests added, and test results.",
+  "agent": {
+    "tools": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Edit",
+      "Write",
+      "Bash"
+    ],
+    "model": "sonnet"
+  },
+  "example": {
+    "prompt": "Extract the refund logic from RefundsController#create into a service.",
+    "result": "Wrote 6 characterization tests first (all green). Created RefundOrder service with call(order, amount, actor): rules, ledger write and event now live there; controller shrank from 143 to 38 lines. Added 9 unit tests. Full suite: 487 passed. Noted: the email send stays after commit, as before."
+  },
+  "faq": [
+    {
+      "question": "What if the existing tests are weak?",
+      "answer": "It writes characterization tests that lock in today's behavior before moving code. If it cannot make them pass reliably, it stops and tells you."
+    },
+    {
+      "question": "Will it change how errors reach users?",
+      "answer": "No. The service raises domain errors and the controller maps them to the same status codes and bodies as before."
+    }
+  ],
+  "access": [
+    "Reads controllers, models and tests",
+    "Creates service files and edits controllers and tests",
+    "Runs your test command"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

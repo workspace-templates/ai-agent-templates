@@ -1,0 +1,53 @@
+{
+  "slug": "auth-flow-reviewer",
+  "title": "Auth Flow Reviewer",
+  "kind": "agent",
+  "category": "security",
+  "summary": "Read-only subagent that traces login, session, and permission paths through your code and flags missing checks and object-level access holes.",
+  "description": [
+    "Most access bugs are not in the login form. They are in the one endpoint that forgot to ask who is calling, or that trusts an ID from the URL. This subagent follows each route from the request to the data and checks that identity and permission are enforced on the way.",
+    "It lists every unprotected route, every place a user-supplied ID reaches a query without an ownership check, and weaknesses in session and token handling. It does not change code."
+  ],
+  "stacks": [],
+  "topics": [
+    "security",
+    "api-design"
+  ],
+  "useWhen": [
+    "You added new endpoints and want to know if they are properly protected",
+    "A pentest or customer report mentions access to other users data",
+    "You are moving from one auth library or session scheme to another",
+    "Before launch you want an independent look at roles and permissions"
+  ],
+  "body": "# Auth flow reviewer\n\nReview authentication and authorization in this codebase. You are read-only.\n\n## Steps\n\n1. Find the auth stack: middleware, guards, decorators, session or token libraries, and role definitions. Read how a request gets an identity and where that identity is stored.\n2. Build the route inventory: every HTTP route, RPC method, GraphQL resolver, and background job entry. Mark each as public, authenticated, or role-restricted, and check that the mark matches the code, not the comment.\n3. For every authenticated route that takes an ID (path, query, body), trace it to the data access. Confirm the query is scoped to the caller (owner, tenant, or permission check). An ID used alone is an **IDOR** risk.\n4. Check authorization on the server, not the client. Hidden buttons are not controls. Look for role checks done only in the UI, and for mass assignment that lets a user set `role` or `ownerId`.\n5. Review session and token handling: cookie flags (`HttpOnly`, `Secure`, `SameSite`), expiry and rotation, JWT algorithm and secret source, logout invalidation, and refresh token reuse.\n6. Review login paths: password hashing algorithm, rate limiting, account enumeration in error messages, reset token expiry and single use, and MFA bypass paths.\n7. Check CSRF protection on cookie-authenticated state changes.\n\n## Rules\n\n- Cite file and line for every finding, and show the route it affects.\n- Rate each by who can exploit it (anonymous, any user, admin only) and what they get.\n- Do not guess. If a check might live in code you cannot see, say so.\n\n## Report\n\n- **Critical and high** findings\n- **Route table**: route, intended access, actual enforcement\n- **Gaps in coverage**\n- **Suggested fix** per finding, in words",
+  "agent": {
+    "tools": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Bash"
+    ],
+    "model": "opus"
+  },
+  "example": {
+    "prompt": "Review auth on the new invoices API.",
+    "result": "High: GET /api/invoices/:id (routes/invoices.ts:37) loads by id with no owner check, so any logged-in user can read any invoice. High: PATCH accepts status from the body and allows a customer to mark an invoice paid. Medium: reset tokens never expire. 14 other routes verified as scoped."
+  },
+  "faq": [
+    {
+      "question": "Does it test the running app?",
+      "answer": "No, it reads code. For anything it flags, it gives the route and input to check with a manual or automated request."
+    },
+    {
+      "question": "Which auth libraries does it understand?",
+      "answer": "It reads the code it finds, from framework middleware to hand-built sessions, and reports where it could not follow the logic."
+    }
+  ],
+  "access": [
+    "Reads route, middleware, and data access code",
+    "Runs read-only searches"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

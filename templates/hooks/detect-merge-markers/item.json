@@ -1,0 +1,49 @@
+{
+  "slug": "detect-merge-markers",
+  "title": "Detect Merge Markers",
+  "kind": "hook",
+  "category": "git",
+  "summary": "A Claude Code hook that blocks an edit when Git conflict markers are still sitting in the file the agent just wrote or changed.",
+  "description": [
+    "Agents sometimes resolve a merge conflict halfway and leave the angle-bracket lines behind. This PostToolUse hook opens the file that was just edited and looks for a line starting with seven less-than signs and another starting with seven greater-than signs.",
+    "When both are present it exits with code 2, which feeds the message back to the agent so it cleans the file before continuing. Files over 2 MB, missing files and files with no markers pass without a sound."
+  ],
+  "stacks": [],
+  "topics": [
+    "git",
+    "code-review"
+  ],
+  "useWhen": [
+    "Rebase or merge with an agent doing the conflict fixes",
+    "Catch a half-resolved file before it is committed",
+    "Keep a broken build out of a pull request",
+    "Review a branch that was recently merged"
+  ],
+  "hook": {
+    "event": "PostToolUse",
+    "matcher": "Edit|Write",
+    "command": "node -e \"let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{let j={};try{j=JSON.parse(d)}catch(e){}const f=(j.tool_input||{}).file_path;const fs=require('fs');if(!f||!fs.existsSync(f)||fs.statSync(f).size>2000000)process.exit(0);const L=fs.readFileSync(f,'utf8').split(String.fromCharCode(10));const a=[],b=[];L.forEach((l,n)=>{if(/^<<<<<<< /.test(l))a.push(n+1);if(/^>>>>>>> /.test(l))b.push(n+1)});if(a.length&&b.length){console.error('Merge conflict markers remain in '+f+' (opening line '+a[0]+', closing line '+b[0]+'). Resolve the conflict and delete every marker line before moving on.');process.exit(2)}process.exit(0)})\"",
+    "timeout": 10
+  },
+  "example": {
+    "prompt": "Resolve the conflict in src/config.ts and keep both new options.",
+    "result": "If the agent leaves a line starting with <<<<<<< HEAD in the file, the hook reports the opening and closing line numbers and the agent removes the markers in its next step."
+  },
+  "faq": [
+    {
+      "question": "Will it flag a Markdown heading underlined with equals signs?",
+      "answer": "No. It needs both an opening and a closing marker line, each followed by a space and a label, so a lone row of equals signs is ignored."
+    },
+    {
+      "question": "Does it check files the agent only reads?",
+      "answer": "No. It runs after Edit and Write calls only, and it looks at the single path given in that call."
+    }
+  ],
+  "access": [
+    "Reads the file the agent just edited",
+    "Exit code 2 sends a message to the agent; nothing is changed on disk"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

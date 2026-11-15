@@ -1,0 +1,45 @@
+{
+  "slug": "why-changed",
+  "title": "Why Changed",
+  "kind": "command",
+  "category": "git",
+  "summary": "Explains why a file or function looks the way it does by tracing its commits, blame and linked issues, with evidence.",
+  "description": [
+    "Odd-looking code usually has a reason that lives in an old commit or ticket. This command follows the history of the exact lines you ask about and tells the story: who changed them, when, and what problem the change solved.",
+    "It separates what the history proves from what it only suggests, so you know whether removing a strange workaround is safe."
+  ],
+  "stacks": [],
+  "topics": [
+    "git",
+    "debugging"
+  ],
+  "useWhen": [
+    "A strange conditional looks like a bug but you fear removing it",
+    "You inherit a module and need to know how it got this way",
+    "A reviewer asks why a function was split or merged",
+    "Before deleting a workaround that nobody can explain"
+  ],
+  "body": "Explain why this code looks the way it does: $ARGUMENTS\n\n1. Resolve the target to a file and line range. If a function name is given, find its definition first.\n2. Use `git blame -w -C -L <range> <file>` to list the commits behind those lines, ignoring whitespace and moved code.\n3. For each distinct commit, run `git show <hash>` and read the message, body and diff. Then follow renames with `git log --follow -p -- <file>` when the trail ends at a move.\n4. Collect references: issue or PR numbers (#123, JIRA-45) in messages. If the gh CLI is available and authenticated, read them with `gh pr view` or `gh issue view`. Never guess at links you cannot open.\n5. Look at nearby tests and comments added in the same commits; they often state the intent.\n\nAnswer in this shape: **Short answer** (two sentences), **Timeline** (date, commit, author, what changed and why), **Evidence** (quotes from messages or tickets), **Confidence** (high, medium, low) and **Safe to change?** with the conditions. Make no edits.",
+  "argumentHint": "<file>, <file:line> or <function name>",
+  "example": {
+    "prompt": "/why-changed src/billing/round.ts:22",
+    "result": "Short answer: the extra Math.floor exists because invoices must match the bank rounding.\nTimeline: 2024-03-02 c81f0aa \"Fix 1 cent mismatch (#412)\".\nConfidence: high. Safe to change only if the bank export is updated too."
+  },
+  "faq": [
+    {
+      "question": "What if the history was squashed?",
+      "answer": "It reports the squash, reads the pull request text if it can, and lowers its confidence rating."
+    },
+    {
+      "question": "Does it need network access?",
+      "answer": "Only for linked tickets through gh. Without it, it works from local git alone and says so."
+    }
+  ],
+  "access": [
+    "Reads git history, blame and file contents",
+    "Optionally reads linked issues through the gh CLI"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

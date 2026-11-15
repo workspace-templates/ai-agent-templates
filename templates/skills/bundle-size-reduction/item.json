@@ -1,0 +1,45 @@
+{
+  "slug": "bundle-size-reduction",
+  "title": "Bundle Size Reduction",
+  "kind": "skill",
+  "category": "frontend",
+  "summary": "Analyzes a JavaScript bundle, splits code and replaces heavy dependencies, and reports byte counts before and after every change it makes.",
+  "description": [
+    "Bundles grow one import at a time until a date library is bigger than the app. This skill opens the bundle analyzer first, ranks what is actually in the output, and attacks the largest items in order instead of tweaking config at random.",
+    "It prefers removing code over compressing it, and it stops when the remaining gains are smaller than the effort they cost."
+  ],
+  "stacks": [
+    "javascript"
+  ],
+  "topics": [
+    "performance"
+  ],
+  "useWhen": [
+    "The main chunk is over 250 KB gzipped",
+    "A new dependency made the build jump in size",
+    "First load on mobile is slow and the JavaScript is the cause",
+    "You want to know what is really inside the bundle"
+  ],
+  "body": "# Bundle size reduction\n\nNumbers first. Do not change anything until you have a baseline and a ranked list.\n\n## Steps\n\n1. Build for production and record total, gzip and brotli size per chunk. Generate a treemap with the project's bundler (`npx vite-bundle-visualizer`, `webpack-bundle-analyzer`, `npx source-map-explorer dist/*.js`, or `ANALYZE=true` for Next).\n2. List the ten largest modules and who imports them. Look specifically for: full-library imports (`import _ from 'lodash'`, `import * as`), moment or other locale-heavy date code, duplicate versions of one package (`npm ls <pkg>`), polyfills for browsers you do not support, and icon sets imported whole.\n3. Fix in order of bytes saved:\n   - Replace heavy libraries with native APIs or small ones (`Intl.DateTimeFormat`, `structuredClone`, `date-fns` named imports).\n   - Use named, tree-shakeable imports and check `sideEffects: false` in the package.\n   - Dedupe versions with the package manager.\n   - Lazy-load what is not needed on first paint: routes, modals, charts, editors, with `import()`.\n4. Rebuild after every change and note the delta.\n5. Check the result still works: run the tests and load the lazy parts once.\n\n## Rules\n\n- Do not remove a dependency still used elsewhere. Search before you delete.\n- Never trade a size win for broken browser support listed in the project's browserslist.\n- Stop when a change saves under 2 KB gzipped.\n\n## Report\n\nA table of change, bytes before, bytes after. Then what remains and why you left it.",
+  "example": {
+    "prompt": "Our main bundle is 640 KB gzipped. Make it smaller.",
+    "result": "Main chunk 640 KB to 288 KB gzipped. Moment (72 KB) replaced with `Intl` calls, full lodash import (24 KB) replaced with three named imports, chart library (120 KB) lazy-loaded on the reports route, and two copies of `zod` deduped. Tests pass. Left the 40 KB rich-text editor: it is needed on the landing page."
+  },
+  "faq": [
+    {
+      "question": "Which bundlers does it support?",
+      "answer": "Vite, webpack, Rollup, esbuild and Next.js builds all work. If none is found, it asks which build command to use rather than guessing."
+    },
+    {
+      "question": "Will it swap my libraries without asking?",
+      "answer": "It replaces a dependency only when the swap keeps behavior the same and the tests still pass. Larger API changes are listed in the report for you to approve."
+    }
+  ],
+  "access": [
+    "Reads package files and source",
+    "Runs your production build and the bundle analyzer; edits imports and dependencies"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

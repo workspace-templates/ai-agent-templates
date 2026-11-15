@@ -1,0 +1,44 @@
+{
+  "slug": "write-tests",
+  "title": "Write Tests",
+  "kind": "command",
+  "category": "testing",
+  "summary": "Writes tests for a named file or function in your existing test style, runs them and reports what they cover and what they miss.",
+  "description": [
+    "Tests written without looking at the project end up with the wrong runner, the wrong naming and mocks the team does not use. This command first learns how your repository tests, then writes cases that match.",
+    "It aims at behavior and edge cases, not line coverage, and it runs the new tests before it hands them back. A failing test that reveals a real bug is reported, not hidden."
+  ],
+  "stacks": [],
+  "topics": [
+    "testing"
+  ],
+  "useWhen": [
+    "You added a function and want tests before the pull request",
+    "Legacy code has no tests and you must change it safely",
+    "You want edge cases you would not think of yourself",
+    "A bug was fixed and you need a regression test"
+  ],
+  "body": "Write tests for: $ARGUMENTS\n\n1. Read the target and what it depends on. Then find the closest existing test file and copy its runner, imports, naming, fixtures and mocking style. Find the test command in package.json, pyproject.toml, Makefile or the CI file.\n2. List the behaviors first: the normal path, boundaries (empty, zero, one, maximum), invalid input, error paths, and any ordering or time dependence.\n3. Write one test per behavior with a name that states the expectation. Assert on outputs and visible effects, not on internals. Mock only I/O boundaries such as network, clock and filesystem.\n4. Run only the new tests. If one fails, decide whether the test or the code is wrong. Never weaken an assertion to get green.\n5. Put the file next to the others, following project layout.\n\nReport: the tests added, the command to run them, behaviors deliberately left out, and any real bug found. Ask before changing source code.",
+  "argumentHint": "<file or function to test>",
+  "example": {
+    "prompt": "/write-tests src/utils/slugify.ts",
+    "result": "Added src/utils/slugify.test.ts with 9 cases: accents, repeated dashes, leading spaces, empty string, emoji, 200-character titles.\nRun: npm test -- slugify\nResult: 8 pass, 1 fails. slugify(\"  \") returns \"-\" instead of \"\". Looks like a bug; I did not touch the source. Fix it?"
+  },
+  "faq": [
+    {
+      "question": "Which test framework does it use?",
+      "answer": "The one already in your repository. It copies the style of the nearest existing tests."
+    },
+    {
+      "question": "Does it edit my source files?",
+      "answer": "Only test files. If a test exposes a bug, it reports it and waits for your decision."
+    }
+  ],
+  "access": [
+    "Reads source and existing tests",
+    "Creates or edits test files and runs your test command"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

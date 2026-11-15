@@ -1,0 +1,44 @@
+{
+  "slug": "go-cli-rules",
+  "title": "Go CLI Rules",
+  "kind": "rules",
+  "category": "productivity",
+  "summary": "Project rules for Go command line tools: cobra command layout, config precedence, wrapped errors, exit codes and table-driven tests.",
+  "description": [
+    "These rules describe a Go command line tool with commands kept apart from the logic they call. An agent following them produces packages that are small, testable and easy to extend with new subcommands.",
+    "They also pin down configuration order, error wrapping and exit behavior, which are the details that make a tool pleasant in scripts."
+  ],
+  "stacks": [
+    "go"
+  ],
+  "topics": [
+    "testing"
+  ],
+  "useWhen": [
+    "You start a Go command line tool",
+    "Commands contain business logic and global variables",
+    "Flags, env vars and config files override each other unpredictably",
+    "You want table-driven tests for commands"
+  ],
+  "body": "# Project rules: Go CLI\n\n## Layout\n- `cmd/<tool>/main.go` only builds the root command and exits. Commands live in `internal/cli`, one file per subcommand; logic lives in `internal/<domain>` packages that know nothing about cobra.\n- Avoid `init()` and package-level mutable state. Build commands with constructors that take their dependencies.\n\n## Config and I/O\n- Precedence: flags, then environment variables, then config file, then defaults. Document it in `--help`.\n- Write results to `cmd.OutOrStdout()` and diagnostics to `cmd.ErrOrStderr()`, so tests can capture both. Offer `--json`.\n- Use `RunE` and return errors; never call `os.Exit` or `log.Fatal` inside a command.\n\n## Errors and exit codes\n- Wrap with `fmt.Errorf(\"load config: %w\", err)`; compare with `errors.Is` and `errors.As`. Error strings are lowercase with no trailing punctuation.\n- `main` maps errors to codes: `0` success, `1` failure, `2` usage. Set `SilenceUsage` after argument validation.\n- Pass `context.Context` first, and cancel it on SIGINT with `signal.NotifyContext`.\n\n## Quality\n- Write table-driven tests with `t.Run`, `t.TempDir()` and `t.Parallel()` where safe. Execute commands with `SetArgs` and a buffer.\n- Run `gofmt -l .`, `go vet ./...`, `golangci-lint run` and `go test -race ./...` before finishing.",
+  "example": {
+    "prompt": "Add a delete subcommand with a --force flag",
+    "result": "The agent adds a cobra command in internal/cli that calls a domain function, asks for confirmation unless forced, and covers both paths in a table-driven test."
+  },
+  "faq": [
+    {
+      "question": "Is cobra required?",
+      "answer": "The layout rules assume cobra. With the standard flag package, keep the same split between commands and logic."
+    },
+    {
+      "question": "Why avoid log.Fatal?",
+      "answer": "It exits without running defers and cannot be tested; returning errors lets main decide."
+    }
+  ],
+  "access": [
+    "Instructions only; it does not read or run anything by itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

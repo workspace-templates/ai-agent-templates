@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const fs=require('fs'),p=require('path');let j={};try{j=JSON.parse(fs.readFileSync(0,'utf8'))}catch(e){}const dir=j.cwd||process.cwd();const run=process.versions.node;const rm=Number(run.split('.')[0]);let want='',src='';try{want=fs.readFileSync(p.join(dir,'.nvmrc'),'utf8').trim();src='.nvmrc'}catch(e){}if(!want){try{const k=JSON.parse(fs.readFileSync(p.join(dir,'package.json'),'utf8'));want=String((k.engines||{}).node||'').trim();src='package.json engines'}catch(e){}}const m=want.match(/[0-9]+/);if(m){const need=Number(m[0]);const atLeast=/^>=?/.test(want)&&src!=='.nvmrc';const ok=atLeast?rm>=need:rm===need;if(!ok)console.log('Node version mismatch: this shell runs Node '+run+' but '+src+' asks for '+want+'. Switch with nvm use or fnm use before running installs, builds or tests.')}\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

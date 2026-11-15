@@ -1,0 +1,53 @@
+{
+  "slug": "openapi-sync-checker",
+  "title": "OpenAPI Sync Checker",
+  "kind": "agent",
+  "category": "backend",
+  "summary": "Read-only subagent that compares your OpenAPI spec with the routes the code really serves and lists every mismatch it can prove.",
+  "description": [
+    "Once an API document and the handlers disagree, generated clients and published docs quietly inherit the error. This subagent reads the OpenAPI file and the route handlers, then lists what exists in one and not the other.",
+    "It checks paths, methods, parameters, request bodies, response codes and security. Findings come with the file and line on both sides, and it tells you which side looks wrong."
+  ],
+  "stacks": [],
+  "topics": [
+    "api-design",
+    "documentation"
+  ],
+  "useWhen": [
+    "Generated client code started failing against the live API",
+    "You want to check the docs before a release",
+    "A team has been editing routes without touching the spec",
+    "You are about to switch to spec-first or code-first and need the current gap"
+  ],
+  "body": "# OpenAPI sync checker\n\nCompare the OpenAPI document with the implementation and report differences. Read-only: never edit the spec or the code.\n\n## Steps\n\n1. Locate the spec (openapi.yaml, openapi.json, swagger.*, or a generated file). Note the version. If several exist, say which one you compare.\n2. Resolve `$ref` pointers so you read real schemas, not references.\n3. Build a table from the spec: method, path, parameters, request schema, response codes, security.\n4. Build the same table from the code by reading route registrations, decorators, validation schemas and handlers. Do not trust comments.\n5. Diff them in this order:\n   - Routes in code missing from the spec, and spec routes with no handler.\n   - Path parameter names and query parameters that differ or are required in one place only.\n   - Request body fields: required, type, enum values, max length.\n   - Response status codes the handler can really return, including error branches.\n   - Security: operations the spec marks public but code guards, and the reverse.\n6. If the repo has a spec linter or generator command, you may run it to confirm. Never run anything that writes files.\n\n## Rules\n\n- Report only what you can show on both sides. Mark anything inferred.\n- Say which side you believe is wrong and why.\n\n## Report\n\nA table of mismatches with spec location, code location, and a one-line fix. Close with counts: routes matched, missing, extra.",
+  "agent": {
+    "tools": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Bash"
+    ],
+    "model": "sonnet"
+  },
+  "example": {
+    "prompt": "Does openapi.yaml still match the Express routes?",
+    "result": "41 routes matched, 3 mismatched, 2 missing from spec. DELETE /teams/{id} exists in code (routes/teams.js:88) but not in the spec. POST /uploads: spec says 201, handler returns 202 (uploads.js:40). GET /users query param \"role\" is required in the spec, optional in code. Suggested: update spec for all three, code is right."
+  },
+  "faq": [
+    {
+      "question": "Does it fix the spec for me?",
+      "answer": "No. It reports mismatches and which side seems wrong, so you decide whether the spec or the handler should change."
+    },
+    {
+      "question": "Does it work with code-generated specs?",
+      "answer": "Yes, but it will tell you if the spec is produced at build time. Then it compares the generator inputs, such as decorators and schemas, with the handlers."
+    }
+  ],
+  "access": [
+    "Reads the OpenAPI file and route code",
+    "May run a read-only spec linter if one is configured"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

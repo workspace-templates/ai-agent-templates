@@ -1,0 +1,26 @@
+---
+description: "Project rules for Nuxt 3: directory conventions, auto imports, useFetch data loading, Nitro server routes and per-route rendering modes."
+alwaysApply: true
+---
+
+# Project rules: Nuxt 3
+
+## Structure
+- Respect the directories: `pages/` for routes, `layouts/`, `components/`, `composables/`, `middleware/`, `plugins/`, `server/api/` and `server/utils/`. Do not add manual imports for what auto-import covers.
+- Name composables `useThing`. Put shared types in `types/`. Use TypeScript everywhere and run `nuxi typecheck`.
+
+## Data loading
+- Use `useFetch` or `useAsyncData` with a unique key in components and pages so data is fetched once on the server and reused on the client. Use `$fetch` for event handlers and actions, not for initial render data.
+- Handle `pending` and `error` in the template. Use `lazy` when a page can render before the data arrives.
+- Keep shared state in `useState` with a key, never in a module-level variable (it leaks between requests on the server).
+
+## Server routes
+- Write handlers in `server/api/` with `defineEventHandler`. Validate input with Zod through `readValidatedBody` or `getValidatedQuery`, and throw `createError` with a status code.
+- Put private keys in `runtimeConfig` (server only) and expose only values under `runtimeConfig.public`.
+
+## Rendering
+- Choose per route with `routeRules`: prerender for static pages, `swr` or `isr` for cacheable ones, `ssr: false` only for client-only tools.
+- Wrap browser-only code in `onMounted` or `<ClientOnly>` to avoid hydration mismatches.
+
+## Before finishing
+- Run `nuxi typecheck`, the linter, the tests and `nuxi build`.

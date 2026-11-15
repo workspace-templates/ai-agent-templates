@@ -1,0 +1,7 @@
+[mcp_servers.paypal]
+command = "npx"
+args = ["-y","@paypal/mcp","--tools=all"]
+
+[mcp_servers.paypal.env]
+PAYPAL_ACCESS_TOKEN = "${PAYPAL_ACCESS_TOKEN}"
+PAYPAL_ENVIRONMENT = "${PAYPAL_ENVIRONMENT}"

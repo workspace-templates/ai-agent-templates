@@ -1,0 +1,12 @@
+{
+  "servers": {
+    "netlify": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@netlify/mcp"
+      ]
+    }
+  }
+}

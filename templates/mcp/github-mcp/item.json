@@ -1,0 +1,58 @@
+{
+  "slug": "github-mcp",
+  "title": "GitHub MCP Server",
+  "kind": "mcp",
+  "category": "git",
+  "summary": "Connect your coding agent to GitHub's official MCP server to read issues, pull requests, code and Actions runs without leaving the chat.",
+  "description": [
+    "GitHub's official MCP server lets an agent search code, read and comment on issues and pull requests, and check Actions runs on the repositories your token can see.",
+    "This setup uses the hosted server, so there is nothing to install: add the config and give it a personal access token."
+  ],
+  "stacks": [],
+  "topics": [
+    "github"
+  ],
+  "useWhen": [
+    "Triage issues from your editor",
+    "Review a pull request with the agent",
+    "Check why a CI run failed"
+  ],
+  "mcp": {
+    "name": "github",
+    "transport": "http",
+    "url": "https://api.githubcopilot.com/mcp/",
+    "env": [],
+    "headers": [
+      {
+        "name": "Authorization",
+        "value": "Bearer ${GITHUB_PAT}",
+        "description": "A GitHub personal access token"
+      }
+    ],
+    "source": "https://github.com/github/github-mcp-server",
+    "access": [
+      "Repositories, issues and pull requests your token can see",
+      "Actions runs and logs"
+    ]
+  },
+  "example": {
+    "prompt": "Which open issues are labeled bug and have no assignee?",
+    "result": "4 issues: #212 Login fails on Safari, #219 CSV export drops the last row, ..."
+  },
+  "faq": [
+    {
+      "question": "Where do I get a token?",
+      "answer": "GitHub Settings, Developer settings, Personal access tokens. Give it only the scopes you need."
+    },
+    {
+      "question": "Can it push code?",
+      "answer": "Only if your token allows it. A read-only token keeps it read-only."
+    }
+  ],
+  "access": [
+    "What your GitHub token allows"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

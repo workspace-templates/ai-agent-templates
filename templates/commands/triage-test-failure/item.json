@@ -1,0 +1,45 @@
+{
+  "slug": "triage-test-failure",
+  "title": "Triage Test Failure",
+  "kind": "command",
+  "category": "testing",
+  "summary": "Diagnoses one failing test from its output and tells you whether the test or the code is wrong, with the evidence.",
+  "description": [
+    "When a single test is red the real question is who is at fault. This command reads the failure, the test and the code under it, then gives a verdict with the reasoning behind it, instead of jumping to an edit.",
+    "It also checks the history for what changed last, and looks for flakiness signs such as shared state or time dependence."
+  ],
+  "stacks": [],
+  "topics": [
+    "testing",
+    "debugging"
+  ],
+  "useWhen": [
+    "When CI fails on a test you did not touch",
+    "When a test passes locally but fails in the pipeline",
+    "Before deciding whether to revert a commit",
+    "To explain a failure to a teammate quickly"
+  ],
+  "body": "Triage this failing test: $ARGUMENTS (a test name, a file, or pasted output).\n\n1. Run the test alone and capture the full output. Run it three times to see if the result is stable. Then run it with the rest of its file to check for order effects.\n2. Read the test and the code it exercises. Identify exactly which assertion fails, expected against actual.\n3. Check what changed recently: `git log -n 5 --oneline -- <test file> <source file>` and the working tree diff. Name the commit most likely responsible.\n4. Look for flake causes: wall-clock time, timezone, random data without a seed, shared global state, network calls, unawaited promises, hash or dict ordering.\n5. Reach a verdict: **code bug**, **stale test**, **flaky test**, or **environment**. Give the three strongest pieces of evidence.\n6. Do not edit anything.\n\nReport the verdict, the evidence, the smallest fix and where it goes. Ask whether to apply it.",
+  "argumentHint": "[test name, file or pasted failure output]",
+  "example": {
+    "prompt": "/triage-test-failure shipping.test.ts \"free shipping over 50\"",
+    "result": "Verdict: stale test. Stable red on 3 runs, only this test.\nEvidence: commit 4fa21c raised the threshold to 60 in shipping.ts; the test still uses a 55 cart; the changelog documents the new limit.\nFix: update the cart total to 65. Apply it?"
+  },
+  "faq": [
+    {
+      "question": "Will it change the test or code?",
+      "answer": "Not before telling you the verdict. It edits only after you approve the proposed fix."
+    },
+    {
+      "question": "Can it handle CI-only failures?",
+      "answer": "Yes, if you paste the CI output. It compares environment factors such as timezone, locale and parallel runs."
+    }
+  ],
+  "access": [
+    "Runs the named test and reads git history",
+    "Edits nothing until you approve"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

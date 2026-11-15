@@ -1,0 +1,45 @@
+{
+  "slug": "add-form-validation",
+  "title": "Add Form Validation",
+  "kind": "command",
+  "category": "frontend",
+  "summary": "Adds matching client and server validation to a form, with plain error messages that are announced to screen readers.",
+  "description": [
+    "Client checks make a form pleasant, but only server checks make it safe, and the two drift apart when written separately. This command defines the rules once, applies them in the browser and on the endpoint, and keeps the messages the same.",
+    "Errors are tied to their fields and read out by assistive technology. Libraries already in the project are used instead of adding new ones."
+  ],
+  "stacks": [],
+  "topics": [
+    "api-design",
+    "accessibility"
+  ],
+  "useWhen": [
+    "A signup, checkout or settings form accepts bad input",
+    "The server returns raw errors that the form cannot display",
+    "You need the same rules in the UI and the API",
+    "A form fails accessibility review because errors are only red text"
+  ],
+  "body": "Add validation to the form: $ARGUMENTS\n\n1. Find the form, its submit handler and the endpoint that receives it. Detect the validation library already in use (zod, yup, valibot, Joi, class-validator, pydantic) and use it; add nothing new unless none exists.\n2. List every field with its rule: required, type, length, format, range, and cross-field rules such as matching passwords. Show this list before coding.\n3. Define one schema and use it on both sides. On the server, validate before any database write, return a 422 with `{ field, message }` pairs, and never trust client checks.\n4. In the UI, validate on blur and on submit, show messages beside the field, link them with `aria-describedby`, set `aria-invalid`, and move focus to the first error. Do not clear user input on failure.\n5. Messages say what to do (\"Enter a date after today\"), not what went wrong internally.\n6. Add tests for one valid case and one failure per rule.\n\nRun the tests. Report the rules added and any rule you were unsure about, and ask before changing database constraints.",
+  "argumentHint": "[form component or route]",
+  "example": {
+    "prompt": "/add-form-validation src/routes/signup",
+    "result": "Rules: email (required, valid format), password (min 12, not equal to email), terms (must be true). One zod schema shared by SignupForm and POST /api/signup, which now returns 422 with field messages.\nFocus moves to the first invalid field. 9 tests pass. Should the username be unique-checked on blur?"
+  },
+  "faq": [
+    {
+      "question": "Why validate in two places?",
+      "answer": "The browser check gives quick feedback, while the server check is the one that protects your data. Sharing one schema keeps the two from drifting."
+    },
+    {
+      "question": "Will it add a validation library?",
+      "answer": "Only if the project has none. It reuses whatever you already depend on."
+    }
+  ],
+  "access": [
+    "Reads the form, handler and endpoint",
+    "Edits the form, server route and their tests"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

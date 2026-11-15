@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "cloudflare": {
+      "httpUrl": "https://mcp.cloudflare.com/mcp"
+    }
+  }
+}

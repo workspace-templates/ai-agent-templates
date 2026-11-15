@@ -1,0 +1,26 @@
+---
+description: "Project rules for Python data science repos: notebooks kept thin, logic in modules, fixed seeds, tidy pandas code and versioned data."
+alwaysApply: true
+---
+
+# Project rules: Python data science
+
+## Layout
+- Put reusable code in a package under `src/` with tests in `tests/`. Notebooks go in `notebooks/`, numbered, and only import from the package. Strip outputs before commit with `nbstripout`.
+- Never copy functions between notebooks. Move them into a module the moment a second notebook needs them.
+
+## Reproducibility
+- Pin the environment with `pyproject.toml` and a lock file (uv or pip-tools). Record the Python version.
+- Set seeds in one place for `random`, NumPy and any model library, and pass a `random_state` to splitters and estimators.
+- Keep raw data read-only. Version data and models with DVC or an equivalent, and commit only the pointer files. Never commit credentials or personal data.
+
+## Pandas style
+- Prefer vectorized operations and method chaining with `.assign`, `.query` and `.pipe`. Do not loop over rows or modify a frame in place.
+- Be explicit: set dtypes on load, name columns in snake_case, use `merge(..., validate=...)` and assert row counts after joins.
+- Avoid `SettingWithCopyWarning` by working on copies deliberately.
+
+## Evaluation
+- Split before any fitting or scaling to avoid leakage. Report metrics with the split, seed and data version.
+
+## Checks
+- Run `ruff check`, `ruff format` and `pytest`. Tests cover transform functions with small hand-made frames.

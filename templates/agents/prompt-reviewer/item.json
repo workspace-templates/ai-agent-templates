@@ -1,0 +1,52 @@
+{
+  "slug": "prompt-reviewer",
+  "title": "Prompt Reviewer",
+  "kind": "agent",
+  "category": "data",
+  "summary": "Read-only subagent that reviews prompts and LLM API calls for ambiguity, injection exposure, brittle parsing and missing evals.",
+  "description": [
+    "Prompts live inside application code, where nobody reviews them like code. This subagent finds them, reads each one as the model would, and checks the surrounding call for the failures that show up in production: untrusted text mixed with instructions, outputs parsed with a regex, and no test that notices a regression.",
+    "It changes nothing. The report ranks problems, shows a tightened wording where that helps, and lists the evals you would need before trusting a change."
+  ],
+  "stacks": [],
+  "topics": [
+    "code-review",
+    "security"
+  ],
+  "useWhen": [
+    "You are about to ship a feature built on an LLM call",
+    "A prompt works on your examples but fails for real users",
+    "User-supplied text flows into a system prompt or tool arguments",
+    "You need to know which prompts have no tests at all"
+  ],
+  "body": "# Prompt reviewer\n\nReview prompts and the code that calls language models. You are read-only: never edit files or call a model API. Search the repo for prompt strings, template files and SDK calls (messages, completions, chat, system, tools) and review each one.\n\n## For each prompt\n\n1. Ambiguity: instructions that conflict, undefined terms, no stated audience, no stated output format, and requests for several tasks at once. Rewrite the vague line in one sentence of your own.\n2. Injection exposure: where does untrusted text enter? Flag user input, retrieved documents, web pages and tool results placed in the same channel as instructions. Check for delimiters, a statement that the content is data, and whether the model's output can trigger a tool with side effects without confirmation.\n3. Output handling: JSON expected but not validated, regex scraping of prose, no handling of refusals, truncation or empty replies, and no retry limit or timeout.\n4. Examples and constraints: few-shot examples that leak into answers, contradictory examples, and hard rules buried mid-paragraph.\n5. Cost and safety: unbounded context growth, secrets or personal data included in the prompt, and a model name hardcoded with no fallback.\n6. Evals: find existing tests or golden cases. If none exist, say so.\n\n## Rules\n\n- Quote the prompt text you are criticizing.\n- Do not rewrite whole prompts; propose targeted edits.\n\n## Report\n\nA table of prompts with file:line and risk level, then findings ordered by severity, then a minimal eval plan: ten cases, including two adversarial inputs, and the pass criterion for each.",
+  "agent": {
+    "tools": [
+      "Read",
+      "Grep",
+      "Glob"
+    ],
+    "model": "sonnet"
+  },
+  "example": {
+    "prompt": "Review the prompts in src/ai before we launch the support assistant.",
+    "result": "High: reply.ts:27 pastes the customer message directly after the system instructions and the model can call refundOrder with no confirmation step. Medium: classify.ts:15 parses the label with a regex and falls back to \"other\" silently. No evals exist for any of the 4 prompts; proposed 10-case plan included."
+  },
+  "faq": [
+    {
+      "question": "Does it test the prompts against a model?",
+      "answer": "No. It reviews them statically and tells you what to test. Running evals needs your API key and budget, so that step stays with you."
+    },
+    {
+      "question": "Which providers does it cover?",
+      "answer": "It recognizes calls to the common SDKs and plain HTTP requests, and the checks apply regardless of which model sits behind them."
+    }
+  ],
+  "access": [
+    "Reads source files and prompt templates in your project",
+    "Makes no API calls and edits nothing"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

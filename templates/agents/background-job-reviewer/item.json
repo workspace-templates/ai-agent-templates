@@ -1,0 +1,52 @@
+{
+  "slug": "background-job-reviewer",
+  "title": "Background Job Reviewer",
+  "kind": "agent",
+  "category": "backend",
+  "summary": "Read-only subagent that audits queue workers and scheduled jobs for idempotency, retry storms, poison messages and lost work.",
+  "description": [
+    "Jobs run later, out of sight, and more than once. Queues redeliver, workers crash halfway, deploys kill running tasks. This subagent reads each job handler and asks what happens on the second delivery, on the tenth failure and on a payload that can never succeed.",
+    "It works with Sidekiq, Celery, BullMQ, Resque, Laravel queues, SQS consumers and plain cron. The output is a list of failure scenarios, ranked by how much damage they do."
+  ],
+  "stacks": [],
+  "topics": [
+    "logging",
+    "code-review"
+  ],
+  "useWhen": [
+    "A job double-sent emails or double-charged after a retry",
+    "The queue backed up and never drained",
+    "You are adding a new worker and want a design review first",
+    "A failed job keeps being retried forever"
+  ],
+  "body": "# Background job reviewer\n\nReview queue workers and scheduled jobs for reliability. You are read-only.\n\n## Steps\n\n1. Inventory the jobs: name, trigger (enqueue site or schedule), queue, concurrency, and the retry and timeout settings. Defaults count; look them up for the library in use.\n2. For each job, walk these scenarios and write down what happens:\n   - **Redelivery:** the handler runs twice with the same payload. Is every side effect (email, charge, webhook, row insert) guarded by an idempotency key or a state check?\n   - **Crash midway:** the process dies after step 2 of 4. Is the work resumable, or is it half-done with no marker?\n   - **Poison message:** the payload can never succeed (deleted record, bad JSON). Does it stop after a bounded number of attempts and land in a dead-letter place with the error?\n   - **Retry storm:** a downstream outage fails thousands of jobs at once. Is there exponential backoff with jitter, or do they all return at the same second?\n   - **Long runner:** is the work longer than the visibility timeout or lock? Does it send heartbeats?\n   - **Ordering:** does correctness depend on order the queue does not guarantee?\n   - **Payload:** is it an ID or a full object that goes stale? Does it hold secrets?\n3. Check the enqueue side: jobs enqueued inside a transaction before commit can run before the row exists.\n\n## Report\n\nPer job: verdict (safe, risky, broken), the worst scenario with `file:line`, and the smallest change that fixes it. Put broken jobs first.",
+  "agent": {
+    "tools": [
+      "Read",
+      "Grep",
+      "Glob"
+    ],
+    "model": "opus"
+  },
+  "example": {
+    "prompt": "Review the workers in app/jobs before we scale to 10 workers.",
+    "result": "SendInvoiceEmailJob: broken. No idempotency, a retry after SMTP timeout re-sends (send_invoice_email_job.rb:14). Fix: store sent_at and skip if set. SyncCrmJob: risky. Retries every 5s with no cap, 3,000 failed jobs will hit the CRM together. Add backoff with jitter and max 8 attempts."
+  },
+  "faq": [
+    {
+      "question": "Does it need to see the queue configuration?",
+      "answer": "It reads configuration files in the repo. If limits live in a dashboard or infrastructure code outside the repo, it will mark those settings as unknown instead of guessing."
+    },
+    {
+      "question": "Will it find bugs in cron jobs too?",
+      "answer": "Yes. It checks overlapping runs, missed runs after downtime, and jobs that assume a single server."
+    }
+  ],
+  "access": [
+    "Reads worker, scheduler and queue configuration files",
+    "Edits nothing and runs no commands"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

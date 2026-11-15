@@ -1,0 +1,46 @@
+{
+  "slug": "nuxt-rules",
+  "title": "Nuxt Rules",
+  "kind": "rules",
+  "category": "frontend",
+  "summary": "Project rules for Nuxt 3: directory conventions, auto imports, useFetch data loading, Nitro server routes and per-route rendering modes.",
+  "description": [
+    "These rules help an agent follow the conventions Nuxt already provides, instead of rebuilding them. Pages, layouts, composables and server routes each have a folder, and the agent is told to use it.",
+    "They also cover data loading and rendering choices, where mistakes cause duplicate requests, hydration errors or secrets reaching the browser."
+  ],
+  "stacks": [
+    "nuxt",
+    "vue"
+  ],
+  "topics": [
+    "api-design",
+    "performance"
+  ],
+  "useWhen": [
+    "You build pages in a Nuxt 3 app with an agent",
+    "Data is fetched twice on the server and client",
+    "Hydration warnings appear in the console",
+    "You need a server route or a mixed rendering strategy"
+  ],
+  "body": "# Project rules: Nuxt 3\n\n## Structure\n- Respect the directories: `pages/` for routes, `layouts/`, `components/`, `composables/`, `middleware/`, `plugins/`, `server/api/` and `server/utils/`. Do not add manual imports for what auto-import covers.\n- Name composables `useThing`. Put shared types in `types/`. Use TypeScript everywhere and run `nuxi typecheck`.\n\n## Data loading\n- Use `useFetch` or `useAsyncData` with a unique key in components and pages so data is fetched once on the server and reused on the client. Use `$fetch` for event handlers and actions, not for initial render data.\n- Handle `pending` and `error` in the template. Use `lazy` when a page can render before the data arrives.\n- Keep shared state in `useState` with a key, never in a module-level variable (it leaks between requests on the server).\n\n## Server routes\n- Write handlers in `server/api/` with `defineEventHandler`. Validate input with Zod through `readValidatedBody` or `getValidatedQuery`, and throw `createError` with a status code.\n- Put private keys in `runtimeConfig` (server only) and expose only values under `runtimeConfig.public`.\n\n## Rendering\n- Choose per route with `routeRules`: prerender for static pages, `swr` or `isr` for cacheable ones, `ssr: false` only for client-only tools.\n- Wrap browser-only code in `onMounted` or `<ClientOnly>` to avoid hydration mismatches.\n\n## Before finishing\n- Run `nuxi typecheck`, the linter, the tests and `nuxi build`.",
+  "example": {
+    "prompt": "Add a blog index page that lists posts from our CMS",
+    "result": "The agent adds pages/blog/index.vue with useFetch against a server route that hides the CMS key in runtimeConfig, marks the route with swr caching and handles loading and error states."
+  },
+  "faq": [
+    {
+      "question": "Why not call $fetch in setup?",
+      "answer": "It runs again on the client after server rendering, so the page makes the request twice. useFetch transfers the server result instead."
+    },
+    {
+      "question": "Does it apply to Nuxt 2?",
+      "answer": "No. Folder names and data APIs changed in Nuxt 3, so these rules would mislead an agent on version 2."
+    }
+  ],
+  "access": [
+    "Instructions only; the agent runs Nuxt commands only when you ask it to"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

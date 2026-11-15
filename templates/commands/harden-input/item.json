@@ -1,0 +1,45 @@
+{
+  "slug": "harden-input",
+  "title": "Harden Input",
+  "kind": "command",
+  "category": "security",
+  "summary": "Adds validation and sanitization to the inputs of one named handler and writes tests that throw bad data at it.",
+  "description": [
+    "Handlers tend to trust whatever arrives. This command takes one handler, lists every value it reads from the outside world, and adds checks for type, length, range and format before the value is used.",
+    "It also adds tests for the ugly cases, such as oversized bodies and injection strings, so the protection stays in place after the next refactor."
+  ],
+  "stacks": [],
+  "topics": [
+    "security",
+    "testing"
+  ],
+  "useWhen": [
+    "When a new endpoint accepts form or JSON input",
+    "After a bug report about crashes on odd input",
+    "Before exposing an internal handler to the public",
+    "When replacing ad hoc checks with a schema"
+  ],
+  "body": "Harden the inputs of this handler: $ARGUMENTS\n\n1. Find the handler and list every external input it reads: body fields, query string, path params, headers, cookies, uploaded files.\n2. Use the validation library the project already has (zod, joi, pydantic, class-validator, Bean Validation, go-playground/validator). If none exists, ask before adding a dependency.\n3. Define a strict schema: exact types, min and max lengths, numeric ranges, enums for fixed choices, regex for ids and emails, a size cap for bodies and files. Reject unknown fields.\n4. Escape or encode on output, and use parameterized queries. Never strip characters as a substitute for validation.\n5. Return a 400 with field-level messages that do not echo raw input.\n6. Add tests next to the existing ones for: missing fields, wrong types, empty strings, 10 MB strings, null bytes, SQL and HTML payloads, and negative or huge numbers. Run them.\n\nShow the diff and test results, list any input you left unchecked and why, and ask before committing.",
+  "argumentHint": "[handler, route or file name]",
+  "example": {
+    "prompt": "/harden-input createUser in src/api/users.ts",
+    "result": "Added a zod schema (email max 254, name 1-80, role enum). Unknown fields now rejected with 400.\n9 new tests: all pass. Left unchecked: avatar upload (needs a decision on size limit).\nCommit these changes?"
+  },
+  "faq": [
+    {
+      "question": "Will it add a new library?",
+      "answer": "Only if the project has no validator, and it asks first."
+    },
+    {
+      "question": "Does sanitizing mean deleting bad characters?",
+      "answer": "No. It rejects invalid input outright and encodes safely on output, because stripping characters is easy to bypass."
+    }
+  ],
+  "access": [
+    "Reads the handler and its tests",
+    "Edits the handler and adds tests; runs the test suite"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

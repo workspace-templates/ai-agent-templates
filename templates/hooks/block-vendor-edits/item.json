@@ -1,0 +1,49 @@
+{
+  "slug": "block-vendor-edits",
+  "title": "Block Vendor Edits",
+  "kind": "hook",
+  "category": "code-quality",
+  "summary": "A Claude Code hook that denies edits to files inside node_modules, vendor and dist folders, so fixes go to your own source and not copies.",
+  "description": [
+    "Changes made inside an installed package or a build folder disappear on the next install or build. This PreToolUse hook checks the path of each Edit or Write and refuses it when a folder named node_modules, vendor or dist is part of it.",
+    "The error text points the agent back at your own sources. Windows and Unix paths are both handled."
+  ],
+  "stacks": [],
+  "topics": [
+    "code-review",
+    "debugging"
+  ],
+  "useWhen": [
+    "Stop agents from patching a dependency in place",
+    "Keep compiled output out of your diffs",
+    "Work in a repo with a checked-in vendor folder",
+    "Make bug fixes land in real source files"
+  ],
+  "hook": {
+    "event": "PreToolUse",
+    "matcher": "Edit|Write",
+    "command": "node -e \"process.on('uncaughtException',()=>process.exit(0));let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{let j={};try{j=JSON.parse(d)||{}}catch(e){process.exit(0)}const i=j.tool_input||{};const f=String(i.file_path||'');const fs=require('fs');const p=f.split(String.fromCharCode(92)).join('/');const m=p.match(new RegExp('(^|/)(node_modules|vendor|dist)/'));if(m){console.error('Blocked: '+f+' is inside '+m[2]+'. Edit the source files or the package version instead, never the installed or built copy.');process.exit(2)}process.exit(0)})\"",
+    "timeout": 10
+  },
+  "example": {
+    "prompt": "The date parsing bug is in node_modules/dayjs, fix it there.",
+    "result": "The edit is refused. The agent proposes a version bump, a patch file or a wrapper in your own code."
+  },
+  "faq": [
+    {
+      "question": "Does it block reading those folders?",
+      "answer": "No. It only watches Edit and Write, so the agent can still read dependency code to understand a bug."
+    },
+    {
+      "question": "What about a build folder with another name?",
+      "answer": "Only node_modules, vendor and dist are matched. Add more names inside the pattern in the command for others."
+    }
+  ],
+  "access": [
+    "Reads the file path of each edit",
+    "Blocks matching paths; changes no files"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

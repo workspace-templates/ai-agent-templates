@@ -1,0 +1,44 @@
+{
+  "slug": "vector-database-design",
+  "title": "Vector Database Design",
+  "kind": "skill",
+  "category": "data",
+  "summary": "Chooses the index type, embedding dimensions, chunking and metadata filters for a vector store, with recall checked against a test set.",
+  "description": [
+    "Most vector search problems come from decisions made early and never measured: chunk size, which embedding model, which index. This skill walks the agent through each choice and ends with a recall number rather than a hunch.",
+    "It treats metadata filtering as a first-class design question, since filters decide both correctness and speed in production."
+  ],
+  "stacks": [],
+  "topics": [
+    "performance",
+    "sql"
+  ],
+  "useWhen": [
+    "You are adding semantic search or retrieval to an app",
+    "Search results look relevant but miss obvious matches",
+    "Queries slow down as the collection grows",
+    "You must filter by tenant, date or permission and still search by meaning"
+  ],
+  "body": "# Vector database design\n\nDecide from data size, query shape and filters, not from what a tutorial used.\n\n## Steps\n\n1. Ask or measure: number of vectors now and in a year, update rate, query rate, latency target, and which filters every query needs (tenant, language, date, access level).\n2. Pick the embedding model first. Note its dimensions and max input length. Higher dimensions cost memory and speed; test whether a truncated or smaller variant keeps recall.\n3. Chunk by meaning: split on headings and paragraphs, 200 to 500 tokens, with small overlap. Store the source ID, position and title with each chunk.\n4. Choose the index. Under about 100k vectors, exact search is often fast enough and has perfect recall. Beyond that use HNSW for low latency, or IVF with quantization when memory is the limit. Write down the tuning parameters (for HNSW: M, efConstruction, efSearch).\n5. Design metadata: only fields you filter on, indexed, with fixed types. Enforce tenant and permission filters inside the query, never after retrieval.\n6. Build a test set of 30 to 100 real questions with known correct chunks. Measure recall at 5 and 10 against exact search.\n7. Add hybrid search (keyword plus vector) when queries contain names, codes or rare terms.\n\n## Rules\n\n- Never mix embeddings from two models in one index.\n- Store the model name and version with every vector so you can re-embed later.\n\n## Report\n\nThe chosen design with reasons, the parameters, and the measured recall and latency.",
+  "example": {
+    "prompt": "Design the vector store for our help-center search, 40k articles, multi-tenant",
+    "result": "Recommended 300-token chunks, about 220k vectors, HNSW with efSearch 80, tenant_id and locale as indexed filters applied in-query. Recall@5 was 0.93 against exact search on 60 test questions; added keyword hybrid to lift product-code queries from 0.61 to 0.88."
+  },
+  "faq": [
+    {
+      "question": "Do I need a dedicated vector database?",
+      "answer": "Not always. A Postgres extension or a search engine with vector support handles many apps. Move to a dedicated store when scale or filtering needs outgrow it."
+    },
+    {
+      "question": "Why measure recall against exact search?",
+      "answer": "Approximate indexes trade accuracy for speed. Exact search gives the ceiling, so the gap shows what your index settings cost."
+    }
+  ],
+  "access": [
+    "Reads files and schema in your project",
+    "May write a small evaluation script"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

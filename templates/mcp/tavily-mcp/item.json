@@ -1,0 +1,63 @@
+{
+  "slug": "tavily-mcp",
+  "title": "Tavily MCP Server",
+  "kind": "mcp",
+  "category": "productivity",
+  "summary": "Run Tavily's official MCP server through npx so your agent can search the web and extract page content with tavily-search and tavily-extract.",
+  "description": [
+    "Tavily builds search for AI agents, and its tavily-mcp package adds tools such as tavily-search and tavily-extract. The agent gets ranked results with snippets and can pull the readable content of specific URLs.",
+    "It starts locally with npx and reads your key from TAVILY_API_KEY. An optional DEFAULT_PARAMETERS variable, a JSON string, sets defaults like search depth and result count."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation"
+  ],
+  "useWhen": [
+    "Check the latest version and changelog of a dependency",
+    "Extract the text of a documentation page into the conversation",
+    "Gather sources on a technical question before you decide",
+    "Verify a claim in a README against the vendor's own site"
+  ],
+  "mcp": {
+    "name": "tavily",
+    "transport": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "tavily-mcp@latest"
+    ],
+    "env": [
+      {
+        "name": "TAVILY_API_KEY",
+        "description": "Your Tavily API key"
+      }
+    ],
+    "headers": [],
+    "source": "https://github.com/tavily-ai/tavily-mcp",
+    "access": [
+      "Sends search queries and page URLs to Tavily",
+      "Returns web content to the agent; no access to your files"
+    ]
+  },
+  "example": {
+    "prompt": "Search for the current LTS version of Node and quote the release date.",
+    "result": "The newest LTS line is listed on nodejs.org's releases page with its start date and end-of-life date. The agent cites the source URL beside each figure."
+  },
+  "faq": [
+    {
+      "question": "Is there a hosted version?",
+      "answer": "Yes, Tavily also serves a remote endpoint at mcp.tavily.com that accepts OAuth or a Bearer key. This setup uses the local package."
+    },
+    {
+      "question": "How do I limit result counts?",
+      "answer": "Set DEFAULT_PARAMETERS to a JSON string such as {\"max_results\": 5, \"search_depth\": \"basic\"}."
+    }
+  ],
+  "access": [
+    "Queries and URLs are sent to Tavily's API",
+    "Runs a local npx process, no file access needed"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

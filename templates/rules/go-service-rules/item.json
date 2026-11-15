@@ -1,0 +1,45 @@
+{
+  "slug": "go-service-rules",
+  "title": "Go Service Rules",
+  "kind": "rules",
+  "category": "backend",
+  "summary": "Project rules for Go services: small interfaces, wrapped errors, context everywhere, table-driven tests and no hidden goroutines.",
+  "description": [
+    "Go rewards plain code, and agents tend to write it like Java: big interfaces, global state and swallowed errors. These rules pull generated code back to the idioms that Go teams review for.",
+    "They cover project layout, error handling, concurrency and testing, and set the commands that must pass before a change is done."
+  ],
+  "stacks": [
+    "go"
+  ],
+  "topics": [
+    "api-design",
+    "logging"
+  ],
+  "useWhen": [
+    "You start a new Go service or API",
+    "Agent code ignores errors or invents deep package trees",
+    "Goroutines leak or requests never time out",
+    "You want one test and logging style across the team"
+  ],
+  "body": "# Project rules: Go services\n\n## Layout and style\n- `cmd/<app>/main.go` only wires things together. Domain code lives in `internal/`. Keep packages small, named for what they provide, with no `util` or `common` packages.\n- Define interfaces where they are used, with one to three methods. Accept interfaces, return concrete types.\n- No global mutable state and no `init()` with side effects. Pass dependencies in constructors.\n\n## Errors\n- Never ignore an error. Wrap with context: `fmt.Errorf(\"load user %d: %w\", id, err)`. Compare with `errors.Is` and `errors.As`. Handle an error once: log it or return it, not both.\n- Do not panic outside `main` and tests.\n\n## Context and concurrency\n- `ctx context.Context` is the first parameter of anything that does I/O. Use `http.NewRequestWithContext`, set server and client timeouts, and propagate cancellation.\n- Every goroutine has an owner and a way to stop: use `errgroup`, close channels from the sender, and never start one without knowing how it ends.\n\n## HTTP and logging\n- Use `net/http` with the standard mux or chi. Decode with a size limit, validate, and return JSON errors with correct status codes.\n- Log with `log/slog`, structured fields, no secrets.\n\n## Tests\n- Table-driven tests with subtests; use `t.Parallel()` where safe.\n- Before finishing run `gofmt`, `go vet ./...`, `golangci-lint run` and `go test -race ./...`.",
+  "example": {
+    "prompt": "Add an endpoint that fetches a user's orders from the database",
+    "result": "The agent adds a handler with a context-bound query, an interface declared in the handler package, wrapped errors, a slog line on failure and a table-driven test run with -race."
+  },
+  "faq": [
+    {
+      "question": "Does it force a framework?",
+      "answer": "No. It prefers the standard library, with chi as an accepted router. Add your own framework to the file if you use one."
+    },
+    {
+      "question": "Why must goroutines have an owner?",
+      "answer": "A goroutine nobody can stop leaks memory and hangs shutdowns. The rule makes the agent decide how each one ends."
+    }
+  ],
+  "access": [
+    "Instructions only; it does not read or run anything by itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

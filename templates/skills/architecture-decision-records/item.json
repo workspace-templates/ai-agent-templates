@@ -1,0 +1,43 @@
+{
+  "slug": "architecture-decision-records",
+  "title": "Architecture Decision Records",
+  "kind": "skill",
+  "category": "docs",
+  "summary": "Writes architecture decision records that capture the context, the options weighed, the decision and its consequences in a short, numbered file.",
+  "description": [
+    "Six months after a technical choice, nobody remembers why the team picked it, and the same debate starts again. An architecture decision record (ADR) is a one-page answer: what forced the decision, what else was considered, what was chosen and what it will cost.",
+    "This skill drafts the record from the code, the discussion and your constraints, keeps it short, and files it in a numbered folder so the history stays readable."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation"
+  ],
+  "useWhen": [
+    "The team just chose a database, framework or API style",
+    "A new hire asks why something is built the way it is",
+    "You are about to reverse an earlier decision and need its reasoning",
+    "A design review ended with agreement but no written record"
+  ],
+  "body": "# Architecture decision records\n\nOne decision per record. Write it so a stranger can follow the reasoning in two minutes.\n\n## Steps\n\n1. Look for an existing folder (`docs/adr`, `docs/decisions`, `adr/`) and follow its numbering and template. If none exists, create `docs/adr/` and start at `0001`.\n2. Name the file `NNNN-short-title-in-kebab-case.md`. Never renumber or delete earlier records.\n3. Write these sections:\n   - **Title**: a decision as a phrase, such as \"Use PostgreSQL for order storage\".\n   - **Status**: Proposed, Accepted, Deprecated, or Superseded by ADR-NNNN.\n   - **Context**: the forces at play: requirements, constraints, team skills, deadlines, scale numbers. Facts only.\n   - **Options considered**: two to four, each with its strongest argument and its main drawback. Include \"do nothing\" when it is real.\n   - **Decision**: one clear sentence in active voice (\"We will...\"), then the reason it won.\n   - **Consequences**: what gets easier, what gets harder, what risks remain, and what would make us revisit.\n4. Check each claim against the code or docs. Link tickets, benchmarks and the relevant files.\n5. Keep it to one page. Cut history that does not change the decision.\n6. If the new record replaces an older one, update only the old record's status line to point to it.\n\n## Rules\n\n- Never record a decision the user has not made. Ask when the choice is still open and mark it Proposed.\n- Do not hide the downsides of the chosen option.\n\n## Report\n\nThe new file path, its status, and any older records it supersedes.",
+  "example": {
+    "prompt": "Write an ADR for moving background jobs from cron to a queue",
+    "result": "Created docs/adr/0014-use-sqs-for-background-jobs.md (Accepted). Options: keep cron, Sidekiq on Redis, SQS. Chosen: SQS for managed durability. Consequences: retries and dead-letter handling gained; local development needs an emulator. Supersedes ADR-0006 (status updated)."
+  },
+  "faq": [
+    {
+      "question": "Should every choice get an ADR?",
+      "answer": "No. Write one when a decision is costly to reverse, affects several teams or will make a new person ask why. Skip routine library picks."
+    },
+    {
+      "question": "Can I change an ADR later?",
+      "answer": "Fix typos freely, but do not rewrite the reasoning. Add a new record that supersedes it, so the history of thinking stays intact."
+    }
+  ],
+  "access": [
+    "Reads project files and docs for context",
+    "Creates one markdown file and edits the status of the record it supersedes"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

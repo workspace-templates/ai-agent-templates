@@ -1,0 +1,49 @@
+{
+  "slug": "threat-modeling",
+  "title": "Threat Modeling",
+  "kind": "skill",
+  "category": "security",
+  "summary": "Builds a STRIDE threat model for a feature, with data flows, trust boundaries, abuse cases and ranked mitigations tied to real code.",
+  "description": [
+    "Security review at the end of a project finds problems that are expensive to change. A threat model done while a feature is still a design finds them when the fix is a paragraph of text. This skill has the agent draw the feature as data flows, mark where trust changes and walk each crossing through the six STRIDE categories.",
+    "The output is a short list of specific threats, each with who attacks, how, what it costs you and what stops it, mapped to files so the mitigations can be built and tested."
+  ],
+  "stacks": [],
+  "topics": [
+    "security",
+    "api-design"
+  ],
+  "useWhen": [
+    "You design a feature that handles logins, payments, uploads or user data",
+    "A new integration lets a third party call your API",
+    "A review asks 'what could go wrong here' and nobody has an answer",
+    "You are about to expose an internal service to the internet"
+  ],
+  "body": "# Threat modeling\n\nModel the feature in front of you, not the whole company. Do not change code.\n\n## Steps\n\n1. State the scope in two sentences: what the feature does, what data it touches, and who uses it. List assets worth protecting, such as credentials, personal data, money and admin capability.\n2. Draw the data flow in text. Name each actor, process, data store and external service, and each flow between them with its protocol. Read the real code, routes and configuration to fill it in; do not rely on the description alone.\n3. Mark trust boundaries: browser to server, server to database, service to third party, tenant to tenant, user role to admin role. Every flow that crosses one is a place to examine.\n4. For each crossing, ask the six STRIDE questions. Spoofing: can someone pretend to be another user or service? Tampering: can data be changed in transit or at rest? Repudiation: could an action be denied with no log to show it? Information disclosure: what leaks in errors, logs, URLs or responses? Denial of service: what can be made expensive or unbounded? Elevation of privilege: can a user reach another user's data or an admin function?\n5. Write abuse cases from the attacker's view, such as \"a logged-in user changes the account ID in the URL to read another tenant's invoices\".\n6. Rank each threat by likelihood and impact as high, medium or low. Keep only threats that apply here. Ten real ones beat forty generic ones.\n7. For each kept threat, name a mitigation, the file or layer where it belongs, and a test or log that would prove it works. Mark existing controls you confirmed in code.\n\n## Rules\n\n- Never invent a vulnerability without a code path or design reason.\n- Do not run exploits or touch live systems.\n- Mark what you could not see, such as infrastructure outside the repository.\n\n## Report\n\nScope, assets, the data flow, a table of threats with rank and mitigation, and open questions.",
+  "example": {
+    "prompt": "Threat model the new file sharing feature: users upload a file and share it by link.",
+    "result": "Assets: uploaded files, share tokens, storage credentials. High: share links use a 6-character token (src/share/token.ts), so they can be guessed; use 128-bit random tokens. High: download route checks login but not file ownership (routes/files.ts:44). Medium: no upload size or type limit, so storage can be filled. Medium: no log on link creation. Existing control confirmed: files are served with a forced attachment header."
+  },
+  "faq": [
+    {
+      "question": "Does it replace a penetration test?",
+      "answer": "No. It finds design and code-path problems early and cheaply. A pen test checks the running system, and the two complement each other."
+    },
+    {
+      "question": "Why STRIDE?",
+      "answer": "It gives six fixed questions for every boundary, so nothing depends on who remembers to ask. You can swap in another method if your team has one."
+    },
+    {
+      "question": "How long should the result be?",
+      "answer": "A page or two. If the table grows past about fifteen threats, the scope was too wide and the feature should be split."
+    }
+  ],
+  "access": [
+    "Reads files and configuration in your project",
+    "Runs read-only search commands",
+    "Writes a model file only when you name one"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

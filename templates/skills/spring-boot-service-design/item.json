@@ -1,0 +1,48 @@
+{
+  "slug": "spring-boot-service-design",
+  "title": "Spring Boot Service Design",
+  "kind": "skill",
+  "category": "backend",
+  "summary": "Structures a Spring Boot service into thin controllers, transactional services and typed config, tested with slice tests instead of full context starts.",
+  "description": [
+    "Spring Boot makes it easy to put everything in one controller class with field injection and a test that boots the whole application. This skill has the agent lay out the layers so each piece can be understood and tested alone.",
+    "You get constructor injection, validated configuration properties, transactions at the service boundary, and tests that use `@WebMvcTest` and `@DataJpaTest` so the suite stays fast."
+  ],
+  "stacks": [
+    "java",
+    "spring-boot"
+  ],
+  "topics": [
+    "api-design",
+    "testing"
+  ],
+  "useWhen": [
+    "You are starting a new Spring Boot service",
+    "A controller has grown business logic and database calls",
+    "Tests take minutes because each one starts the full context",
+    "Configuration is scattered across @Value annotations"
+  ],
+  "body": "# Spring Boot service design\n\nThin controllers, transactional services, typed config, sliced tests.\n\n## Steps\n\n1. Package by feature (`orders`, `billing`), not by layer. Inside each: `OrderController`, `OrderService`, `OrderRepository`, DTO records and the entity.\n2. Controllers only translate HTTP: bind and validate (`@Valid`, Bean Validation annotations), call one service method, map to a response record. No repository calls, no business rules.\n3. Services own the rules and the transaction boundary: `@Transactional` on the public method, `readOnly = true` for queries. Do not annotate controllers or repositories for transactions.\n4. Never return JPA entities from controllers. Use Java records as request and response DTOs, mapped explicitly, so a column change never changes the API.\n5. Use constructor injection only (one constructor needs no annotation). No field `@Autowired`.\n6. Replace scattered `@Value` with `@ConfigurationProperties` on a record, with `@Validated` constraints, so a missing setting stops startup with a clear message.\n7. Handle errors in one `@RestControllerAdvice` that maps domain exceptions to ProblemDetail responses.\n8. Test by slice: `@WebMvcTest` with `MockMvc` and a mocked service for controllers; `@DataJpaTest` with Testcontainers for repositories; plain JUnit with mocks for services. Keep `@SpringBootTest` for a few end-to-end checks.\n9. Guard against lazy loading traps: set `spring.jpa.open-in-view=false` and fetch what a use case needs with explicit queries or `@EntityGraph`.\n\n## Rules\n\n- Never put business logic in a controller or an entity setter chain.\n- Never catch `Exception` in a service to hide it.\n\n## Report\n\nStructure created or changed, settings flipped, and tests added with their run time.",
+  "example": {
+    "prompt": "Refactor our OrderController, it has 400 lines and talks to the repository directly.",
+    "result": "Moved rules into OrderService with @Transactional boundaries; the controller now only binds, validates and maps. Replaced entities in responses with OrderResponse records. Turned off open-in-view and added an @EntityGraph on the order list query. Added @WebMvcTest and @DataJpaTest slices; the suite went from 94 s to 21 s."
+  },
+  "faq": [
+    {
+      "question": "Why turn off open-in-view?",
+      "answer": "It keeps a database session open during view rendering, which hides lazy loading queries inside controllers. Turning it off surfaces them where you can fix them."
+    },
+    {
+      "question": "Does it work with Kotlin?",
+      "answer": "The structure applies. The skill is tuned for Java records and annotations, so adjust the DTO examples to data classes."
+    }
+  ],
+  "access": [
+    "Reads Java source, build files and configuration",
+    "Edits classes and tests when approved",
+    "Runs your Maven or Gradle test command"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

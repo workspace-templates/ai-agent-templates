@@ -1,0 +1,43 @@
+{
+  "slug": "git-conflict-resolution",
+  "title": "Git Conflict Resolution",
+  "kind": "skill",
+  "category": "git",
+  "summary": "Resolves merge and rebase conflicts by working out what each side intended, combining them on purpose and proving the result with tests.",
+  "description": [
+    "The usual agent move on a conflict is to pick one side and delete the other, which quietly loses someone's work. This skill reads the history behind both sides first, so the resolution keeps the purpose of each change, not just the text.",
+    "It resolves one file at a time, builds and tests before continuing, and never finishes a merge with conflict markers or failing checks."
+  ],
+  "stacks": [],
+  "topics": [
+    "git"
+  ],
+  "useWhen": [
+    "A merge or rebase stopped with conflicts in several files",
+    "Two long-lived branches changed the same module",
+    "A lockfile or generated file conflicts again and again",
+    "You do not trust a resolution that only picked \"ours\" or \"theirs\""
+  ],
+  "body": "# Git conflict resolution\n\nA conflict is two intentions colliding. Find both before you edit a line.\n\n## Steps\n\n1. Run `git status` and list the conflicted files. Note whether this is a merge, rebase or cherry-pick: during a rebase, \"ours\" is the branch being rebased onto and \"theirs\" is your own commit, which is the reverse of what people expect.\n2. For each file, read the intent of both sides: `git log --merge -p -- <file>` shows the commits from each side that touch it. Read their messages and diffs. Read the whole file around the markers, not just the marked block.\n3. Choose one of three outcomes and be able to say why: keep one side, keep both combined, or write something new that satisfies both. Never keep both blocks pasted together without checking they still make sense.\n4. Remove every `<<<<<<<`, `=======` and `>>>>>>>` line. Search for them: `git diff --check` must be clean.\n5. Generated files and lockfiles: do not hand-edit. Take one side, then regenerate (`npm install`, `cargo update -p <crate>`, the project's codegen command).\n6. After each file, `git add <file>`. When all are staged, run the build and the tests before `git merge --continue` or `git rebase --continue`.\n7. If a conflict is a real design disagreement (both sides changed behavior incompatibly), stop and ask the user. Do not guess.\n\n## Rules\n\n- Never run `git checkout --theirs .` or `--ours .` on everything.\n- Never abort or force-push without being asked.\n\n## Report\n\nPer file: what each side did, what you kept and why. Then the test result and anything you want a human to double-check.",
+  "example": {
+    "prompt": "Rebase feature/billing onto main and resolve the conflicts",
+    "result": "3 conflicts. src/invoice.ts: main renamed `total` to `amountDue`, the branch added a discount line; kept both, using the new name. package-lock.json: took main, reran `npm install`. billing.test.ts: merged both new cases. Build and 212 tests pass; rebase continued. Please look at invoice.ts:88, where the discount now applies before tax."
+  },
+  "faq": [
+    {
+      "question": "Does it ever just pick one side?",
+      "answer": "Yes, when one side is plainly obsolete, for example a deleted file or a pure rename. It states the reason in the report each time."
+    },
+    {
+      "question": "Will it push the result?",
+      "answer": "No. It finishes the local merge or rebase and leaves the push to you."
+    }
+  ],
+  "access": [
+    "Runs git status, diff and log, plus merge --continue or rebase --continue",
+    "Edits the conflicted files and runs your build and tests"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

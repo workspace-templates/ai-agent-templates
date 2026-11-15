@@ -1,0 +1,12 @@
+{
+  "servers": {
+    "gcloud": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@google-cloud/gcloud-mcp"
+      ]
+    }
+  }
+}

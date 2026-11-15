@@ -1,0 +1,58 @@
+{
+  "slug": "data-cleaner",
+  "title": "Data Cleaner",
+  "kind": "agent",
+  "category": "data",
+  "summary": "Subagent that cleans a messy dataset with a repeatable pandas script and logs every row it changes, drops or flags.",
+  "description": [
+    "Hand-edited spreadsheets and one-off notebook cells make cleaning impossible to repeat. This subagent profiles the file first, then writes one script that turns the raw input into a clean output, so the next export goes through the same steps.",
+    "Nothing changes silently. The script writes a change log and the agent reports counts for every rule: values fixed, rows dropped, cells left blank on purpose. The raw file is never overwritten."
+  ],
+  "stacks": [
+    "python"
+  ],
+  "topics": [
+    "python",
+    "logging"
+  ],
+  "useWhen": [
+    "A CSV export has mixed date formats, stray whitespace and duplicate rows",
+    "You get a new vendor file every week and need the same cleanup each time",
+    "A dataset is going into analysis and you need to know what was altered",
+    "Merging two sources whose keys do not quite match"
+  ],
+  "body": "# Data cleaner\n\nClean one dataset with a script that can be rerun. Never modify the raw input; write output next to it with a clean_ prefix and keep the script in the repo.\n\n## Steps\n\n1. Profile before touching anything: row count, dtypes, null share per column, distinct counts, min and max for numbers and dates, and the ten most common values of each text column. Print this.\n2. Decide the rules and write them down at the top of the script as a numbered list. Typical rules: trim and collapse whitespace, normalize case for categories, parse dates with an explicit format, convert numeric strings (currency symbols, thousands separators), map known variants to one label, and standardize missing-value markers such as \"N/A\", \"-\" and \"null\".\n3. Duplicates: define the key first. Drop exact duplicates automatically; for key duplicates with different values, keep neither silently, write them to a review file.\n4. Implement with pandas in small named functions, one per rule. Each function returns the frame and appends a line to a change log: rule, rows affected, example before and after.\n5. Validate: assert the schema, that keys are unique, and that no value is out of range. Fail loudly.\n6. Run the script twice and confirm the second run changes nothing.\n\n## Rules\n\n- Do not impute values unless the user asked. Leave unknowns as null.\n- Never drop a row without logging its index and reason.\n\n## Report\n\nRule-by-rule table of counts, the rows needing human review, rows in versus out, and the command to rerun.",
+  "agent": {
+    "tools": [
+      "Read",
+      "Write",
+      "Edit",
+      "Bash",
+      "Glob",
+      "Grep"
+    ],
+    "model": "sonnet"
+  },
+  "example": {
+    "prompt": "Clean customers_export.csv. Dates are a mess and there are duplicate customers.",
+    "result": "Wrote clean_customers.py and clean_customers.csv. 12,440 rows in, 12,118 out. Dates: 3 formats parsed, 41 unparseable left null. Whitespace trimmed in 2,206 cells. 198 exact duplicates dropped; 124 email duplicates with conflicting names saved to review_duplicates.csv. Second run changed 0 rows."
+  },
+  "faq": [
+    {
+      "question": "Will it fill in missing values?",
+      "answer": "Only if you ask. By default unknowns stay null, because a guessed value in a dataset is harder to spot later than an empty one."
+    },
+    {
+      "question": "What if my file is too large for memory?",
+      "answer": "It checks the size during profiling and switches to chunked reading or Polars when the file would not fit comfortably in RAM."
+    }
+  ],
+  "access": [
+    "Reads the dataset you point it at",
+    "Writes a cleaning script, a clean output file and a change log",
+    "Runs Python locally; no data leaves your machine"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

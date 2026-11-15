@@ -1,0 +1,69 @@
+{
+  "slug": "mongodb-mcp",
+  "title": "MongoDB MCP Server",
+  "kind": "mcp",
+  "category": "database",
+  "summary": "Query MongoDB and Atlas clusters, inspect collections and indexes from your agent with the official server, started in read-only mode.",
+  "description": [
+    "MongoDB's official server lets an agent connect to a cluster, list databases and collections, run queries and aggregations, and look at indexes and schema. With Atlas service account credentials it can also work with projects and clusters.",
+    "The setup starts it with the --readOnly flag, which switches off the tools that create, update or delete data. The connection string goes in an environment variable rather than the command line, because arguments can show up in process lists. Drop the flag only for a database you can afford to change."
+  ],
+  "stacks": [],
+  "topics": [
+    "sql",
+    "debugging"
+  ],
+  "useWhen": [
+    "Explore an unfamiliar database and its collections",
+    "Write and test an aggregation pipeline on real documents",
+    "Check which indexes a collection has and which are missing",
+    "Answer a data question without opening a shell"
+  ],
+  "mcp": {
+    "name": "mongodb",
+    "transport": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "mongodb-mcp-server@latest",
+      "--readOnly"
+    ],
+    "env": [
+      {
+        "name": "MDB_MCP_CONNECTION_STRING",
+        "description": "MongoDB connection string for your cluster"
+      }
+    ],
+    "headers": [],
+    "source": "https://github.com/mongodb-js/mongodb-mcp-server",
+    "access": [
+      "Reads databases, collections, documents and indexes reachable with your connection string",
+      "Read-only flag blocks create, update and delete tools"
+    ]
+  },
+  "example": {
+    "prompt": "Connect and show how many orders were placed per day over the last week.",
+    "result": "7 rows from an aggregation on orders grouped by day, from 112 orders on Monday to 187 on Friday."
+  },
+  "faq": [
+    {
+      "question": "Can I use Atlas credentials instead?",
+      "answer": "Yes. Set MDB_MCP_API_CLIENT_ID and MDB_MCP_API_CLIENT_SECRET for an Atlas service account, which also lets it manage Atlas resources."
+    },
+    {
+      "question": "How do I allow writes?",
+      "answer": "Remove --readOnly from the args. Do that only against a database with backups."
+    },
+    {
+      "question": "Where should the connection string live?",
+      "answer": "In an environment variable, and use a database user with only the roles you need."
+    }
+  ],
+  "access": [
+    "Reads data from the cluster your connection string points to",
+    "Cannot write while --readOnly is set"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{let j={};try{j=JSON.parse(d)||{}}catch(e){process.exit(0)}const i=j.tool_input||{};const q=String.fromCharCode(34),sq=String.fromCharCode(39),bs=String.fromCharCode(92),nl=String.fromCharCode(10);const t=String(j.prompt||'');const pats=[['an AWS access key',/AKIA[0-9A-Z]{16}/],['a GitHub token',/(gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,})/],['an Anthropic or OpenAI key',/sk-(ant-)?[A-Za-z0-9_-]{24,}/],['a Stripe live key',/[rs]k_live_[A-Za-z0-9]{16,}/],['a Slack token',/xox[abprs]-[A-Za-z0-9-]{10,}/],['a Google API key',/AIza[0-9A-Za-z_-]{35}/],['a private key',/-----BEGIN [A-Z ]*PRIVATE KEY-----/]];const h=pats.find(p=>p[1].test(t));if(h){console.error('Prompt not sent: it contains '+h[0]+'. Remove the secret, refer to it by variable name instead, and send the prompt again.');process.exit(2)}})\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "slug": "onboarding-guide",
+  "title": "Onboarding Guide",
+  "kind": "skill",
+  "category": "docs",
+  "summary": "Builds a developer onboarding doc from the repo's actual setup, scripts, conventions and CI, so day-one questions get answered in writing.",
+  "description": [
+    "Onboarding docs go stale because they are written from memory. Here the agent derives the guide from evidence: package scripts, CI jobs, lint config, branch rules, the commit history and the folder structure.",
+    "The result covers a first-week path for a new engineer: set up, make a small change, get it reviewed and shipped. Parts nobody documented are listed as open questions for the team."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation"
+  ],
+  "useWhen": [
+    "A new engineer starts next week and the wiki is outdated",
+    "Setup takes a day because steps live in people's heads",
+    "A team inherits a repository with no handover notes",
+    "You want conventions written down instead of enforced by review comments"
+  ],
+  "body": "# Onboarding guide\n\nDescribe how this team really works, as proven by the repository.\n\n## Steps\n\n1. Survey the repo: top-level layout, manifests, scripts, Docker and compose files, CI workflows, linters and formatters, test setup, pre-commit hooks, CODEOWNERS and any existing docs.\n2. Mine conventions from evidence. Use recent history (`git log --oneline -50`) for commit message style, branch naming and PR size. Read lint and format config for code style. Read CI for what must pass before merge.\n3. Write the guide with these sections: What this system does and who uses it; Architecture in one page (main modules and how a request or job flows through them); Local setup (verified commands); Daily workflow (branch, test, lint, open PR, review, deploy); Conventions (naming, errors, logging, tests); Where things live (a table of folder to purpose); Who to ask (from CODEOWNERS only).\n4. Add a \"first task\" walkthrough: a tiny real change such as editing a message string, taken from setup to merged.\n5. Finish with Open questions, listing facts you could not find.\n\n## Rules\n\n- State only what you found. Cite the file for each convention.\n- No org charts, no wishes, no marketing text.\n- Keep it under 800 lines and link to deeper docs.\n\n## Report\n\nThe guide path, what you verified by running it, and the open questions for the team to answer.",
+  "example": {
+    "prompt": "Create an onboarding doc for this repo",
+    "result": "Wrote docs/onboarding.md (240 lines). Verified setup with docker compose up and npm test. Conventions came from commitlint, ESLint config and CI: conventional commits, squash merges, required checks lint, unit, e2e. Open questions: how staging deploys are approved, and who owns the billing module."
+  },
+  "faq": [
+    {
+      "question": "Does it invent team norms?",
+      "answer": "No. Each convention is tied to a file or to repeated history. Anything without evidence goes into the open questions list."
+    },
+    {
+      "question": "Should it replace our wiki?",
+      "answer": "It lives next to the code, so it changes with it. Link it from the wiki rather than copying it there."
+    }
+  ],
+  "access": [
+    "Reads the repository and its git history",
+    "Writes one documentation file",
+    "Runs setup and test commands to verify them"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

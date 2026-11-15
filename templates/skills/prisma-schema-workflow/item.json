@@ -1,0 +1,47 @@
+{
+  "slug": "prisma-schema-workflow",
+  "title": "Prisma Schema Workflow",
+  "kind": "skill",
+  "category": "database",
+  "summary": "Evolves a Prisma schema safely with named migrations, seed scripts, type-safe queries and a check for destructive changes.",
+  "description": [
+    "Prisma makes schema changes easy to write and easy to get wrong. This skill gives the agent a repeatable loop: edit the schema, generate a named migration, read the SQL it produced, then update code and seeds.",
+    "The step most people skip is reading the generated SQL, which is where dropped columns and table rewrites show up."
+  ],
+  "stacks": [
+    "typescript",
+    "prisma"
+  ],
+  "topics": [
+    "migrations",
+    "typescript"
+  ],
+  "useWhen": [
+    "You are adding or changing models in a Prisma project",
+    "A migration drifted from the database or fails to apply",
+    "You need seed data for development and tests",
+    "Queries return too much data or lose type safety"
+  ],
+  "body": "# Prisma schema workflow\n\nTreat `schema.prisma` and the migration SQL as reviewed code.\n\n## Steps\n\n1. Read `schema.prisma`, the latest migrations and `package.json` scripts. Confirm which database and whether migrations are used (`prisma migrate`) or push (`db push`). Do not mix them on one database.\n2. Edit the schema: explicit `@id`, `@unique`, `@@index` for each foreign key and filter, relation names when a model has two relations to another, and `onDelete` behavior stated rather than default.\n3. Generate the migration with `npx prisma migrate dev --name add_invoice_status` using a descriptive name. Use `--create-only` when the change needs hand edits.\n4. Open the generated `migration.sql` and read it. Stop and ask before any `DROP`, a type change, or a new required column on a populated table. For the latter, add it optional, backfill, then make it required in a later migration.\n5. Run `npx prisma generate` and fix type errors; they are the list of code to update.\n6. Write queries with `select` or `include` for only what the caller needs. Use `$transaction` for related writes, and `createMany` for bulk inserts.\n7. Keep `prisma/seed.ts` idempotent with `upsert`, and run it with `prisma db seed`.\n8. In CI and production use `prisma migrate deploy`, never `migrate dev`.\n\n## Rules\n\n- Never edit a migration that has already been applied elsewhere; add a new one.\n- On drift, run `migrate diff` to see it before any reset, and never reset a shared database.\n\n## Report\n\nThe schema diff, the migration SQL highlights, code changes and how you verified them.",
+  "example": {
+    "prompt": "Add invoice status and a paidAt date to our Prisma schema",
+    "result": "Added enum InvoiceStatus and paidAt DateTime?. The migration SQL created the enum and an optional column, no table rewrite. Updated 4 query sites flagged by tsc, made the seed idempotent with upsert, and added an index on (customerId, status)."
+  },
+  "faq": [
+    {
+      "question": "migrate dev or db push?",
+      "answer": "Use migrate dev when you want a history you can review and deploy. db push suits throwaway prototypes only, since it leaves no migration files."
+    },
+    {
+      "question": "How do I rename a field without losing data?",
+      "answer": "Use `@map` to keep the column name, or edit the generated SQL to a RENAME statement with --create-only. Plain rename in the schema otherwise generates a drop and add."
+    }
+  ],
+  "access": [
+    "Reads and edits schema, migrations and TypeScript files",
+    "Runs Prisma CLI commands against your development database"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

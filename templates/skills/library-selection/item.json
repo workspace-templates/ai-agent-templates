@@ -1,0 +1,45 @@
+{
+  "slug": "library-selection",
+  "title": "Library Selection",
+  "kind": "skill",
+  "category": "productivity",
+  "summary": "Compares candidate libraries on maintenance, fit, size and risk, then recommends one with evidence instead of picking whatever is popular.",
+  "description": [
+    "Choosing a dependency by download count is how projects end up on abandoned packages. This skill makes the agent write down what you actually need, shortlist a few candidates and check each against the same list of facts, with sources you can open.",
+    "It ends with one recommendation, the runner-up, and the cost of leaving later. If the best answer is to write forty lines yourself, it says that."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation",
+    "security"
+  ],
+  "useWhen": [
+    "You need a date, validation, charting or queue library and several exist",
+    "A dependency is deprecated and you must pick its replacement",
+    "Your team argues about two packages without any shared criteria",
+    "You want to be sure a new dependency is safe before it enters the lockfile"
+  ],
+  "body": "# Library selection\n\nRecommend with evidence. Do not install anything while comparing.\n\n## Steps\n\n1. Write the requirements: what the library must do, the runtime and version it must support, license limits, bundle or install size limits, and what the project already uses that could do part of the job. Check the lockfile first: an existing dependency may already cover it.\n2. Shortlist three to five candidates, including \"write it ourselves\" when the need is small. Use the registry, the official docs and the repository, not blog rankings.\n3. For each candidate collect, with a link or command for each fact: latest release date and release cadence, last commit, open issues and how fast they are answered, number of maintainers, license, install size and dependency count, TypeScript types or equivalent, and known advisories (`npm audit`, `pip-audit`, the GitHub advisory database).\n4. Test fit. In a scratch directory, write the smallest snippet that does your hardest use case with each finalist. Note how awkward it was, and any behavior that surprised you.\n5. Judge risk: single maintainer, a major rewrite in progress, heavy transitive tree, native build steps, or API that leaks into your code and makes switching costly.\n6. Score the finalists against the requirements in a table, then recommend one. State the deciding factor and what evidence would change the decision.\n7. Give the adoption plan: pinned version, where to wrap it behind a thin module so it can be replaced, and the first usage to migrate.\n\n## Rules\n\n- Never recommend on popularity alone.\n- Never run install scripts from an unvetted package on the real project.\n- Mark any fact you could not verify.\n\n## Report\n\nThe comparison table, the recommendation with its deciding factor, and the adoption plan.",
+  "example": {
+    "prompt": "We need schema validation for API inputs in a TypeScript service. Compare options.",
+    "result": "Candidates: zod, valibot, ajv with JSON Schema, hand-written guards. Recommendation: zod. Releases monthly, 2 active maintainers, types inferred from schemas, 59 kB gzipped is fine for a server. Runner-up: valibot if bundle size ever matters. Rejected: ajv, which duplicates our types. Adopt zod 3.x pinned, wrapped in src/validation/index.ts. Unverified: long-term maintainer count."
+  },
+  "faq": [
+    {
+      "question": "Can it recommend not using a library?",
+      "answer": "Yes. When the need is small and the candidates are heavy or shaky, a short local module is listed as a real option and often wins."
+    },
+    {
+      "question": "Does it trust download counts?",
+      "answer": "Only as a weak signal. Release cadence, issue response time, maintainers and advisories carry more weight, and each is shown with where it came from."
+    }
+  ],
+  "access": [
+    "Reads your manifests, lockfiles and source files",
+    "Reads public package registries and repositories",
+    "Runs experiments in a scratch directory outside your project"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

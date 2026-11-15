@@ -1,0 +1,45 @@
+{
+  "slug": "release-notes",
+  "title": "Release Notes",
+  "kind": "command",
+  "category": "git",
+  "summary": "Writes user-facing release notes from merged pull requests since the last release, grouped by what users can now do.",
+  "description": [
+    "Release notes fail when they repeat commit messages. This command collects the merged changes and rewrites them around what people can do now, what got better and what they must change on their side.",
+    "Internal work is left out. Anything that needs action, such as a migration, a renamed setting or a removed option, is placed at the top where nobody can miss it."
+  ],
+  "stacks": [],
+  "topics": [
+    "git",
+    "documentation"
+  ],
+  "useWhen": [
+    "You publish a release and need a post or email",
+    "Support asks what changed in the latest version",
+    "Customers must know about a breaking change in time",
+    "You want release notes that a non-developer can read"
+  ],
+  "body": "Write release notes for the changes since: $ARGUMENTS (the latest tag if empty).\n\n1. Collect merged changes with `git log <since>..HEAD --merges --oneline`; if the project squashes, use `git log --no-merges`. When `gh` is available, read the pull request titles and descriptions for context.\n2. Drop internal work: refactors, tests, CI, dependency bumps without user effect.\n3. Write for the people who use the product, not the people who build it. Lead each item with the benefit (\"You can now export reports as CSV\"), then one clause of detail.\n4. Put anything that needs action first under **Before you upgrade**: breaking changes, migrations, renamed settings, removed features, with the exact step to take.\n5. Then use the sections **New**, **Improved**, **Fixed**. Credit external contributors by handle if the history shows them.\n\nKeep it under 300 words and avoid jargon and internal ticket numbers. Show the draft, ask what to change, and do not publish or tag anything.",
+  "argumentHint": "[since tag or date, optional]",
+  "example": {
+    "prompt": "/release-notes v3.1.0",
+    "result": "Before you upgrade: the API_TOKEN setting is now called ACCESS_TOKEN. Rename it in your .env file.\n\nNew: Export any report as CSV.\nImproved: Dashboards load about twice as fast on large accounts.\nFixed: Invitation emails no longer land twice in the inbox."
+  },
+  "faq": [
+    {
+      "question": "How is this different from the changelog entry?",
+      "answer": "A changelog is a precise record for developers. These notes are written as an announcement for the people who use the product."
+    },
+    {
+      "question": "Does it publish anything?",
+      "answer": "No. It prints a draft and waits for your edits."
+    }
+  ],
+  "access": [
+    "Reads git history and, if installed, GitHub pull request text through gh",
+    "Does not write or publish anything"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

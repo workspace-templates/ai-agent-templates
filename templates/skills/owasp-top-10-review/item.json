@@ -1,0 +1,44 @@
+{
+  "slug": "owasp-top-10-review",
+  "title": "OWASP Top 10 Review",
+  "kind": "skill",
+  "category": "security",
+  "summary": "Walks a codebase category by category through the OWASP Top 10 and reports each confirmed weakness with file, line and a concrete fix.",
+  "description": [
+    "A generic \"find security bugs\" prompt skims the surface and misses whole classes of problems. This skill makes the agent take the ten OWASP categories one at a time, search for the code patterns each one produces, and open every hit before calling it a finding.",
+    "You get a short report grouped by category, with the file and line, how an attacker would use the flaw, and the smallest patch. Categories with nothing found are listed as checked, so you know what was covered."
+  ],
+  "stacks": [],
+  "topics": [
+    "security",
+    "code-review"
+  ],
+  "useWhen": [
+    "Before a launch or a customer security questionnaire",
+    "When you inherit a service and need a fast risk picture",
+    "After adding a new endpoint family or an admin area",
+    "When an audit asks for evidence that the code was reviewed against OWASP"
+  ],
+  "body": "# OWASP Top 10 review\n\nReview the code against the current OWASP Top 10, one category at a time. Report only what you confirmed by reading the code.\n\n## Steps\n\n1. Map the surface first: entry points (routes, handlers, queue consumers), the auth layer, data stores and every place user input enters. Note the framework and its built-in protections.\n2. For each category, search for its typical patterns, then open every hit:\n   - Broken access control: handlers that load a record by id without checking the owner or role, missing checks on admin routes.\n   - Cryptographic failures: MD5 or SHA-1 for passwords, hard-coded keys, plain HTTP, weak random for tokens.\n   - Injection: queries, shell calls, templates and file paths built from input.\n   - Insecure design: no rate limit on login or reset, no limits on expensive operations.\n   - Misconfiguration: debug mode, default credentials, open CORS, verbose errors.\n   - Vulnerable components: outdated packages with known advisories.\n   - Authentication failures, integrity failures (unsigned updates, unsafe deserialization), logging gaps, and server-side request forgery.\n3. Trace each suspect from input to the dangerous call. If a check on the path stops it, drop the finding.\n\n## Rules\n\n- Never claim a vulnerability you could not trace end to end.\n- Do not run exploits or hit live systems. Read and reason only.\n- Do not change code unless asked; propose patches.\n\n## Report\n\nGroup by category. Per finding: `path:line`, severity, how it is exploited, the fix. List categories with no findings under \"Checked, clean\".",
+  "example": {
+    "prompt": "Review the orders service against the OWASP Top 10.",
+    "result": "A01 Broken access control: src/routes/orders.ts:44 loads an order by id with no owner check, so any logged-in user can read any order. Fix: add userId to the query. A03 Injection: src/search.ts:19 concatenates the sort field into SQL; allowlist the column. Checked, clean: A02, A05, A07, A08, A09, A10. A06 not verifiable offline, run npm audit."
+  },
+  "faq": [
+    {
+      "question": "Does it scan dependencies for known vulnerabilities?",
+      "answer": "It flags outdated packages it can see in the manifest, but advisory data lives in tools like npm audit or pip-audit. Run one alongside and feed the output in."
+    },
+    {
+      "question": "Will it find every vulnerability?",
+      "answer": "No. It is a structured code read, not a penetration test. It is good at access checks, injection and unsafe defaults, and weaker on logic flaws that need running the app."
+    }
+  ],
+  "access": [
+    "Reads source and config files in your project",
+    "Runs read-only searches; changes nothing"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

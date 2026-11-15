@@ -1,0 +1,2 @@
+[mcp_servers.prisma]
+url = "https://mcp.prisma.io/mcp"

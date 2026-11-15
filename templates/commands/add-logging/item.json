@@ -1,0 +1,45 @@
+{
+  "slug": "add-logging",
+  "title": "Add Logging",
+  "kind": "command",
+  "category": "code-quality",
+  "summary": "Adds structured log lines to one flow at the points that help debugging, with levels, context fields and no sensitive data.",
+  "description": [
+    "Logs written in a panic are either silent when you need them or so chatty nobody reads them. This command traces one flow from entry to exit and picks the few places where a line will answer a real question later.",
+    "It uses the logger the project already has, adds fields instead of string concatenation, and keeps passwords, tokens and personal data out of every line."
+  ],
+  "stacks": [],
+  "topics": [
+    "logging",
+    "debugging"
+  ],
+  "useWhen": [
+    "A request fails in production and the logs say nothing useful",
+    "You are adding a new background job or webhook handler",
+    "Support needs to follow one order through several services",
+    "Existing logs print whole objects with customer data"
+  ],
+  "body": "Add structured logging to this flow: $ARGUMENTS\n\n1. Find the project's logger (winston, pino, structlog, logging, slog, zap, log4j) and one well-logged file. Match its import, field names and level usage. If there is no logger, stop and ask before adding a dependency.\n2. Trace the flow from entry to exit. Mark: start and end with duration, each external call, each branch that changes the outcome, retries, and every caught error.\n3. Choose levels: debug for internals, info for business events, warn for recovered problems, error for failures with the cause attached.\n4. Log fields, not sentences: request id, user id, order id, counts, elapsed ms. Reuse a correlation id if one exists.\n5. Never log passwords, tokens, card numbers, full emails, request bodies or raw headers. Redact or log only an id.\n6. No logging inside tight loops.\n\nShow the diff plus a list of the lines added with their level. Run the tests. Ask before changing logger configuration.",
+  "argumentHint": "[flow, function or file]",
+  "example": {
+    "prompt": "/add-logging the stripe webhook handler",
+    "result": "Added 7 lines in src/webhooks/stripe.ts: received (info, event id, type), signature failed (warn), duplicate event skipped (info), order updated (info, order id, ms), handler error (error with cause).\nNo payload or card data logged. 21 tests pass. Logger config untouched."
+  },
+  "faq": [
+    {
+      "question": "Which logger does it use?",
+      "answer": "The one already in the project. If none exists it asks before adding a package."
+    },
+    {
+      "question": "How does it avoid leaking private data?",
+      "answer": "It logs identifiers and counts only, and redacts anything that looks like a secret or personal field."
+    }
+  ],
+  "access": [
+    "Reads the flow and existing logging setup",
+    "Edits the named files to add log calls and runs the tests"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

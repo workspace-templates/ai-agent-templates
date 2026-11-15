@@ -1,0 +1,45 @@
+{
+  "slug": "write-runbook",
+  "title": "Write Runbook",
+  "kind": "command",
+  "category": "docs",
+  "summary": "Writes an on-call runbook for a service or alert, with first checks, exact commands, escalation and a safe way back.",
+  "description": [
+    "At 3am nobody wants to read architecture notes; they want the first command to run. This command writes a runbook around that moment, built from your code, config and monitoring definitions.",
+    "Each step names its command, the output that means good or bad and what to do next. Commands that change production are marked and kept behind a confirm step."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation",
+    "devops"
+  ],
+  "useWhen": [
+    "A new alert fires and nobody knows what it means",
+    "You are handing a service to an on-call rotation",
+    "After an incident, to capture what worked",
+    "Before launching a service to real users"
+  ],
+  "body": "Write a runbook for: $ARGUMENTS (service name or alert name).\n\n1. Gather facts from the repository: how the service is deployed, its dependencies (database, queue, third-party APIs), health endpoints, log locations, dashboards and alert rules (search for alert definitions and the alert name). Mark any fact you cannot find as \"to be confirmed\" and never invent hostnames or URLs.\n2. Structure the page as: Purpose and impact (who notices when it breaks), Quick checks (first three minutes), Diagnosis by symptom, Fixes, Escalation, and After the incident.\n3. For every check give the exact command in a code block, what healthy output looks like and what bad output looks like. Use read-only commands first (status, logs, metrics queries).\n4. Put commands that change state, such as restart, scale, failover, rollback, in a separate list marked \"Changes production\", each with its risk and how to undo it.\n5. Add who to page and when, using names from the repository's CODEOWNERS or docs when present.\n\nMatch the format of runbooks already in docs/. Show the draft and ask before saving it. Run none of the commands yourself.",
+  "argumentHint": "[service or alert name]",
+  "example": {
+    "prompt": "/write-runbook HighQueueLatency",
+    "result": "Draft docs/runbooks/high-queue-latency.md: quick checks (queue depth via rabbitmqctl list_queues, consumer count, last deploy time), 4 symptom branches, 2 state-changing fixes marked with undo steps. 3 items marked to be confirmed. Save the file?"
+  },
+  "faq": [
+    {
+      "question": "Does it run the commands it writes?",
+      "answer": "No. It only writes them down. A person decides when and where to run each one."
+    },
+    {
+      "question": "What if it cannot find an on-call contact?",
+      "answer": "It leaves a marked gap. It never makes up names or channels."
+    }
+  ],
+  "access": [
+    "Reads code, config and alert definitions",
+    "Writes one runbook file after you approve"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

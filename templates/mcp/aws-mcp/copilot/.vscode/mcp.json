@@ -1,0 +1,29 @@
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "fastmcp_log_level",
+      "description": "Log level, ERROR keeps output quiet",
+      "password": true
+    },
+    {
+      "type": "promptString",
+      "id": "aws_documentation_partition",
+      "description": "Documentation partition, aws for the standard docs",
+      "password": true
+    }
+  ],
+  "servers": {
+    "aws-docs": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "awslabs.aws-documentation-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "${input:fastmcp_log_level}",
+        "AWS_DOCUMENTATION_PARTITION": "${input:aws_documentation_partition}"
+      }
+    }
+  }
+}

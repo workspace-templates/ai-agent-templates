@@ -1,0 +1,55 @@
+{
+  "slug": "cloudflare-mcp",
+  "title": "Cloudflare MCP Server",
+  "kind": "mcp",
+  "category": "devops",
+  "summary": "Point your agent at Cloudflare's hosted API MCP server to manage Workers, R2, DNS and other products and to search the Cloudflare docs.",
+  "description": [
+    "Cloudflare's current MCP server covers its whole public API through three tools: one to search endpoints, one to call them and one to search the developer docs. The agent writes small scripts that run in an isolated sandbox on Cloudflare's side.",
+    "You sign in with OAuth and pick the permissions to grant. For automation, a scoped API token can be sent as a bearer token instead."
+  ],
+  "stacks": [],
+  "topics": [
+    "ci",
+    "debugging"
+  ],
+  "useWhen": [
+    "Check DNS records for a zone before a migration",
+    "List Workers and their latest deploys",
+    "Find the right Cloudflare API endpoint for a task",
+    "Look up a limit or setting in the Cloudflare docs"
+  ],
+  "mcp": {
+    "name": "cloudflare",
+    "transport": "http",
+    "url": "https://mcp.cloudflare.com/mcp",
+    "env": [],
+    "headers": [],
+    "source": "https://github.com/cloudflare/mcp-server-cloudflare",
+    "access": [
+      "Cloudflare accounts, zones and products allowed by the permissions you approve",
+      "Can change DNS, Workers and storage if you grant write permissions"
+    ]
+  },
+  "example": {
+    "prompt": "List the DNS records for example.com that point at an IP address and tell me which are proxied.",
+    "result": "3 A records: example.com (proxied), api.example.com (proxied), mail.example.com (DNS only)."
+  },
+  "faq": [
+    {
+      "question": "Which permissions should I grant?",
+      "answer": "Start with read access to the zones you need. Add write access only for the task at hand."
+    },
+    {
+      "question": "Is the old per-product server list still needed?",
+      "answer": "No. Several separate servers such as Workers Builds and Radar are marked deprecated in favor of this API server."
+    }
+  ],
+  "access": [
+    "Acts on your Cloudflare account within the approved permissions",
+    "Searches Cloudflare's public documentation"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

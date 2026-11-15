@@ -1,0 +1,44 @@
+{
+  "slug": "test-mocking-strategies",
+  "title": "Test Mocking Strategies",
+  "kind": "skill",
+  "category": "testing",
+  "summary": "Picks the right test double for each dependency (real object, fake, stub or spy) so tests stay fast without mocking away the behavior they should verify.",
+  "description": [
+    "Over-mocked tests pass while the product is broken, because they only prove the code calls what the test told it to call. This skill gives the agent a decision order for every collaborator, with the real thing first.",
+    "It also audits existing tests for the common traps: mocking the unit under test, asserting call counts instead of outcomes, and stubs that drift from the real interface."
+  ],
+  "stacks": [],
+  "topics": [
+    "testing",
+    "refactoring"
+  ],
+  "useWhen": [
+    "Tests pass but a bug still reached production",
+    "A refactor breaks forty tests that assert internal calls",
+    "You are adding tests to code with database, HTTP and clock dependencies",
+    "A mock setup is longer than the test itself"
+  ],
+  "body": "# Test mocking strategies\n\nUse the least fake double that keeps the test fast and deterministic.\n\n## Decide per dependency\n\n1. **Real object** when it is pure, in memory and cheap: value types, parsers, formatters. Never mock these.\n2. **Fake** (a working simplified implementation) for stateful collaborators you own: an in-memory repository, a fake clock, a local queue. Share one fake across the suite and test it against the same contract as the real one.\n3. **Stub** for a canned answer from something slow or external: an HTTP client returning a fixed response, including error and timeout cases.\n4. **Spy or mock** only when the call itself is the behavior: an email sent, a payment charged, an event published. Assert the arguments that matter, not the call order.\n\n## Rules\n\n- Mock at the boundary you own, such as your own payment client wrapper, not the third-party SDK's internals.\n- Assert outcomes (return value, stored state, emitted event) before interactions.\n- Never mock the class under test, and never stub a private method.\n- If a test needs more than three doubles, the unit has too many dependencies: say so and suggest the split.\n- Keep stubs honest: build responses from recorded real payloads or the published schema.\n\n## Report\n\nFor a review: each test with a smell, the double it uses, the better choice and why. For new tests: which doubles you chose and the reason for each.",
+  "example": {
+    "prompt": "Review the mocks in src/billing/__tests__ and tell me which ones hide bugs.",
+    "result": "3 of 11 tests mock InvoiceCalculator, the class they test, so they assert nothing about totals. Replace with the real calculator and a fake clock. chargeCustomer.test asserts call order on the Stripe SDK; switch to checking the PaymentResult and the saved status. Fake repository added in tests/fakes/ with a contract test."
+  },
+  "faq": [
+    {
+      "question": "Is it ever fine to mock a database?",
+      "answer": "Rarely. A fake in memory or a real throwaway database catches query and mapping mistakes that a mock cannot, so prefer those unless the test is truly about orchestration."
+    },
+    {
+      "question": "Does this depend on a test framework?",
+      "answer": "No. The decision order applies to Jest, pytest, JUnit, Go and others. It uses whatever mocking tools your project already has."
+    }
+  ],
+  "access": [
+    "Reads source and test files",
+    "Edits test files and runs your tests when you ask it to apply the changes"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

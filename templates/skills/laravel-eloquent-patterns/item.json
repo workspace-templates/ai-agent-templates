@@ -1,0 +1,48 @@
+{
+  "slug": "laravel-eloquent-patterns",
+  "title": "Laravel Eloquent Patterns",
+  "kind": "skill",
+  "category": "backend",
+  "summary": "Writes Laravel model code the idiomatic way: typed relations, query scopes, form requests and eager loading. Use it when adding or reviewing Eloquent code.",
+  "description": [
+    "Laravel makes it easy to put a query in a controller, a validation rule in a closure and an N+1 loop in a Blade view. This skill steers the agent toward the structure the framework already gives you, so models stay small and controllers stay thin.",
+    "It checks relations for eager loading, moves repeated where clauses into scopes, and puts input rules in form requests. Raw SQL and mass-assignment shortcuts are flagged instead of copied."
+  ],
+  "stacks": [
+    "php",
+    "laravel"
+  ],
+  "topics": [
+    "api-design",
+    "refactoring"
+  ],
+  "useWhen": [
+    "You are adding a new model with relations and a controller",
+    "A page runs dozens of queries and you suspect lazy loading",
+    "The same where clause appears in three controllers",
+    "A controller method validates input inline and has grown past thirty lines"
+  ],
+  "body": "# Laravel Eloquent patterns\n\nUse the framework's own structure before inventing one. Match the Laravel version in composer.json.\n\n## Steps\n\n1. Read the model, its migration and the controller that uses it. Note the foreign keys and casts already there.\n2. Declare every relation with a return type (`HasMany`, `BelongsTo` and so on) and keep the foreign key name explicit when it is not the default.\n3. Search the code you touch for loops that read a relation inside a `foreach`. Replace the lazy read with `with()` on the query, or `load()` when the model already exists. In development, suggest `Model::preventLazyLoading()` so the next N+1 fails loudly.\n4. Move a where clause into a local scope (`scopeActive`) when it appears twice. One-off conditions stay inline.\n5. Move validation and authorization into a form request class: `rules()` for input, `authorize()` for the policy check. The controller then calls `$request->validated()` and nothing else.\n6. Declare `$fillable` explicitly. Never use `$guarded = []` and never pass `$request->all()` to `create()`.\n7. Wrap writes that touch several tables in `DB::transaction()`.\n\n## Rules\n\n- Use `chunkById()` for large jobs, never `all()` on a big table.\n- Put counts in `withCount()`, not in a loop of `->count()` calls.\n- Do not add a repository layer on top of Eloquent unless the project already has one.\n- Run `php artisan test` after each change and report failures first.\n\n## Report\n\nList each file changed, the query count before and after for any page you optimized, and anything you left alone on purpose.",
+  "example": {
+    "prompt": "The orders index page is slow. Clean up the Eloquent code behind it.",
+    "result": "OrderController@index ran 1 + 50 + 50 queries: each row read `$order->customer` and `$order->items`. Added `with(['customer','items'])` and `withCount('items')`, now 3 queries. Moved the repeated `where('status','open')` into `scopeOpen` and validation into `IndexOrdersRequest`. Tests pass. Left the raw SQL report query alone."
+  },
+  "faq": [
+    {
+      "question": "Does it work with older Laravel versions?",
+      "answer": "It reads composer.json first and avoids features your version lacks, such as typed scope attributes or newer cast syntax."
+    },
+    {
+      "question": "Will it add a repository pattern?",
+      "answer": "No. Eloquent already is the data layer, and the skill only suggests extra layers when your project already uses them."
+    }
+  ],
+  "access": [
+    "Reads models, migrations, controllers and views",
+    "Edits PHP files in your project",
+    "Runs php artisan test"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

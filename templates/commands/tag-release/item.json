@@ -1,0 +1,45 @@
+{
+  "slug": "tag-release",
+  "title": "Tag Release",
+  "kind": "command",
+  "category": "git",
+  "summary": "Picks the next semantic version from commits since the last tag and prepares the annotated tag command for your approval.",
+  "description": [
+    "Choosing a version number by feel leads to breaking changes shipped as patches. This command reads every commit since the latest tag, classifies them and proposes the smallest correct bump.",
+    "It writes the tag message from the real changes and prints the exact commands. It will not create or push a tag until you answer."
+  ],
+  "stacks": [],
+  "topics": [
+    "git",
+    "documentation"
+  ],
+  "useWhen": [
+    "You are ready to cut a release and unsure whether it is minor or patch",
+    "The team uses Conventional Commits and wants the bump derived from them",
+    "You need a short tag annotation without writing release notes by hand",
+    "You want a check that the working tree is clean before tagging"
+  ],
+  "body": "Prepare the next release tag. Requested version, if any: $ARGUMENTS\n\n1. Run `git status --porcelain` and `git branch --show-current`. Warn if the tree is dirty or the branch is not the release branch.\n2. Find the latest tag: `git describe --tags --abbrev=0 --match \"v*\"`. If none exists, propose v0.1.0 and stop to confirm.\n3. Read `git log <tag>..HEAD --format=\"%h %s%n%b\"`. Classify: any \"BREAKING CHANGE\" or \"!\" means major; any feat means minor; otherwise patch. For versions below 1.0, breaking changes bump minor.\n4. If the user gave a version, use it, but say so when it disagrees with your classification.\n5. Draft an annotated message: a one-line headline, then bullets grouped as Breaking, Added, Fixed.\n\nShow the bump reasoning with the commits that drove it, then the commands `git tag -a vX.Y.Z -m \"...\"` and `git push origin vX.Y.Z`. Ask \"Create the tag?\" Run the tag only after a yes. Push only after a separate yes. Never move or delete an existing tag.",
+  "argumentHint": "[optional forced version, e.g. 2.0.0]",
+  "example": {
+    "prompt": "/tag-release",
+    "result": "Last tag v1.4.2, 17 commits since. 2 feat, 6 fix, no breaking changes -> v1.5.0.\n\ngit tag -a v1.5.0 -m \"Saved filters and CSV export\"\n\nCreate the tag?"
+  },
+  "faq": [
+    {
+      "question": "Will it push the tag?",
+      "answer": "Not on the first yes. Creating locally and publishing are two separate questions."
+    },
+    {
+      "question": "Does it work without Conventional Commits?",
+      "answer": "Yes. It reads the commit text and diffs to judge impact, and says how sure it is when subjects are vague."
+    }
+  ],
+  "access": [
+    "Reads git history and working tree status",
+    "Creates a tag locally, and pushes it only after a second approval"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

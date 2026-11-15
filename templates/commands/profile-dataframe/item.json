@@ -1,0 +1,48 @@
+{
+  "slug": "profile-dataframe",
+  "title": "Profile DataFrame",
+  "kind": "command",
+  "category": "data",
+  "summary": "Profiles a pandas DataFrame for dtypes, nulls, outliers and duplicates, then suggests exact pandas fixes for each issue.",
+  "description": [
+    "Bad dtypes and hidden duplicates cause quiet errors in joins and averages. This command inspects a DataFrame already in your code or notebook and tells you what is wrong with each column.",
+    "Every finding comes with a one-line pandas fix you can paste. It only reads the data, so the original frame stays unchanged until you decide."
+  ],
+  "stacks": [
+    "python",
+    "pandas"
+  ],
+  "topics": [
+    "python",
+    "debugging"
+  ],
+  "useWhen": [
+    "A groupby or merge returns surprising row counts",
+    "You loaded data and want to check it before modeling",
+    "Memory use of a DataFrame is higher than expected",
+    "You inherited a pipeline with no data checks"
+  ],
+  "body": "Profile the pandas DataFrame: $ARGUMENTS (a variable, a file that builds it, or a file to load).\n\n1. Find where the frame is created. Write a small script or use the notebook to load it without altering the source. Never modify the original frame; work on `df.copy()`.\n2. Print `df.shape`, `df.dtypes`, `df.memory_usage(deep=True)` and `df.isna().mean()` sorted high to low.\n3. For object columns, check for numbers or dates stored as strings, mixed case, leading and trailing whitespace, and low cardinality that should be `category`.\n4. For numeric columns, find outliers by the 1.5 IQR rule and impossible values. Show `df.describe()`.\n5. Count `df.duplicated().sum()`, and also duplicates on the likely key columns.\n6. Check index uniqueness and sort order, and datetime columns for time zone and gaps.\n\nReport a table: column, issue, evidence, and a one-line fix such as `df[\"price\"] = pd.to_numeric(df[\"price\"].str.replace(\"$\",\"\"))`. Ask whether to apply fixes into a cleaning function.",
+  "argumentHint": "[variable name, file or loader function]",
+  "example": {
+    "prompt": "/profile-dataframe orders from etl/load.py",
+    "result": "orders: 120,400 x 11, 38 MB.\nsignup_date is object (parse with pd.to_datetime), status has 9 values for 4 real ones (case and spaces), 214 duplicate order_id rows, total has 3 negative values.\nFixes listed per column. Write them into clean_orders()?"
+  },
+  "faq": [
+    {
+      "question": "Does it modify my DataFrame?",
+      "answer": "No. It works on a copy and only suggests fixes until you approve a cleaning function."
+    },
+    {
+      "question": "Can it handle big frames?",
+      "answer": "For very large data it profiles a random sample and says so in the report."
+    }
+  ],
+  "access": [
+    "Reads the code that builds the DataFrame and runs it",
+    "Edits files only after you approve a cleaning function"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,50 @@
+{
+  "slug": "check-node-version",
+  "title": "Check Node Version",
+  "kind": "hook",
+  "category": "devops",
+  "summary": "A Claude Code hook that compares the running Node version with .nvmrc or package.json engines at session start and warns the agent on a mismatch.",
+  "description": [
+    "Builds and tests fail in odd ways when the shell runs a different Node major than the project expects. This SessionStart hook reads your .nvmrc, or the engines field in package.json when there is no .nvmrc, and compares it with the Node that Claude Code sees.",
+    "On a mismatch it prints one line that goes into the session context, so the agent knows to switch versions before installing or testing. When the versions agree, or no version is declared, it says nothing."
+  ],
+  "stacks": [
+    "node"
+  ],
+  "topics": [
+    "debugging",
+    "ci"
+  ],
+  "useWhen": [
+    "Work across repos that pin different Node majors",
+    "Avoid native module errors after a Node upgrade",
+    "Start sessions in a team repo with an .nvmrc",
+    "Explain strange install failures early"
+  ],
+  "hook": {
+    "event": "SessionStart",
+    "command": "node -e \"const fs=require('fs'),p=require('path');let j={};try{j=JSON.parse(fs.readFileSync(0,'utf8'))}catch(e){}const dir=j.cwd||process.cwd();const run=process.versions.node;const rm=Number(run.split('.')[0]);let want='',src='';try{want=fs.readFileSync(p.join(dir,'.nvmrc'),'utf8').trim();src='.nvmrc'}catch(e){}if(!want){try{const k=JSON.parse(fs.readFileSync(p.join(dir,'package.json'),'utf8'));want=String((k.engines||{}).node||'').trim();src='package.json engines'}catch(e){}}const m=want.match(/[0-9]+/);if(m){const need=Number(m[0]);const atLeast=/^>=?/.test(want)&&src!=='.nvmrc';const ok=atLeast?rm>=need:rm===need;if(!ok)console.log('Node version mismatch: this shell runs Node '+run+' but '+src+' asks for '+want+'. Switch with nvm use or fnm use before running installs, builds or tests.')}\"",
+    "timeout": 10
+  },
+  "example": {
+    "prompt": "Start a session in a repo whose .nvmrc says 20 while the shell runs Node 18.",
+    "result": "The session opens with a note that Node 18.19.0 is active but .nvmrc asks for 20, and the agent suggests nvm use first."
+  },
+  "faq": [
+    {
+      "question": "Which formats does it understand?",
+      "answer": "It reads the first number in .nvmrc, such as 20 or v20.11.0, and ranges like >=18 in engines. Aliases that carry no number are skipped."
+    },
+    {
+      "question": "Does it change my Node version?",
+      "answer": "No. It only reports. Switching versions stays with you or with the agent, using your own version manager."
+    }
+  ],
+  "access": [
+    "Reads .nvmrc and package.json in the project folder",
+    "Prints a warning into the session context and changes nothing"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

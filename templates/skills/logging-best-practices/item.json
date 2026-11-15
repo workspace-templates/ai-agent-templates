@@ -1,0 +1,44 @@
+{
+  "slug": "logging-best-practices",
+  "title": "Logging Best Practices",
+  "kind": "skill",
+  "category": "code-quality",
+  "summary": "Adds structured log lines with levels, correlation IDs and no personal data where they help. Use it when a service is hard to debug from its logs.",
+  "description": [
+    "A log line is only useful if someone can find it, link it to one request and read it at three in the morning. This skill makes the agent place a small number of structured entries at the points that decide an outcome, and leaves the rest of the code quiet.",
+    "Every entry carries a level, a stable event name and a correlation ID, and never a password, token, email or full request body. The agent matches the logger your project already uses instead of adding a new one."
+  ],
+  "stacks": [],
+  "topics": [
+    "logging",
+    "code-review"
+  ],
+  "useWhen": [
+    "A production incident left you guessing because the logs said nothing useful",
+    "You are adding a new service and want a consistent log format from day one",
+    "Log volume is huge but the one failing request is impossible to trace",
+    "A review found passwords or emails being written to log files"
+  ],
+  "body": "# Logging best practices\n\nLog decisions and failures, not every step. Every line must help someone answer \"what happened to this request?\"\n\n## Steps\n\n1. Find the logger already in use (`grep -rn \"logger\\|logging\\|pino\\|winston\\|slog\" src`). Reuse it. Do not add a second library.\n2. Locate the points that matter: request entry and exit, calls to other services and databases, retries, fallbacks, state changes, and every catch block.\n3. Make sure a correlation ID exists. Read it from an incoming header such as `x-request-id` or create one at the edge, then attach it to the logger context so every line carries it.\n4. Write each entry as structured key-value data with a short event name (`payment.declined`), not an interpolated sentence. Put variable data in fields.\n5. Pick levels deliberately: ERROR only when someone should act, WARN for handled surprises, INFO for business events, DEBUG for detail that is off in production.\n6. Log an error once, where it is handled, with the exception and stack. Do not log and rethrow at every layer.\n\n## Never log\n\nPasswords, tokens, API keys, session cookies, full card or national ID numbers, email addresses, or whole request bodies. Log an internal user ID or a masked value instead.\n\n## Report\n\nList the files changed, the events added with their levels, and any place where you found personal data already being logged.",
+  "example": {
+    "prompt": "Add logging to the order checkout flow so we can trace failed payments.",
+    "result": "Added 6 structured entries in src/checkout/service.ts: checkout.started, payment.authorized, payment.declined (WARN, with decline code), inventory.reserve_failed (ERROR), checkout.completed and a single catch-block entry. All carry requestId from the existing middleware. Found and removed an email address in the old \"order created\" line."
+  },
+  "faq": [
+    {
+      "question": "Will it install a logging library?",
+      "answer": "No. It looks for the logger your project already uses and follows its conventions. A new dependency is only suggested in the report, never added."
+    },
+    {
+      "question": "How does it decide what counts as personal data?",
+      "answer": "It treats credentials, contact details, payment data and free-text user input as off limits, and prefers opaque IDs. You can add project-specific field names to the request."
+    }
+  ],
+  "access": [
+    "Reads source files and searches them for logger usage",
+    "Edits the files where log lines are added"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

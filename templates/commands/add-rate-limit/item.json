@@ -1,0 +1,45 @@
+{
+  "slug": "add-rate-limit",
+  "title": "Add Rate Limit",
+  "kind": "command",
+  "category": "backend",
+  "summary": "Adds rate limiting to a named route group using your current stack, with sane limits, proper 429 replies and a test.",
+  "description": [
+    "Login, signup and search routes invite abuse long before anything else does. This command adds limits to the route group you name, using the middleware or gateway feature your stack already has.",
+    "It picks the limit key with care, since keying only on IP punishes shared offices and keying only on user misses anonymous abuse. A test proves the limit actually trips."
+  ],
+  "stacks": [],
+  "topics": [
+    "security",
+    "api-design"
+  ],
+  "useWhen": [
+    "Login or password reset can be hammered",
+    "A public search or export route is costing too much",
+    "You see bursts from one client in the logs",
+    "A security review asks for throttling on auth routes"
+  ],
+  "body": "Add rate limiting to this route group: $ARGUMENTS\n\n1. Find how the app is served and whether a limiter exists already (express-rate-limit, slowapi, Rack::Attack, a gateway or CDN rule, Redis). Reuse it. Do not add a new store without asking.\n2. Choose the key per route: IP for anonymous routes, user id or API key for authenticated ones, and both IP and account name for login. Mention proxy setups: read the real client IP only from a trusted forwarded header.\n3. Propose limits and show the numbers before coding, for example 5 per minute for login, 60 per minute for general reads. A burst allowance is better than a hard cap.\n4. Return 429 with a Retry-After header and the project's normal error body. Never reveal whether an account exists.\n5. Check multi-instance behavior: an in-memory counter is wrong behind several servers, so say so.\n6. Write a test that exceeds the limit, sees the 429, and checks that a different key is unaffected. Run the tests.\n\nReport the limits, keys and any gap such as a shared store you did not set up.",
+  "argumentHint": "[route group, e.g. /auth/*]",
+  "example": {
+    "prompt": "/add-rate-limit /auth/*",
+    "result": "Reused express-rate-limit with the existing Redis store. POST /auth/login: 5 per minute per IP+email. POST /auth/reset: 3 per hour per email. 429 with Retry-After.\nTest passes: sixth login attempt is rejected, another email is not.\nNote: trust proxy is off, so I set it to 1 for your load balancer. Confirm."
+  },
+  "faq": [
+    {
+      "question": "Which limits does it choose?",
+      "answer": "It proposes numbers per route type and shows them before writing code, so you can raise or lower them."
+    },
+    {
+      "question": "Does it work behind a load balancer?",
+      "answer": "It checks how the client IP is forwarded and warns when counters live in process memory across several instances."
+    }
+  ],
+  "access": [
+    "Reads server setup, middleware and dependencies",
+    "Edits middleware and test files, then runs tests"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,45 @@
+{
+  "slug": "add-pagination",
+  "title": "Add Pagination",
+  "kind": "command",
+  "category": "backend",
+  "summary": "Adds pagination to a list endpoint in the style your project already uses, with a stable order and updated tests.",
+  "description": [
+    "An unbounded list works in development and times out in production. This command adds paging to one list endpoint, choosing between page numbers and cursors based on what the codebase already does.",
+    "It insists on a deterministic sort, since paging over an unstable order skips or repeats rows. Tests cover the first page, the last page and an empty result."
+  ],
+  "stacks": [],
+  "topics": [
+    "api-design",
+    "sql"
+  ],
+  "useWhen": [
+    "A list route returns every row and is getting slow",
+    "The frontend needs infinite scroll or numbered pages",
+    "You want new paging to match the convention of older routes",
+    "Clients report duplicate rows between pages"
+  ],
+  "body": "Add pagination to: $ARGUMENTS\n\n1. Read the endpoint and the query behind it. Search other list endpoints for an existing convention (page and limit, offset, or cursor) and follow it. If there is none, prefer cursor paging for large or changing tables and page numbers for small admin lists, and say which you chose.\n2. Add a default and a hard maximum page size, and validate both inputs.\n3. Make the order deterministic: add a unique tiebreaker such as id after the sort column.\n4. Return the project's envelope with items plus total or next cursor, whichever fits the chosen style. Avoid an expensive COUNT on huge tables unless the convention requires it.\n5. Check that an index supports the sort and filter; if not, name the index to add but do not create it.\n6. Update tests: first page, middle page, last page, empty result, limit above the maximum, invalid cursor.\n7. Run the tests.\n\nReport the new request and response shape, and the index suggestion if any.",
+  "argumentHint": "[list endpoint or query function]",
+  "example": {
+    "prompt": "/add-pagination GET /customers",
+    "result": "Chose cursor paging to match /orders. Params: limit (default 25, max 100), cursor. Order by createdAt desc, id desc.\nResponse: {items, nextCursor}. 6 tests pass.\nSuggested index: customers(created_at, id). Not created."
+  },
+  "faq": [
+    {
+      "question": "Page numbers or cursors?",
+      "answer": "It copies whatever your other endpoints use. Without a convention it picks cursors for big, changing data and explains why."
+    },
+    {
+      "question": "Will it add database indexes?",
+      "answer": "It only recommends one with the exact columns. Creating it is a schema change that you approve yourself."
+    }
+  ],
+  "access": [
+    "Reads the endpoint, query code and tests",
+    "Edits the endpoint and test files, then runs tests"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

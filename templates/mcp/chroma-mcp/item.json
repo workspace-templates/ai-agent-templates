@@ -1,0 +1,71 @@
+{
+  "slug": "chroma-mcp",
+  "title": "Chroma MCP Server",
+  "kind": "mcp",
+  "category": "data",
+  "summary": "Create Chroma collections and add, query and inspect embeddings from your coding agent with the chroma-mcp server, run through uvx.",
+  "description": [
+    "Chroma's MCP server turns the agent into a client of a Chroma database. It can create and modify collections, add documents with metadata, run semantic queries, fetch by id or filter, and delete what you no longer need.",
+    "You choose where the data lives with a client type: ephemeral keeps everything in memory, persistent writes to a folder you name, and http or cloud connect to a running Chroma. The server starts with uvx, so uv must be installed. The default embedding function needs no key."
+  ],
+  "stacks": [],
+  "topics": [
+    "vector-search",
+    "data"
+  ],
+  "useWhen": [
+    "Try a retrieval idea on a handful of documents in memory",
+    "Keep a persistent local collection of notes and search it",
+    "Inspect what a collection holds before debugging a RAG pipeline",
+    "Compare how two embedding settings rank the same query"
+  ],
+  "mcp": {
+    "name": "chroma",
+    "transport": "stdio",
+    "command": "uvx",
+    "args": [
+      "chroma-mcp"
+    ],
+    "env": [
+      {
+        "name": "CHROMA_CLIENT_TYPE",
+        "description": "ephemeral, persistent, http or cloud"
+      },
+      {
+        "name": "CHROMA_DATA_DIR",
+        "description": "Folder for data when the client type is persistent"
+      }
+    ],
+    "headers": [],
+    "source": "https://github.com/chroma-core/chroma-mcp",
+    "access": [
+      "Reads and queries collections in the Chroma instance you choose",
+      "Can create, change and delete collections and documents"
+    ]
+  },
+  "example": {
+    "prompt": "Create a collection named meeting-notes, add these three paragraphs, then query it for 'budget concerns'.",
+    "result": "Collection meeting-notes created with 3 documents. Best match: paragraph 2, about the Q3 budget overrun, distance 0.31."
+  },
+  "faq": [
+    {
+      "question": "Where is my data kept?",
+      "answer": "It depends on the client type. Ephemeral is lost when the server stops; persistent uses CHROMA_DATA_DIR."
+    },
+    {
+      "question": "Can I keep API keys out of the config?",
+      "answer": "Yes. The README supports a dotenv file through --dotenv-path, and cloud settings also come from CHROMA_ environment variables."
+    },
+    {
+      "question": "Does it have a read-only mode?",
+      "answer": "Not documented. Delete tools are included, so use a persistent folder you can restore, or ask the agent to confirm before deletions."
+    }
+  ],
+  "access": [
+    "Reads collections from the configured Chroma",
+    "Can modify and delete collections and documents"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

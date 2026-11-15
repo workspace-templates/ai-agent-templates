@@ -1,0 +1,45 @@
+{
+  "slug": "explain-query",
+  "title": "Explain Query",
+  "kind": "command",
+  "category": "database",
+  "summary": "Explains what a SQL query returns, how the database plans to run it and which parts will be slow, using the real plan if allowed.",
+  "description": [
+    "Reading a long query with several joins and subqueries is slow even for experts. This command breaks it into steps in plain words, then shows how the database will most likely run it.",
+    "If you allow it, it fetches the actual execution plan with EXPLAIN and points to the specific node that costs the most, such as a sequential scan over a large table."
+  ],
+  "stacks": [],
+  "topics": [
+    "sql",
+    "performance"
+  ],
+  "useWhen": [
+    "You inherited a query nobody can describe",
+    "A report page takes seconds to load",
+    "You need to review a query in a pull request",
+    "Learning how joins and subqueries are executed"
+  ],
+  "body": "Explain this query: $ARGUMENTS (SQL text, or a file and line where it lives).\n\n1. Identify the dialect and find the schema and indexes for each table involved. If the query is in application code, extract the SQL and note the bound parameters.\n2. Say in two sentences what the query returns and for whom. Then walk through it in logical order: FROM and joins, WHERE, GROUP BY, HAVING, window functions, ORDER BY, LIMIT. One line each.\n3. Predict the physical plan: which index each filter could use, join method and order, and where a sort or temp table is needed.\n4. Offer to run `EXPLAIN` (never `EXPLAIN ANALYZE` on writes, since it executes them). Run it only when a read-only connection is available and the user agrees.\n5. Flag slow spots: functions on indexed columns, leading wildcard LIKE, SELECT *, OR across columns, correlated subqueries, missing join indexes, OFFSET paging.\n\nReport the explanation, a ranked list of the slow spots with evidence, and one rewrite per spot. Do not alter any code or schema.",
+  "argumentHint": "[SQL text or file:line]",
+  "example": {
+    "prompt": "/explain-query src/reports/monthly.sql",
+    "result": "Returns revenue per product for each month of the year for active accounts.\nPlan: seq scan on events (4.1M rows, no index on created_at), hash join to accounts, sort for GROUP BY.\nSlow spot 1: DATE(created_at) blocks the index; use a range. Rewrite shown."
+  },
+  "faq": [
+    {
+      "question": "Will it run my query?",
+      "answer": "Only EXPLAIN on a read-only connection and only after you agree. Plain explanation needs no database access."
+    },
+    {
+      "question": "Does it change the query?",
+      "answer": "It proposes rewrites in the report and leaves your files alone."
+    }
+  ],
+  "access": [
+    "Reads the query, schema and index definitions",
+    "Runs EXPLAIN on a read-only connection only if you confirm"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

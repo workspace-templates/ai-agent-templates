@@ -1,0 +1,45 @@
+{
+  "slug": "remove-duplication",
+  "title": "Remove Duplication",
+  "kind": "command",
+  "category": "code-quality",
+  "summary": "Finds duplicated logic in one area and merges it only where the copies truly belong together, with tests proving behavior held.",
+  "description": [
+    "Not every repeated block should be merged: two pieces of code can look alike and still change for different reasons. This command finds the copies, compares them line by line and judges whether they share one reason to change.",
+    "Real duplicates are merged into one helper with a clear name. Coincidental ones stay separate, each with the reason noted, so you do not end up with an abstraction nobody can follow."
+  ],
+  "stacks": [],
+  "topics": [
+    "refactoring",
+    "code-review"
+  ],
+  "useWhen": [
+    "One bug fix had to be repeated in three files",
+    "Two services share copy-pasted validation",
+    "You are about to add a fourth variation of the same function",
+    "Review comments keep saying this looks like that other file"
+  ],
+  "body": "Find and remove duplication in: $ARGUMENTS\n\n1. Search the area for repeated logic: similar function bodies, repeated conditionals, parallel switch statements, copied SQL or regexes. Use `jscpd` or a similar detector if installed, then verify by reading.\n2. For each cluster, diff the copies and list what differs. Ask of each pair: if one needs to change tomorrow, must the other change too? If yes, they truly belong together. If not, it is coincidental.\n3. Make sure tests cover each copy before merging. Add missing characterization tests first and run them green.\n4. Merge only real duplicates: extract one function, pass the differences as parameters, name it for what it does. Keep it in the nearest shared module, not a new utils dump.\n5. Never merge across package boundaries or change public signatures without asking.\n\nReport clusters as merged, left alone (with the reason), or needs decision. Run all tests and show the net lines removed.",
+  "argumentHint": "[folder or module]",
+  "example": {
+    "prompt": "/remove-duplication src/api/validators",
+    "result": "3 clusters. Merged: email and phone normalization (4 copies) into normalizeContact(). Left alone: order and refund date checks, same shape but different rules. Needs decision: two pagination helpers in separate packages.\nTests pass, net -96 lines."
+  },
+  "faq": [
+    {
+      "question": "Does it merge anything that looks similar?",
+      "answer": "No. Each cluster is judged on whether the copies change for the same reason, and the rest stay separate."
+    },
+    {
+      "question": "What protects against breaking behavior?",
+      "answer": "It adds tests around each copy before merging and runs the full suite afterward."
+    }
+  ],
+  "access": [
+    "Reads and searches the named area",
+    "Edits source files and adds tests for the merged code"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "monday": {
+      "command": "npx",
+      "args": [
+        "@mondaydotcomorg/monday-api-mcp@latest",
+        "--read-only"
+      ],
+      "env": {
+        "MONDAY_TOKEN": "${env:MONDAY_TOKEN}"
+      }
+    }
+  }
+}

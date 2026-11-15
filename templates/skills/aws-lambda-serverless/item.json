@@ -1,0 +1,46 @@
+{
+  "slug": "aws-lambda-serverless",
+  "title": "AWS Lambda Serverless",
+  "kind": "skill",
+  "category": "devops",
+  "summary": "Builds AWS Lambda functions that handle cold starts, timeouts, memory sizing and retries, with idempotent handlers and clear failure paths.",
+  "description": [
+    "Lambda looks simple until a retry charges a customer twice or a timeout kills a job halfway. This skill has the agent design the function around how Lambda really runs: initialization outside the handler, a timeout shorter than the caller's, and handlers that can safely run twice.",
+    "It also covers the settings that decide cost and speed, such as memory size and package weight, and wires a dead-letter queue so failures are kept for inspection instead of vanishing."
+  ],
+  "stacks": [
+    "aws"
+  ],
+  "topics": [
+    "performance",
+    "logging"
+  ],
+  "useWhen": [
+    "You are writing a new function triggered by SQS, S3, API Gateway or a schedule",
+    "A function times out or is billed far more than expected",
+    "Duplicate events cause duplicate side effects",
+    "Cold starts make an API endpoint feel slow"
+  ],
+  "body": "# AWS Lambda serverless\n\nWrite for the Lambda lifecycle: cold start, warm reuse, retry and timeout.\n\n## Steps\n\n1. Identify the trigger and its retry behavior. Async invokes and SQS retry; API Gateway does not. Decide what a duplicate event does.\n2. Create clients, load config and open connections outside the handler so warm invocations reuse them. Keep imports lean and import only the SDK clients you use.\n3. Make the handler idempotent: derive an idempotency key from the event (message ID, request ID or business key) and record it with a conditional write (`attribute_not_exists`) before the side effect.\n4. Set the timeout below the upstream limit (API Gateway allows 29 seconds) and use `context.getRemainingTimeInMillis()` to stop long loops early. For SQS, set the queue visibility timeout to at least six times the function timeout.\n5. Pick memory by measurement: run the function at 256, 512, 1024 and 2048 MB and choose the cheapest option that meets the latency goal. CPU scales with memory.\n6. Configure failure handling: a dead-letter queue or on-failure destination, `ReportBatchItemFailures` for SQS batches, and a bounded retry count.\n7. Log one structured JSON line per invocation with the request ID, outcome and duration. Never log full payloads with personal data.\n8. Package small: bundle and tree-shake, and move shared code to a layer only if several functions use it.\n\n## Rules\n\n- Never store state in memory between invocations and depend on it.\n- Never use unbounded recursion between Lambdas.\n\n## Report\n\nTrigger and retry model, idempotency key, timeout and memory chosen with the measurements behind them.",
+  "example": {
+    "prompt": "Write a Lambda that processes order messages from SQS",
+    "result": "Handler in src/orders.ts: clients created at module scope, idempotency by messageId with a conditional DynamoDB write, partial batch failure reporting, 30s timeout with a 180s queue visibility timeout, 512 MB (measured: 1024 MB was 11 percent faster at 60 percent higher cost). DLQ after 4 receives."
+  },
+  "faq": [
+    {
+      "question": "Does it deploy the function?",
+      "answer": "No. It writes the code and infrastructure definition and leaves deployment to your own pipeline."
+    },
+    {
+      "question": "Does it cover cold starts for every runtime?",
+      "answer": "It applies the common causes: heavy imports, work done in the handler and oversized packages. Provisioned concurrency is suggested only when measured latency requires it."
+    }
+  ],
+  "access": [
+    "Reads and edits function code and infrastructure files",
+    "Runs your build and test commands; no AWS calls unless you ask"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

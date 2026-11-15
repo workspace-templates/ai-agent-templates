@@ -1,0 +1,53 @@
+{
+  "slug": "linear-mcp",
+  "title": "Linear MCP Server",
+  "kind": "mcp",
+  "category": "productivity",
+  "summary": "Connect your agent to Linear's hosted MCP server to find, read, create and update issues and projects without leaving the terminal.",
+  "description": [
+    "Linear provides an official remote MCP server for its workspace. The agent can look up an issue by key, read the thread, create follow-ups and move work between states.",
+    "Authentication is OAuth, started the first time you connect. Linear also serves a read-only endpoint if you only want the agent to look."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation"
+  ],
+  "useWhen": [
+    "Start work from an issue key and read its full context",
+    "File follow-up issues for the TODOs found in a change",
+    "Summarize what is in the current cycle",
+    "Update an issue status after a pull request merges"
+  ],
+  "mcp": {
+    "name": "linear",
+    "transport": "http",
+    "url": "https://mcp.linear.app/mcp",
+    "env": [],
+    "headers": [],
+    "source": "https://linear.app/docs/mcp",
+    "access": [
+      "Reads and writes issues, projects and comments you can access in Linear",
+      "Authenticates with OAuth"
+    ]
+  },
+  "example": {
+    "prompt": "Read ENG-482 and tell me what is left to do.",
+    "result": "ENG-482 \"Export invoices as CSV\": the endpoint exists, the date filter and the download button are missing. Two comments ask for UTF-8 with a BOM."
+  },
+  "faq": [
+    {
+      "question": "Can I make it read-only?",
+      "answer": "Yes. Use https://mcp.linear.app/mcp/readonly as the URL, which exposes only read tools."
+    },
+    {
+      "question": "How do I sign in?",
+      "answer": "The first connection starts an OAuth flow. In Claude Code, run /mcp and pick Linear."
+    }
+  ],
+  "access": [
+    "Reads and can change Linear issues you can access"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

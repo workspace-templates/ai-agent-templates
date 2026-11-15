@@ -1,0 +1,23 @@
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "monday_token",
+      "description": "Your monday.com personal API token",
+      "password": true
+    }
+  ],
+  "servers": {
+    "monday": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "@mondaydotcomorg/monday-api-mcp@latest",
+        "--read-only"
+      ],
+      "env": {
+        "MONDAY_TOKEN": "${input:monday_token}"
+      }
+    }
+  }
+}

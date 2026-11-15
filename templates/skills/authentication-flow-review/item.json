@@ -1,0 +1,44 @@
+{
+  "slug": "authentication-flow-review",
+  "title": "Authentication Flow Review",
+  "kind": "skill",
+  "category": "security",
+  "summary": "Reviews login, session handling, password reset and MFA code for bypasses and weak defaults, reporting each flaw with its exact attack path.",
+  "description": [
+    "Authentication code fails in the corners: the reset link that never expires, the session that survives a password change, the MFA step that can be skipped by calling the next URL. This skill reads those corners on purpose.",
+    "It follows each flow as an attacker would, step by step, and reports only the breaks it can describe. The result is a ranked list you can fix in order, with the reasoning shown."
+  ],
+  "stacks": [],
+  "topics": [
+    "security",
+    "code-review"
+  ],
+  "useWhen": [
+    "You wrote or changed login, signup or reset code",
+    "Before adding MFA or single sign-on to an existing app",
+    "After a credential stuffing attempt or account takeover report",
+    "When you replace a hand-rolled session with a library"
+  ],
+  "body": "# Authentication flow review\n\nWalk each flow like an attacker. Report a flaw only when you can state the steps that exploit it.\n\n## Steps\n\n1. Find the flows: signup, login, logout, session or token refresh, password reset, email change, MFA enrollment and challenge, \"remember me\", OAuth callbacks.\n2. Login: look for user enumeration (different messages or timing for unknown email versus wrong password), no rate limit or lockout, passwords compared with `==` instead of a constant-time check, and hashing that is not bcrypt, scrypt or argon2 with a cost factor.\n3. Sessions: is the id regenerated after login, to stop fixation? Cookies `HttpOnly`, `Secure`, `SameSite`? Is there an idle and absolute timeout? Does logout destroy the session on the server, and does a password change end the other sessions?\n4. Reset: tokens random, at least 128 bits, single use, stored hashed, expiring in under an hour. The link must not leak through a Referer header. The response must be the same whether the account exists or not.\n5. MFA: can the second step be skipped by requesting an authenticated URL directly? Are codes rate limited and single use? Are recovery codes hashed?\n6. Check that every authenticated route really enforces the check, not just the front end.\n\n## Rules\n\n- Do not test against a live system or real accounts.\n- Prefer the framework's maintained auth over custom code, and say so when custom code is the problem.\n\n## Report\n\nRanked findings: flow, `path:line`, attack steps, impact, fix. Then a list of flows that passed.",
+  "example": {
+    "prompt": "Review our login and password reset before the mobile launch.",
+    "result": "High: src/auth/reset.ts:27 reset tokens are 6 digits and never expire, so an attacker can brute-force them. Fix: 32 random bytes, hashed in the table, 30 minute expiry. High: session id is not regenerated at login (login.ts:51), enabling fixation. Medium: login returns \"no such user\" for unknown emails. Passed: password hashing (argon2id), cookie flags."
+  },
+  "faq": [
+    {
+      "question": "Can it review OAuth or SSO flows?",
+      "answer": "Yes. It checks state and nonce handling, redirect URI matching and how the provider identity is mapped to a local account."
+    },
+    {
+      "question": "Will it log in to my app to test?",
+      "answer": "No. It works from the code only, so nothing touches real accounts or live traffic."
+    }
+  ],
+  "access": [
+    "Reads source files and configuration in your project",
+    "Does not run the app or contact any server"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

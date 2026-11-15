@@ -1,0 +1,25 @@
+# Project rules: Axum
+
+## Structure
+- `main.rs` builds config, the pool and the `Router`; each feature module exposes `pub fn router() -> Router<AppState>` and the app merges or nests them.
+- `AppState` is a cloneable struct holding the `PgPool`, config and clients, passed with `.with_state`. Extract it with `State<AppState>`. No `static mut` or lazy globals for dependencies.
+
+## Handlers
+- Take typed extractors (`Path`, `Query`, `Json<T>`) with `serde` structs and a validator crate for constraints. Order matters: the body extractor goes last.
+- Return `Result<Json<T>, AppError>`.
+
+## Errors
+- Define one `AppError` enum with `thiserror` and implement `IntoResponse` mapping each variant to a status and JSON body. Log internal details with `tracing`; return a generic message for 500s.
+- Never `unwrap` or `expect` on request-driven paths. Use `?`.
+
+## Middleware
+- Apply tower-http layers (`TraceLayer`, `TimeoutLayer`, `CorsLayer`, compression) with `ServiceBuilder`. Put auth in a layer or an extractor.
+
+## Data
+- Use `sqlx::query_as!` with offline metadata (`cargo sqlx prepare`) and migrations in `migrations/`. Use transactions for multi-statement changes. Never hold a lock across an `.await`.
+
+## Tests
+- Call the router with `tower::ServiceExt::oneshot`. Use `#[sqlx::test]` for database tests.
+
+## Before finishing
+Run `cargo fmt --check`, `cargo clippy -- -D warnings` and `cargo test`.

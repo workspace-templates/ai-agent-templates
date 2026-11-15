@@ -1,0 +1,44 @@
+{
+  "slug": "sql-analytics-queries",
+  "title": "SQL Analytics Queries",
+  "kind": "skill",
+  "category": "data",
+  "summary": "Writes readable CTE-based SQL for funnels, cohorts and retention, with the grain stated up front. Use it for product and revenue analytics questions.",
+  "description": [
+    "Analytics queries go wrong quietly: a join that multiplies rows, a funnel that counts users twice, a cohort off by one week. This skill writes each query as a chain of named steps, states the grain of every step, and checks totals against a simple count.",
+    "You get SQL a colleague can read top to bottom, plus a note on the assumptions behind it so the number can be defended."
+  ],
+  "stacks": [],
+  "topics": [
+    "sql"
+  ],
+  "useWhen": [
+    "You need a signup to purchase funnel from raw event tables",
+    "Leadership asks for weekly retention by signup cohort",
+    "A dashboard query is one hundred lines of nested subqueries nobody dares touch",
+    "Two reports give different user counts and you need to find out why"
+  ],
+  "body": "# SQL analytics queries\n\nWrite the query as a story of small named steps. Know the grain of every step.\n\n## Steps\n\n1. Restate the question as a metric: numerator, denominator, time window, and the unit counted (users, orders, sessions). Ask if any is unclear.\n2. Inspect the tables first: columns, keys, and a few rows. Confirm the grain of each (one row per what?) and the time zone of timestamps.\n3. Build with CTEs, one idea each, named for what they hold: `signups`, `first_purchase`, `weekly_activity`. Put filters in the earliest CTE possible.\n4. Funnels: take each user's first event per step with `MIN(event_time)`, join steps on user and require time order. Count distinct users, never events.\n5. Cohorts and retention: cohort = `DATE_TRUNC` of first activity; offset = periods between activity and cohort; divide by the cohort size, not by total users.\n6. Use window functions (`ROW_NUMBER`, `LAG`, `SUM() OVER`) instead of self-joins where possible.\n7. Check: the first funnel step equals a plain `COUNT(DISTINCT user_id)`; every step is less than or equal to the one before; cohort sizes add up to the total.\n\n## Rules\n\n- Never join two tables at different grains without aggregating one first.\n- Write `LEFT JOIN` when losing rows would bias the metric, and say why.\n- Match the dialect already used in the project.\n\n## Report\n\nThe query, a two line explanation of each CTE, the sanity checks and their results, and every assumption such as \"excluded internal accounts\".",
+  "example": {
+    "prompt": "Weekly retention for users who signed up in September, last 8 weeks.",
+    "result": "Query in analytics/retention_sept.sql using 4 CTEs: signups, activity, offsets, cohort_sizes. Week 0 is 100% by construction; week 1 is 38.2%, week 4 is 21.7%, week 8 is 14.9%. Check: cohort size 9,402 equals COUNT(DISTINCT user_id) on signups. Assumption: any login counts as active; test accounts excluded by the is_internal flag."
+  },
+  "faq": [
+    {
+      "question": "Which SQL dialect does it write?",
+      "answer": "The one your project already uses. It reads existing queries and migrations for hints, and asks if there is nothing to go on."
+    },
+    {
+      "question": "Does it run queries against my database?",
+      "answer": "Only if you have given the agent a command line client and a connection. It prefers read-only queries and shows the SQL before running anything expensive."
+    }
+  ],
+  "access": [
+    "Reads existing SQL files and schema definitions",
+    "Writes new query files",
+    "Can run read-only queries if a database client is available"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

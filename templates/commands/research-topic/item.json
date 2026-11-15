@@ -1,0 +1,45 @@
+{
+  "slug": "research-topic",
+  "title": "Research Topic",
+  "kind": "command",
+  "category": "productivity",
+  "summary": "Researches a technical question and returns a short sourced brief with options compared and one clear recommendation.",
+  "description": [
+    "Choosing a library or approach from memory is risky, because versions and advice go stale. This command checks the official docs, release notes and your own repository, then compares the realistic options.",
+    "Every claim in the brief points to a source, and the final recommendation says what would change the answer."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation",
+    "api-design"
+  ],
+  "useWhen": [
+    "You must pick between two libraries or services",
+    "A new framework feature might replace homegrown code",
+    "You need to know if a dependency is still maintained",
+    "A teammate asks for a recommendation with evidence"
+  ],
+  "body": "Research this question and give a brief: $ARGUMENTS\n\n1. Restate the question and the constraints you can see in this repository: language, runtime, hosting, existing dependencies, license rules. Ask one clarifying question only if the answer would change the result.\n2. Find two to four candidates. Use official documentation, release notes and the project's repository first; check last release date, open issue trends and license. Search the codebase for existing solutions before proposing a new dependency.\n3. Compare on what matters here: fit, effort to adopt, operating cost, lock-in, maturity, security record.\n4. Prefer facts you can cite. Mark anything uncertain as such. Never invent version numbers or benchmark results.\n\nFormat, under 400 words:\n**Recommendation** (one sentence), **Options** (table with pros, cons, source link each), **Why this one**, **Risks**, **What would change my mind**, **Sources** (URLs with the date accessed).\n\nDo not install packages or edit files. Offer a small proof of concept as a next step and ask whether to start it.",
+  "argumentHint": "<question, e.g. \"queue library for Node with retries\">",
+  "example": {
+    "prompt": "/research-topic background job library for a Python FastAPI service",
+    "result": "Recommendation: Arq, because the app already runs Redis and needs only retries and cron. Options: Celery (heavy), RQ (no async), Arq. Would change if jobs need complex workflows. Sources: three official docs links. Build a proof of concept?"
+  },
+  "faq": [
+    {
+      "question": "Does it install what it recommends?",
+      "answer": "No. It only reads and reports, and offers a proof of concept as a separate step."
+    },
+    {
+      "question": "How does it avoid outdated advice?",
+      "answer": "It prefers current official docs and release pages, and dates every source it cites."
+    }
+  ],
+  "access": [
+    "Reads the repository and public web pages",
+    "Makes no changes"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

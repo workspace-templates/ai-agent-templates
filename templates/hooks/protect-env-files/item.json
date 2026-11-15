@@ -1,0 +1,48 @@
+{
+  "slug": "protect-env-files",
+  "title": "Protect Env Files",
+  "kind": "hook",
+  "category": "security",
+  "summary": "A Claude Code hook that blocks the agent from reading or writing .env files and private keys such as .pem and id_rsa, while allowing .env.example.",
+  "description": [
+    "Environment files and private keys hold the secrets that matter most, and an agent that reads them can echo them into logs, chats or commits. This hook checks the path of every Read, Edit and Write call.",
+    "It blocks .env and .env.* files, .pem, .key, .p12 and .pfx files, and SSH keys such as id_rsa and id_ed25519. Template files ending in .example, .sample or .template stay open."
+  ],
+  "stacks": [],
+  "topics": [
+    "security"
+  ],
+  "useWhen": [
+    "Keep production credentials out of the model context",
+    "Share a repository with an agent safely",
+    "Stop accidental edits to deployment keys",
+    "Enforce a no-secrets policy for a team"
+  ],
+  "hook": {
+    "event": "PreToolUse",
+    "matcher": "Edit|Write|Read",
+    "command": "node -e \"let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{let j={};try{j=JSON.parse(d)}catch(e){process.exit(0)}const i=j.tool_input||{};const f=String(i.file_path||'').split(String.fromCharCode(92)).join('/');const b=f.split('/').pop();const ok=/[.](example|sample|template|dist)$/i.test(b);const bad=(/^[.]env([.].*)?$/i.test(b)&&!ok)||/[.](pem|key|p12|pfx)$/i.test(b)||/^id_(rsa|dsa|ecdsa|ed25519)$/.test(b);if(bad){console.error('Blocked: '+b+' holds secrets. Ask the user for the value you need, or use a .env.example file.');process.exit(2)}})\"",
+    "timeout": 10
+  },
+  "example": {
+    "prompt": "Read .env and tell me which database URL the app uses.",
+    "result": "Read blocked: .env holds secrets. The agent asks you for the variable name or checks .env.example instead."
+  },
+  "faq": [
+    {
+      "question": "Does it block cat .env in the shell?",
+      "answer": "No. The matcher covers the file tools only. Add a Bash rule to your permissions if you need that too."
+    },
+    {
+      "question": "Can it read .env.example?",
+      "answer": "Yes. Files ending in example, sample, template or dist are allowed."
+    }
+  ],
+  "access": [
+    "Reads the file path of each tool call",
+    "Blocks matching paths; reads no file content"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

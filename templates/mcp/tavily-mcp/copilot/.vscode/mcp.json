@@ -1,0 +1,23 @@
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "tavily_api_key",
+      "description": "Your Tavily API key",
+      "password": true
+    }
+  ],
+  "servers": {
+    "tavily": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "tavily-mcp@latest"
+      ],
+      "env": {
+        "TAVILY_API_KEY": "${input:tavily_api_key}"
+      }
+    }
+  }
+}

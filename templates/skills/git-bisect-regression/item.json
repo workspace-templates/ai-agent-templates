@@ -1,0 +1,44 @@
+{
+  "slug": "git-bisect-regression",
+  "title": "Git Bisect Regression",
+  "kind": "skill",
+  "category": "git",
+  "summary": "Finds the exact commit that introduced a regression by running git bisect with an automated test, then explains what that commit changed.",
+  "description": [
+    "When something worked last month and fails today, reading code is slow and guessing is slower. Bisect finds the culprit in about log2 of the number of commits, as long as the check is automatic and honest.",
+    "This skill builds that check first, proves it on both ends of the range, runs the search unattended and always returns the repository to where you started."
+  ],
+  "stacks": [],
+  "topics": [
+    "debugging",
+    "git"
+  ],
+  "useWhen": [
+    "A test or behavior worked in an older release and fails now",
+    "The range between a good tag and HEAD has dozens of commits",
+    "You can reproduce the bug but do not know which change caused it",
+    "A teammate says \"it was fine last week\""
+  ],
+  "body": "# Git bisect regression\n\nFind the first bad commit with a script, not by eye.\n\n## Steps\n\n1. Pin down the failure and the range. Ask for a known good commit or tag if the user has not named one; if they have none, probe older tags until the check passes.\n2. Write the check as a command that exits 0 when the code is good, 1 when bad, and 125 when the commit cannot be tested (does not build, missing dependency). Prefer an existing failing test: `npm test -- -t \"name\"`, `pytest path::test`, `go test -run Name`. Otherwise a small script in a temp file outside the repository.\n3. Validate the check before starting: it must fail on the bad commit and pass on the good one. A check that is flaky gives a wrong answer, so run it three times on each end.\n4. Make sure the working tree is clean (`git status`) and note the current branch.\n5. Run: `git bisect start <bad> <good>`, then `git bisect run ./check.sh`. Include dependency install or build inside the script when the commits change them.\n6. Read the result with `git show <sha>` and the message. Check the diff really explains the failure; if the culprit is a merge commit or a huge squash, bisect again inside it with `--first-parent` off.\n7. Always finish with `git bisect reset` so the repository returns to the starting branch.\n\n## Rules\n\n- Never fix the bug inside the bisect session.\n- Do not edit tracked files while bisecting.\n\n## Report\n\nCulprit commit, author, date, the lines that matter, the number of steps taken and the check command, so the user can rerun it.",
+  "example": {
+    "prompt": "The export test passes on v4.2.0 and fails on main. Find out when it broke.",
+    "result": "Bisected 87 commits in 7 steps with `npm test -- -t export`. First bad commit: 9d3f1c2 \"Switch CSV writer to streaming\" changed the line ending from CRLF to LF in src/export/csv.ts:41. Repository reset to main. Rerun with `git bisect run` and the same command to confirm."
+  },
+  "faq": [
+    {
+      "question": "What if some commits do not build?",
+      "answer": "The check returns 125 for those, and bisect skips them. If many are skipped, the answer may be a small range instead of one commit, and the report says so."
+    },
+    {
+      "question": "Does it change my branch?",
+      "answer": "It moves HEAD while searching and always runs bisect reset at the end, so you land back on your original branch."
+    }
+  ],
+  "access": [
+    "Runs git bisect, show and status on the local repository",
+    "Executes your test or build command repeatedly while searching"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

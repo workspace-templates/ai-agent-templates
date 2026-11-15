@@ -1,0 +1,43 @@
+{
+  "slug": "property-based-testing",
+  "title": "Property Based Testing",
+  "kind": "skill",
+  "category": "testing",
+  "summary": "Writes property-based tests with generators, invariants and shrinking for parsers, serializers and pure logic where example tests miss edge cases.",
+  "description": [
+    "Example tests check the inputs you thought of. Property tests check a rule across thousands of generated inputs and hand back the smallest input that breaks it. This skill teaches the agent to find the rule first, then pick a library and write the generator.",
+    "It focuses on properties that pay off: round trips, idempotence, ordering and conservation laws, plus comparison against a slow but obviously correct model."
+  ],
+  "stacks": [],
+  "topics": [
+    "testing"
+  ],
+  "useWhen": [
+    "You wrote a parser, encoder or serializer",
+    "A function has too many edge cases to list by hand",
+    "A bug came from an input nobody thought to test",
+    "You are replacing an algorithm with a faster one and need proof it agrees"
+  ],
+  "body": "# Property based testing\n\nFind a rule that must always hold, then let a generator attack it.\n\n## Steps\n\n1. Pick the library already in the project, or the standard one for the language (fast-check, Hypothesis, jqwik, gopter or rapid, proptest). Do not add a second.\n2. Write the property in one plain sentence before any code. Good shapes:\n   - round trip: `decode(encode(x)) == x`\n   - idempotence: `normalize(normalize(x)) == normalize(x)`\n   - invariant: output length, sum or sort order is preserved\n   - oracle: the fast version equals a naive, obviously correct version\n   - no crash: arbitrary input returns a value or a documented error, never an unhandled exception\n3. Build generators for the domain, not raw strings: valid records, boundary numbers (0, -1, max, NaN), unicode, empty and huge collections. Constrain with filters sparingly, since heavy filtering wastes runs.\n4. Run at least 200 cases locally and more in CI. Keep the seed printed on failure.\n5. When a property fails, use the shrunk counterexample: decide whether the code or the property is wrong, fix it, and keep the counterexample as a plain example test.\n\n## Rules\n\n- A property must not recompute the implementation. That proves nothing.\n- Never swallow the library's seed or disable shrinking.\n- Keep each property to one rule.\n\n## Report\n\nThe properties added, the generators, any bug found with its shrunk input, and the run count used.",
+  "example": {
+    "prompt": "Add property tests for parseDuration() in src/time.ts",
+    "result": "Added 3 properties with fast-check: format(parse(s)) round-trips for valid input, parse never throws on arbitrary strings, and parse(\"90m\") equals parse(\"1h30m\"). Found a bug: parse(\"0.5h\") returned 0. Shrunk input: \"0.5h\". Fixed in parseFloat handling and kept it as a named example test."
+  },
+  "faq": [
+    {
+      "question": "How is this different from fuzzing?",
+      "answer": "Fuzzing hunts for crashes with random bytes. Property tests state a rule about correct output and shrink failures to a readable minimal case, so they fit business logic too."
+    },
+    {
+      "question": "Will it make my test suite slow?",
+      "answer": "Each property runs a few hundred cases in well under a second for pure code. The agent lowers the count for anything touching I/O."
+    }
+  ],
+  "access": [
+    "Reads source files",
+    "Adds test files and may add a dev dependency if none is present, after asking"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

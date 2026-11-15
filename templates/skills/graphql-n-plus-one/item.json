@@ -1,0 +1,47 @@
+{
+  "slug": "graphql-n-plus-one",
+  "title": "GraphQL N+1",
+  "kind": "skill",
+  "category": "backend",
+  "summary": "Finds resolvers that fire one query per parent object and fixes them with request-scoped dataloaders, batching and proof from query counts.",
+  "description": [
+    "A list of 50 orders with a customer on each one can quietly become 51 database queries. It passes review because every resolver looks fine on its own. This skill makes the agent measure first, using query logs, then fix only what it can show.",
+    "The usual fix is a dataloader created per request, keyed correctly and returning results in the order the keys came in. The agent adds a test that asserts the number of queries so the regression cannot return unseen."
+  ],
+  "stacks": [
+    "graphql"
+  ],
+  "topics": [
+    "performance",
+    "debugging"
+  ],
+  "useWhen": [
+    "A GraphQL query is slow when the list gets long",
+    "Database logs show the same query repeated with different ids",
+    "You are adding a nested field to a type that is returned in lists",
+    "Response time grew after a schema change"
+  ],
+  "body": "# GraphQL N+1\n\nCount queries before and after. No count, no fix.\n\n## Steps\n\n1. Reproduce with one realistic query that returns a list with nested fields. Enable query logging (ORM debug flag, `pg_stat_statements` or a logging data source) and count statements for that single request. Record the number.\n2. Find the pattern: a resolver on a child type that runs a lookup by the parent's id, for example `Order.customer` calling `db.customer.findById(order.customerId)`.\n3. Add a dataloader per resolver family. Create loaders in the per-request context, never at module level, so one user's cache and permissions never leak to another.\n4. The batch function receives an array of keys and must return an array of the same length and order. Fetch with one `WHERE id IN (...)` query, then map back by key and return `null` or an error for the missing ones.\n5. For one-to-many fields, load by foreign key and group the rows into an array per key.\n6. Where a query can join cheaply (the parent query already knows the children are always wanted), prefer a join or a lookahead on the selected fields over a loader.\n7. Add a test that runs the query against a fixture of 20 parents and asserts the statement count (for example 3, not 41).\n\n## Rules\n\n- Never share a loader between requests.\n- Never rely on the batch result order from the database; reorder it.\n- Do not add loaders for fields that are not in a list; it adds code with no gain.\n\n## Report\n\nQuery count before and after, resolvers changed, loaders added and the test that guards them.",
+  "example": {
+    "prompt": "The orders query takes 2 seconds when it returns 100 orders. Find the N+1.",
+    "result": "Request issued 304 queries. Causes: Order.customer, Order.items and Item.product each queried per parent. Added three per-request loaders in src/graphql/loaders.ts, with the batch results reordered by key. Count is now 4 and the query takes 140 ms. Added a test asserting 4 statements for 100 orders."
+  },
+  "faq": [
+    {
+      "question": "Why create loaders per request?",
+      "answer": "The loader caches by key. A shared one would serve one user data loaded for another, which is both stale and a permissions leak."
+    },
+    {
+      "question": "Does this work with Prisma or SQLAlchemy?",
+      "answer": "Yes. The batching idea is the same; the skill uses whichever query API your project already has."
+    }
+  ],
+  "access": [
+    "Reads resolvers and data access code",
+    "Runs your tests and may turn on query logging locally",
+    "Edits resolvers and adds loaders when approved"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

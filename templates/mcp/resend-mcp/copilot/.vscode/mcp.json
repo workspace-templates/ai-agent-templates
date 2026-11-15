@@ -1,0 +1,37 @@
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "resend_api_key",
+      "description": "Your Resend API key. A key limited to sending access is enough for test sends.",
+      "password": true
+    },
+    {
+      "type": "promptString",
+      "id": "sender_email_address",
+      "description": "Optional default From address on a verified domain.",
+      "password": true
+    },
+    {
+      "type": "promptString",
+      "id": "mcp_allowed_file_dirs",
+      "description": "Optional folders the server may read attachments from. Set it to keep file access narrow.",
+      "password": true
+    }
+  ],
+  "servers": {
+    "resend": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "resend-mcp"
+      ],
+      "env": {
+        "RESEND_API_KEY": "${input:resend_api_key}",
+        "SENDER_EMAIL_ADDRESS": "${input:sender_email_address}",
+        "MCP_ALLOWED_FILE_DIRS": "${input:mcp_allowed_file_dirs}"
+      }
+    }
+  }
+}

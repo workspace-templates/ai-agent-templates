@@ -1,0 +1,43 @@
+{
+  "slug": "core-web-vitals-optimization",
+  "title": "Core Web Vitals Optimization",
+  "kind": "skill",
+  "category": "frontend",
+  "summary": "Improves LCP, INP and CLS with measured fixes to images, fonts, scripts and layout, and reports before and after numbers for each change.",
+  "description": [
+    "Performance advice without measurements is guesswork, and agents are happy to preload everything and lazy-load the hero image. This skill starts from a real Lighthouse or field number, finds the single element or task behind it, and fixes that.",
+    "Each change is re-measured. A fix that does not move the metric is reverted rather than left in as clutter."
+  ],
+  "stacks": [],
+  "topics": [
+    "performance"
+  ],
+  "useWhen": [
+    "Search Console flags pages as poor or needs improvement",
+    "The hero image appears late on a slow connection",
+    "Clicks and taps feel laggy on a busy page",
+    "Content jumps while the page loads"
+  ],
+  "body": "# Core Web Vitals optimization\n\nMeasure, fix one thing, measure again. Targets at the 75th percentile: LCP under 2.5 s, INP under 200 ms, CLS under 0.1.\n\n## Steps\n\n1. Baseline. Run `npx lighthouse <url> --only-categories=performance --preset=desktop --output=json` (and mobile) three times and take the median. Note the LCP element, the longest tasks, and the layout shifts with their sources. Use field data if the user has it; lab numbers alone can mislead.\n2. LCP. Identify the element. If it is an image: serve a correctly sized AVIF or WebP, add `fetchpriority=\"high\"`, never `loading=\"lazy\"`, and preload it only when it is not in the initial HTML. If it is text: fix the font (below) and render-blocking CSS. Cut server time to first byte before touching anything else if it exceeds 600 ms.\n3. Fonts. Self-host, subset, `font-display: swap` or `optional`, preload only the one or two files used above the fold, and match fallback metrics with `size-adjust` to avoid shifts.\n4. CLS. Give every image, video and embed `width` and `height` or `aspect-ratio`. Reserve space for ads and banners. Animate `transform` and `opacity`, not layout properties. Never insert content above existing content after load.\n5. INP. Find the slow interaction in the performance profile. Break up tasks over 50 ms (`scheduler.yield()` or `setTimeout`), debounce expensive handlers, and defer third-party scripts with `async` or `defer`, or load them after interaction.\n6. Re-measure after each change. Revert any change that did not improve its metric.\n\n## Report\n\nA table of metric, before, after and the change that caused it. List third-party scripts by cost and recommend which to remove.",
+  "example": {
+    "prompt": "Product pages have LCP of 4.1 seconds on mobile, fix it",
+    "result": "LCP element was the gallery image, lazy-loaded at 2400 px wide. Changed to `fetchpriority=\"high\"` with a 800 px AVIF srcset and removed `loading=\"lazy\"`: LCP 4.1 s to 2.3 s. Preloaded one font file and added size-adjust: CLS 0.14 to 0.02. A chat widget costs 380 ms of main-thread time; recommend loading it on first click."
+  },
+  "faq": [
+    {
+      "question": "Does it need a live URL?",
+      "answer": "It works best against a running build, local or deployed. Without one it reviews the code and marks every suggestion as unmeasured."
+    },
+    {
+      "question": "Why does it revert fixes that do not help?",
+      "answer": "Each speculative tweak adds complexity to maintain. Only changes with a measured gain stay in your code."
+    }
+  ],
+  "access": [
+    "Reads templates, styles and build config",
+    "Runs Lighthouse and your build; edits images, CSS and HTML head tags"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

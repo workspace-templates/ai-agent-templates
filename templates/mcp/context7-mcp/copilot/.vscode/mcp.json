@@ -1,0 +1,19 @@
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "context7_api_key",
+      "description": "Optional Context7 API key from the Context7 dashboard, for higher rate limits",
+      "password": true
+    }
+  ],
+  "servers": {
+    "context7": {
+      "type": "http",
+      "url": "https://mcp.context7.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${input:context7_api_key}"
+      }
+    }
+  }
+}

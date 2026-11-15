@@ -1,0 +1,8 @@
+[mcp_servers.resend]
+command = "npx"
+args = ["-y","resend-mcp"]
+
+[mcp_servers.resend.env]
+RESEND_API_KEY = "${RESEND_API_KEY}"
+SENDER_EMAIL_ADDRESS = "${SENDER_EMAIL_ADDRESS}"
+MCP_ALLOWED_FILE_DIRS = "${MCP_ALLOWED_FILE_DIRS}"

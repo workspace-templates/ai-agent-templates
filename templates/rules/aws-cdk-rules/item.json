@@ -1,0 +1,46 @@
+{
+  "slug": "aws-cdk-rules",
+  "title": "AWS CDK Rules",
+  "kind": "rules",
+  "category": "devops",
+  "summary": "Project rules for AWS CDK in TypeScript: construct layers, stable naming, removal policies, assertion tests and a mandatory cdk diff review.",
+  "description": [
+    "This file tells an agent how to organize an AWS CDK app written in TypeScript. It separates reusable constructs from stacks and keeps environment choices out of the construct code.",
+    "It also treats infrastructure changes with care: stateful resources are protected, tests assert on the synthesized template, and every deploy starts with a reviewed diff."
+  ],
+  "stacks": [
+    "aws",
+    "typescript"
+  ],
+  "topics": [
+    "ci",
+    "security"
+  ],
+  "useWhen": [
+    "You start a new CDK app with an agent",
+    "A change risks replacing a database or bucket",
+    "Stacks hard-code account IDs and regions",
+    "You want tests for infrastructure code"
+  ],
+  "body": "# Project rules: AWS CDK (TypeScript)\n\n## Layout\n- `bin/` holds the app entry, `lib/constructs/` reusable constructs, `lib/stacks/` deployable stacks, `test/` the tests. Keep stacks thin and put logic in constructs.\n- Prefer L2 constructs. Drop to L1 (`Cfn*`) or escape hatches only with a comment saying what the L2 lacks.\n- Pass environment as props (account, region, stage) from the app file. Never read `process.env` inside a construct and never hard-code account IDs.\n\n## Naming and state\n- Do not set physical names (`bucketName`, `tableName`) unless a cross-stack contract demands it; a fixed name blocks replacement.\n- Set `removalPolicy: RETAIN` on databases, buckets and key stores in production, and enable point-in-time recovery or versioning.\n- Split stateful and stateless resources into separate stacks so a code change cannot replace data.\n- Tag every stack with `owner` and `stage`.\n\n## Security\n- Grant access with `grantRead`, `grantWrite` and similar methods. Write a raw IAM statement only when no grant exists, and never use `*` for both actions and resources.\n- Keep secrets in Secrets Manager or SSM; reference them, do not inline values.\n\n## Tests and delivery\n- Use `Template.fromStack` with `hasResourceProperties` for key assertions, and snapshot tests sparingly.\n- Run `npx tsc --noEmit`, `npm test`, `npx cdk synth` and `npx cdk diff` before finishing. Report any resource marked for replacement or deletion and wait for approval.",
+  "example": {
+    "prompt": "Add a queue and a worker Lambda that reads from it",
+    "result": "The agent adds a QueueWorker construct, grants consume access with grantConsumeMessages, adds a dead-letter queue, writes a Template assertion test and shows the cdk diff with no replacements."
+  },
+  "faq": [
+    {
+      "question": "Why avoid fixed resource names?",
+      "answer": "CloudFormation cannot replace a resource whose name is fixed, so an update that needs a new resource fails. Generated names avoid that trap."
+    },
+    {
+      "question": "Can I use it with Python CDK?",
+      "answer": "The principles carry over, but the layout and test commands here are for TypeScript. Adjust the commands if you use another language."
+    }
+  ],
+  "access": [
+    "Guidance only; the agent runs cdk synth and diff locally if you allow it, and never deploys by itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,25 @@
+---
+description: "Project rules for Kubernetes manifests: standard labels, resource requests, probes, restricted security contexts, config handling and safe rollouts."
+alwaysApply: true
+---
+
+# Project rules: Kubernetes
+
+## Metadata
+- Put every object in an explicit namespace and give it the `app.kubernetes.io/name`, `instance`, `version` and `part-of` labels. Selectors use only stable labels, never the version.
+- Pin images to a version or digest, never `latest`. Set `imagePullPolicy` on purpose.
+
+## Resources and probes
+- Set CPU and memory `requests` on every container, and a memory `limit` equal to or above the request. Be careful with CPU limits that throttle.
+- Define `readinessProbe` for traffic, `livenessProbe` only for real deadlocks, and `startupProbe` for slow starts. Handle `SIGTERM` and set a `terminationGracePeriodSeconds` that fits.
+
+## Security
+- Set `runAsNonRoot: true`, `allowPrivilegeEscalation: false`, `readOnlyRootFilesystem: true`, drop all capabilities and use the `RuntimeDefault` seccomp profile. Do not use `hostNetwork` or privileged mode.
+- Give each workload its own ServiceAccount with minimal RBAC, and add a NetworkPolicy.
+
+## Config and rollout
+- Use ConfigMaps for settings and Secrets, or an external secrets operator, for credentials. Never put secrets in manifests in git.
+- Run at least two replicas for services, with a PodDisruptionBudget and topology spread. Use `RollingUpdate` with `maxUnavailable: 0` for critical services. Add an HPA when load varies.
+
+## Validate
+- Run `kubectl apply --dry-run=server`, `kubeconform` and `kube-linter lint` (or Polaris) and review the `kubectl diff`.

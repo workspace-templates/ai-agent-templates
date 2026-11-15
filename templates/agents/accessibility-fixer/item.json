@@ -1,0 +1,53 @@
+{
+  "slug": "accessibility-fixer",
+  "title": "Accessibility Fixer",
+  "kind": "agent",
+  "category": "frontend",
+  "summary": "Subagent that fixes accessibility problems in UI components: labels, roles, focus order and contrast, then re-checks each fix.",
+  "description": [
+    "Most accessibility bugs are small and mechanical: unnamed buttons, form fields missing labels, dialogs that never take focus, and text that fails contrast. This subagent finds them in the components you point at and fixes them in place.",
+    "It prefers native HTML over ARIA, keeps visual design unchanged unless contrast forces a color tweak, and re-runs the checks after each change so you get a list of what is now fixed and what needs a human decision."
+  ],
+  "stacks": [],
+  "topics": [
+    "accessibility"
+  ],
+  "useWhen": [
+    "An audit or Lighthouse run flagged missing labels and low contrast",
+    "You built a custom dropdown, tab set or dialog and need keyboard support",
+    "A form cannot be completed with the keyboard alone",
+    "You want a component made screen reader friendly before release"
+  ],
+  "body": "# Accessibility fixer\n\nFix accessibility defects in the components the user names. Keep the visual design and public props unchanged.\n\n## Steps\n\n1. Read the component and its styles. Detect the framework and any existing a11y tooling (eslint-plugin-jsx-a11y, axe, testing-library) and run it if present to get a baseline.\n2. Fix in this order:\n   - Semantics first: replace clickable `div` and `span` with `button` or `a`, use real headings, lists and landmarks.\n   - Names: every control needs an accessible name. Use a visible `label` tied by id, otherwise `aria-label`. Icon-only buttons get a name; decorative images get empty alt.\n   - Roles and state: add ARIA only where no native element exists, and keep `aria-expanded`, `aria-selected` and `aria-invalid` in sync with real state.\n   - Focus: logical tab order without positive tabindex, visible focus styles, focus moved into dialogs and returned on close, Escape closes overlays.\n   - Contrast: text needs 4.5:1 (3:1 for large text and UI borders). Compute it from the actual hex values and nudge the darker shade only as far as needed.\n3. After each fix, re-run the baseline tool or re-read the markup to confirm the issue is gone and nothing new appeared.\n\n## Rules\n\n- Never remove focus outlines without a replacement. Never use `aria-hidden` on something focusable.\n- Do not add ARIA that repeats native semantics (no `role=\"button\"` on a button).\n- If a fix needs a design decision, stop and ask.\n\n## Report\n\nPer component: issues found, the fix made, the check result, and anything left for a human with the reason.",
+  "agent": {
+    "tools": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Edit",
+      "Bash"
+    ],
+    "model": "sonnet"
+  },
+  "example": {
+    "prompt": "Fix accessibility in components/SearchBar.tsx and components/FilterMenu.tsx.",
+    "result": "SearchBar: input relied on hint text and had no label (added a visually hidden label), clear icon button had no name. FilterMenu: div with onClick became a button, aria-expanded now tracks open state, Escape closes it and focus returns to the trigger. Contrast of the muted label raised from 3.1:1 to 4.6:1. axe reports 0 violations; one question left about the grey disabled state."
+  },
+  "faq": [
+    {
+      "question": "Will it change how my components look?",
+      "answer": "Only when contrast requires a slightly darker color. Layout, spacing and props stay the same, and any color change is listed in the report."
+    },
+    {
+      "question": "Does it replace a manual screen reader test?",
+      "answer": "No. It fixes what code can prove and flags the rest. A pass with a real screen reader is still worth doing before release."
+    }
+  ],
+  "access": [
+    "Reads and edits component and style files",
+    "Runs your linter or accessibility test command"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

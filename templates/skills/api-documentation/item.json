@@ -1,0 +1,45 @@
+{
+  "slug": "api-documentation",
+  "title": "API Documentation",
+  "kind": "skill",
+  "category": "docs",
+  "summary": "Documents HTTP endpoints from the real handlers, with request and response examples, error cases and auth, so integrators succeed on the first call.",
+  "description": [
+    "Generated reference pages list parameters but rarely show a working call. This skill has the agent read each handler, route and validator, then write documentation an integrator can follow with only a terminal and an API key.",
+    "Every endpoint gets a runnable example, the success body, and the errors a caller will actually hit. Authentication, pagination and rate limits are written once and linked from each endpoint."
+  ],
+  "stacks": [],
+  "topics": [
+    "api-design",
+    "documentation"
+  ],
+  "useWhen": [
+    "A public or partner API has no docs beyond the OpenAPI stub",
+    "Support tickets ask how to authenticate or why a call returns 422",
+    "You are adding endpoints and want docs that match the code",
+    "An internal service is about to get its first outside consumer"
+  ],
+  "body": "# API documentation\n\nDocument what the code does, not what the design doc hoped it would do.\n\n## Steps\n\n1. Find the surface: route definitions, controllers, OpenAPI or schema files, validators, middleware. List every endpoint with method and path before writing anything.\n2. For each endpoint read the handler to learn the real parameters, which are required, defaults, size limits and the shape of the success body. Read the validator for exact constraints.\n3. Collect error behavior: which status codes can come back, the error body format, and the trigger for each (missing field, bad token, not found, conflict, rate limit).\n4. Write one shared section first: base URL, authentication (header name, token format, how to get a key, expiry), pagination style, rate limits, versioning, idempotency.\n5. Write each endpoint as: purpose in one line; `curl` example with realistic values; request parameters as a table (name, type, required, notes); success response with a real JSON body; error table.\n6. If a test or local server exists, run the curl examples and paste the real output.\n\n## Rules\n\n- Use dummy values like `YOUR_API_KEY`, never real secrets.\n- Mark undocumented or deprecated behavior as such; do not hide it.\n- Keep field names exactly as the code spells them.\n- Do not invent endpoints, fields or status codes.\n\n## Report\n\nThe docs file path, the endpoints covered, the examples you ran, and mismatches found between code and any existing spec.",
+  "example": {
+    "prompt": "Write docs for the /v1/invoices endpoints",
+    "result": "Wrote docs/api/invoices.md covering 5 endpoints (list, get, create, void, download PDF). Ran all curl examples against the dev server. Found a mismatch: the OpenAPI file says amount is a string, the handler requires an integer in cents. Documented the code behavior and flagged the spec."
+  },
+  "faq": [
+    {
+      "question": "Can it update an OpenAPI file instead of Markdown?",
+      "answer": "Yes, tell it the target format. It then edits the spec and still checks every example against the handlers."
+    },
+    {
+      "question": "What if the code and the old docs disagree?",
+      "answer": "The code wins. The disagreement is listed in the report so you can decide whether the code or the contract is wrong."
+    }
+  ],
+  "access": [
+    "Reads route handlers, schemas and tests",
+    "Writes documentation files",
+    "May call a local dev server to test examples"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

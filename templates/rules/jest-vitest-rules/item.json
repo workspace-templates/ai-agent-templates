@@ -1,0 +1,45 @@
+{
+  "slug": "jest-vitest-rules",
+  "title": "Jest Vitest Rules",
+  "kind": "rules",
+  "category": "testing",
+  "summary": "Project rules for Jest and Vitest unit tests: clear names, arrange-act-assert, narrow mocks, deterministic time and meaningful coverage.",
+  "description": [
+    "These rules set one style for unit tests in JavaScript and TypeScript projects, whether the runner is Jest or Vitest. Tests read as specifications and fail with messages that point at the cause.",
+    "They limit mocking to boundaries and ban hidden shared state, so the suite stays quick and trustworthy as it grows."
+  ],
+  "stacks": [
+    "javascript",
+    "typescript"
+  ],
+  "topics": [
+    "testing"
+  ],
+  "useWhen": [
+    "You ask an agent to add unit tests",
+    "Tests mock every internal module",
+    "Test names say \"works\" or \"test 1\"",
+    "Green suites miss real regressions despite many tests"
+  ],
+  "body": "# Project rules: Jest and Vitest\n\n## Structure and naming\n- Colocate `*.test.ts` next to the source. `describe` the unit; write `it('returns 404 when the user is missing')` as a behavior, not a method name.\n- Arrange, act, assert, separated by blank lines. One behavior per test; use `it.each` for tables of inputs.\n\n## Isolation\n- Tests must not depend on order or share mutable state. Build data with small factory functions; reset in `beforeEach`, not `afterAll`.\n- Control time with fake timers (`vi.useFakeTimers` or `jest.useFakeTimers`) and `setSystemTime`; never wait on real delays. Seed randomness.\n\n## Mocks\n- Mock only boundaries: network, filesystem, clock, third-party SDKs. Do not mock the unit under test or its pure helpers.\n- Prefer `vi.fn()` or `jest.fn()` with explicit return values, and restore mocks automatically (`restoreMocks: true`). Verify calls with `toHaveBeenCalledWith`, not call counts alone.\n- For HTTP, use MSW rather than stubbing fetch by hand.\n\n## Assertions and coverage\n- Assert outcomes users see. Use `toEqual` for data, `toThrow` with a message, `await expect(p).rejects` for promises. Avoid snapshots of large objects.\n- Treat coverage as a gap finder; set thresholds on branches. Do not add assertion-free tests.\n- Run the type check, lint and `npm test -- --coverage` before finishing.",
+  "example": {
+    "prompt": "Add tests for the discount calculator",
+    "result": "The agent writes an it.each table covering tiers and edge cases, uses fixed dates with fake timers, mocks nothing internal and reports coverage of the branches."
+  },
+  "faq": [
+    {
+      "question": "Do the rules differ between Jest and Vitest?",
+      "answer": "Only the API names do. Swap vi for jest where the file calls for it; the conventions are the same."
+    },
+    {
+      "question": "Are snapshots banned?",
+      "answer": "No, only large ones. Small inline snapshots are fine for stable output such as error messages."
+    }
+  ],
+  "access": [
+    "Instructions only; it does not read or run anything by itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

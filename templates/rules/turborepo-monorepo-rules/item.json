@@ -1,0 +1,45 @@
+{
+  "slug": "turborepo-monorepo-rules",
+  "title": "Turborepo Monorepo Rules",
+  "kind": "rules",
+  "category": "devops",
+  "summary": "Project rules for Turborepo monorepos: clear package boundaries, cacheable task pipelines, shared configs and disciplined versioning.",
+  "description": [
+    "This rules file explains how an agent should work inside a Turborepo workspace with several apps and packages. It keeps dependencies pointing one way and stops code from reaching into another package by relative path.",
+    "It also makes pipelines fast and trustworthy: every task declares its inputs and outputs so the cache hits when it should and misses when it must."
+  ],
+  "stacks": [
+    "typescript"
+  ],
+  "topics": [
+    "ci",
+    "refactoring"
+  ],
+  "useWhen": [
+    "You add a package to an existing monorepo",
+    "Builds are slow because nothing caches",
+    "Apps import each other with ../../ paths",
+    "Config files are copied into every package"
+  ],
+  "body": "# Project rules: Turborepo monorepo\n\n## Layout\n- `apps/` holds deployable things, `packages/` holds libraries. Apps may depend on packages; packages never depend on apps, and packages avoid cycles.\n- Every package has its own `package.json` with a scoped name such as `@acme/ui`, an explicit `exports` map and a `workspace:*` dependency on siblings.\n- Import across packages by package name only. Never use relative paths that leave the package folder.\n\n## Shared config\n- Put TypeScript, ESLint and formatter settings in packages like `@acme/tsconfig` and `@acme/eslint-config`, and extend them. Do not copy config files.\n- Declare a dependency in the package that imports it, not in the root, except for repo-wide tooling.\n\n## Tasks\n- Define tasks in `turbo.json`: `build` depends on `^build`, lists `outputs` (`dist/**`), and `test` and `lint` depend on what they need.\n- List environment variables a task reads under `env` so the cache key is correct. Mark long-running tasks like `dev` as `persistent` and `cache: false`.\n- Keep scripts named alike in every package (`build`, `test`, `lint`, `typecheck`) so `turbo run` works everywhere.\n\n## Versioning\n- Use one package manager and one lockfile. Use Changesets for versioned, published packages; private apps need no version bumps.\n\n## Before finishing\n- Run `turbo run lint typecheck test build --filter=...[origin/main]` to check only what changed, and fix cache misses you introduced.",
+  "example": {
+    "prompt": "Create a shared validation package and use it in the web app and the API",
+    "result": "The agent adds packages/validation with an exports map, a tsconfig extending the shared one, workspace dependencies in both apps, matching scripts and a turbo.json entry, then runs the filtered pipeline."
+  },
+  "faq": [
+    {
+      "question": "Does it work with pnpm, npm and Yarn?",
+      "answer": "Yes. Only the workspace protocol differs a little, so keep the one your repository already uses."
+    },
+    {
+      "question": "Why list outputs and env in turbo.json?",
+      "answer": "Turborepo caches by declared inputs and outputs. Missing entries give stale results or no cache hits at all."
+    }
+  ],
+  "access": [
+    "Guidance only; the agent may run turbo and package manager commands in your repo when you let it"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

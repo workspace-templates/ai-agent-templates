@@ -1,0 +1,47 @@
+{
+  "slug": "check-android-lint",
+  "title": "Check Android Lint",
+  "kind": "command",
+  "category": "mobile",
+  "summary": "Runs Android lint, groups the findings by impact and fixes the ones that affect users, crashes or Play Store releases.",
+  "description": [
+    "A raw lint report can hold hundreds of warnings, most of them noise. This command runs lint through Gradle, reads the report and sorts findings into what breaks users, what blocks a release and what can wait.",
+    "It fixes the first two groups when the change is local and clear, and lists the rest with a short reason so the baseline can be updated deliberately."
+  ],
+  "stacks": [
+    "kotlin"
+  ],
+  "topics": [
+    "code-review",
+    "performance"
+  ],
+  "useWhen": [
+    "Before building a release bundle for the Play Store",
+    "Lint fails the CI job and the report is overwhelming",
+    "You raised targetSdk and want to see what it breaks",
+    "A new module needs a first lint pass"
+  ],
+  "body": "Run and triage Android lint for module: $ARGUMENTS (app if empty).\n\n1. Run `./gradlew :<module>:lintDebug` (use lintRelease when preparing a release). Read the XML at `<module>/build/reports/lint-results-*.xml`, not the console summary.\n2. Group issues by severity, then by id. Ignore anything already in lint-baseline.xml.\n3. Fix first: Fatal and Error items, plus these warnings when present: MissingPermission, NewApi, ObsoleteSdkInt, HardcodedText on user-facing strings, Overdraw, UnusedResources in large assets, ExportedWithoutPermission, and missing translations.\n4. For each fix, make the change in Kotlin, XML or the manifest, and keep it small. Never add a @SuppressLint or edit the baseline to hide an issue without asking.\n5. Re-run lint and compare counts before and after.\n\nReport a table: issue id, count, action (fixed, deferred, needs decision) and example file:line. End by asking whether the deferred group should go into the baseline or become tickets.",
+  "argumentHint": "[module name, default app]",
+  "example": {
+    "prompt": "/check-android-lint app",
+    "result": "lintDebug: 3 errors, 41 warnings. Fixed 3 errors (2 NewApi calls guarded with SDK_INT, 1 exported receiver). Deferred 38 warnings, mostly UnusedResources in legacy drawables. Add the deferred group to the baseline?"
+  },
+  "faq": [
+    {
+      "question": "Does it silence warnings to get a green build?",
+      "answer": "No. Suppressions and baseline edits need your explicit approval."
+    },
+    {
+      "question": "Does it work with multi-module projects?",
+      "answer": "Yes. Pass a module name and it runs that module only, so reports stay readable."
+    }
+  ],
+  "access": [
+    "Runs Gradle lint tasks and reads the reports",
+    "Edits Kotlin, XML and manifest files for approved fixes"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

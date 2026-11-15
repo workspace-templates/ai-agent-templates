@@ -1,0 +1,59 @@
+{
+  "slug": "netlify-mcp",
+  "title": "Netlify MCP Server",
+  "kind": "mcp",
+  "category": "devops",
+  "summary": "Netlify's official MCP server, started with npx, lets your agent create, configure and deploy sites and manage environment variables.",
+  "description": [
+    "Netlify's MCP server wraps the Netlify API and CLI. An agent can create a project, deploy it, manage environment variables and secrets, turn on form handling and look up team details.",
+    "It runs locally with npx and needs Node.js 22 or later. It normally uses your existing Netlify login. A personal access token can be set as an environment variable only to troubleshoot authentication."
+  ],
+  "stacks": [],
+  "topics": [
+    "ci",
+    "debugging"
+  ],
+  "useWhen": [
+    "Deploy a static site from a folder you just built",
+    "Add an environment variable to a site",
+    "Enable form submissions on a landing page",
+    "Check which team a site belongs to"
+  ],
+  "mcp": {
+    "name": "netlify",
+    "transport": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "@netlify/mcp"
+    ],
+    "env": [],
+    "headers": [],
+    "source": "https://github.com/netlify/netlify-mcp",
+    "access": [
+      "Netlify sites, environment variables and extensions on your account",
+      "Can deploy sites and change access controls"
+    ]
+  },
+  "example": {
+    "prompt": "Create a new Netlify site from the dist folder and set API_URL to https://api.example.com.",
+    "result": "Created site acme-landing, deployed dist, and set API_URL for all deploy contexts. The live URL is acme-landing.netlify.app."
+  },
+  "faq": [
+    {
+      "question": "Which Node version do I need?",
+      "answer": "Node.js 22 or newer, per the project's prerequisites."
+    },
+    {
+      "question": "Do I have to create a token?",
+      "answer": "Not normally. The token variable NETLIFY_PERSONAL_ACCESS_TOKEN is documented only as a troubleshooting step; never commit it."
+    }
+  ],
+  "access": [
+    "Reads and changes Netlify sites and settings on your account",
+    "Runs locally through npx"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

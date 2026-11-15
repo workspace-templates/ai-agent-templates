@@ -1,0 +1,45 @@
+{
+  "slug": "add-edge-case-tests",
+  "title": "Add Edge Case Tests",
+  "kind": "command",
+  "category": "testing",
+  "summary": "Adds tests for the boundary and error cases of one function: empty, huge, null, malformed and surprising input.",
+  "description": [
+    "Most functions are tested with three friendly examples. This command takes one function and probes its limits: what happens at zero, at the maximum, with missing values or with text that should not be there.",
+    "Where the function behaves badly, it reports the bug instead of baking it into the test, and asks how you want it to behave."
+  ],
+  "stacks": [],
+  "topics": [
+    "testing",
+    "debugging"
+  ],
+  "useWhen": [
+    "After writing a parser, formatter or calculation",
+    "When a function crashed in production on odd input",
+    "Before making a utility part of a shared library",
+    "To learn how a legacy function really behaves"
+  ],
+  "body": "Add edge case tests for this function: $ARGUMENTS\n\n1. Locate the function, its types or docstring, its callers and any existing tests. Note its contract: accepted input, return value, thrown errors.\n2. List edge cases by category: empty (empty string, list, object), null or undefined, boundaries (0, 1, -1, max, max plus one), size (very long strings, 100k items), text (unicode, emoji, combining marks, newlines, leading and trailing whitespace), numbers (NaN, Infinity, floats like 0.1 + 0.2, very large integers), dates (leap day, DST change, timezone), type confusion, and repeated or concurrent calls.\n3. Predict the expected result for each from the contract. Where the contract is silent, mark the case as a question rather than guessing.\n4. Write the tests in the existing style, one behavior per test, with readable names. Use table-driven or parameterized tests where the framework supports them.\n5. Run them. For any failure, decide if the function has a bug. Do not edit the function and do not weaken the test; list the bug.\n\nReport tests added, passes, and bugs or open questions found. Ask how to resolve each.",
+  "argumentHint": "[function name or file:line]",
+  "example": {
+    "prompt": "/add-edge-case-tests parseDuration in src/lib/time.ts",
+    "result": "Added 26 cases in time.test.ts. 23 pass.\nBugs: parseDuration(\"\") returns 0 instead of throwing; \"1h30\" silently ignores the missing unit; \"99999999999d\" overflows to a negative value.\nQuestion: should \"1.5h\" be accepted?\nHow should the three bugs be handled?"
+  },
+  "faq": [
+    {
+      "question": "Will it change the function when a test fails?",
+      "answer": "No. It reports the defect and asks which behavior you want first."
+    },
+    {
+      "question": "What if the contract is unclear?",
+      "answer": "Those cases are listed as questions so you decide the intended result before a test locks it in."
+    }
+  ],
+  "access": [
+    "Reads the function and its callers",
+    "Adds test cases; leaves the function untouched"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

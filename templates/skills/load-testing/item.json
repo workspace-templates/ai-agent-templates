@@ -1,0 +1,44 @@
+{
+  "slug": "load-testing",
+  "title": "Load Testing",
+  "kind": "skill",
+  "category": "testing",
+  "summary": "Designs a k6 load test with realistic traffic, explicit thresholds and a clear pass or fail result, and reads the numbers back to you.",
+  "description": [
+    "A load test that hammers one endpoint with a constant rate tells you little about production. This skill has the agent model a real traffic mix, ramp up in stages and fail the run when latency or errors cross limits you chose before the test.",
+    "The result is a k6 script that lives in the repository and a short report naming the first thing that broke and where the headroom ends."
+  ],
+  "stacks": [],
+  "topics": [
+    "testing",
+    "performance"
+  ],
+  "useWhen": [
+    "Before a launch, campaign or migration that will change traffic",
+    "You need to know how many users one instance handles",
+    "A service slowed down and you want a repeatable benchmark",
+    "Setting service level targets and checking the system meets them"
+  ],
+  "body": "# Load testing with k6\n\nA load test needs a question, a traffic model and thresholds written down first.\n\n## Steps\n\n1. Ask or infer: which endpoints, expected peak requests per second, and the targets (for example p95 under 400 ms, errors under 1 percent). Never test production or a shared environment without explicit approval; use a staging copy with realistic data volume.\n2. Build the traffic mix from access logs or analytics: weights per endpoint, think time between steps, and a login or token flow that is done once per virtual user, not per request.\n3. Write the script in `tests/load/<name>.js`:\n   - `scenarios` using `ramping-arrival-rate` so the load is a request rate, not a user count\n   - stages: warm up, ramp, hold at peak for at least five minutes, ramp down\n   - `thresholds` for `http_req_duration{p(95)}`, `http_req_failed` and per-endpoint tags\n   - `check()` on status and a field of the body, since a fast 500 is not a pass\n4. Run a short smoke pass (1 virtual user, 30 seconds) to validate the script before the real run.\n5. Run the full test. Watch for the knee: where latency climbs faster than load.\n6. Repeat once for stability, then a stress run above peak to find the breaking point.\n\n## Rules\n\n- Never hard-code secrets in the script; read from `__ENV`.\n- Do not include warm-up in thresholds.\n- Never point it at third-party services.\n\n## Report\n\nPass or fail per threshold, p50, p95 and p99, error rate, the first bottleneck seen, and the safe rate you recommend.",
+  "example": {
+    "prompt": "Load test the /search and /cart endpoints for 300 requests per second",
+    "result": "Wrote tests/load/shop.js: 70/30 search/cart mix, ramp to 300 rps, 5 minute hold, thresholds p95 < 400 ms and errors < 1 percent. Result: FAIL at 240 rps, p95 910 ms, db connection pool exhausted. Safe rate: 200 rps. Recommend pool size 40 before retest."
+  },
+  "faq": [
+    {
+      "question": "Why a request rate instead of virtual users?",
+      "answer": "A fixed user count slows its own request rate when the server slows down, which hides the problem. An arrival rate keeps pressure constant so the failure shows."
+    },
+    {
+      "question": "Can it use another tool than k6?",
+      "answer": "Yes, if your project already uses Gatling, Locust or Artillery, the agent keeps the same model and thresholds in that tool."
+    }
+  ],
+  "access": [
+    "Reads source files and access logs you point it to",
+    "Writes a script under tests/load and runs k6 against the URL you give it"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

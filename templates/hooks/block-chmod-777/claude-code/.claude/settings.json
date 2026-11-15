@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{let j={};try{j=JSON.parse(d)||{}}catch(e){process.exit(0)}const i=j.tool_input||{};const q=String.fromCharCode(34),sq=String.fromCharCode(39),bs=String.fromCharCode(92),nl=String.fromCharCode(10);const worldW=m=>m.split(',').some(x=>/^[0-7]{2}[2367]$/.test(x)||/^[0246][0-7]{2}[2367]$/.test(x)||/^([ugo]*o[ugo]*|a)[+=][rwxXst]*w/.test(x));for(const sg of String(i.command||'').split(/[;&|]+/)){const a=sg.trim().split(/[ ]+/);if(a[0]==='sudo')a.shift();if(a[0]!=='chmod')continue;const m=a.slice(1).find(t=>t[0]!=='-');if(m&&worldW(m)){console.error('Blocked: chmod '+m+' makes files writable by every user. Use 755 for programs and folders, 644 for plain files, or 775 and 664 to share with a group.');process.exit(2)}}})\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

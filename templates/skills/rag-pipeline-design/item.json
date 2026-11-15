@@ -1,0 +1,44 @@
+{
+  "slug": "rag-pipeline-design",
+  "title": "RAG Pipeline Design",
+  "kind": "skill",
+  "category": "data",
+  "summary": "Designs retrieval-augmented generation with sensible chunking, embeddings, reranking and cited answers. Use it when an LLM must answer from your documents.",
+  "description": [
+    "Most disappointing RAG systems fail at retrieval, not generation. This skill designs the pipeline from the documents up: how to split them, what to embed, how to search, when to rerank, and how to make the answer cite what it used.",
+    "Before building anything, the agent writes a small set of real questions with known source passages, so every choice can be measured against retrieval hit rate instead of opinion."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation",
+    "python"
+  ],
+  "useWhen": [
+    "You want an assistant that answers from internal docs or a knowledge base",
+    "Your prototype gives plausible answers that are not in the documents",
+    "Retrieval returns the right page only half the time",
+    "Answers need citations a user can click and verify"
+  ],
+  "body": "# RAG pipeline design\n\nRetrieval quality sets the ceiling. Measure it before tuning the prompt.\n\n## Steps\n\n1. Inspect the corpus: formats, size, languages, update frequency, tables and images, and access rules per document. Decide how updates and deletions will flow in.\n2. Write 20 or more test questions with the document and passage that answers each. Include a few that have no answer. This is the retrieval test set.\n3. Chunk by structure, not by fixed length alone: split on headings and paragraphs, target 200 to 500 tokens, add 10 to 15 percent overlap, and keep tables whole. Prepend the document title and section path to each chunk.\n4. Store metadata with each chunk: source URL, title, section, date, and permission tags. Filter on permissions in the query, never after generation.\n5. Retrieve hybrid: vector search plus keyword search (BM25), merged by reciprocal rank fusion. Fetch about 30 candidates.\n6. Rerank the candidates with a cross-encoder or a reranking API and keep the top 5 to 8.\n7. Generate with instructions to answer only from the supplied passages, to quote the chunk ID for each claim, and to say \"not found\" when the passages do not answer.\n8. Measure recall at k and the share of answers whose citations support the claim. Change one thing at a time.\n\n## Rules\n\n- Never mix document text into the system instructions without marking it as untrusted data.\n- Do not embed secrets or restricted documents into a shared index.\n\n## Report\n\nThe design with each choice and its reason, the test set results, and the likely failure modes.",
+  "example": {
+    "prompt": "Design RAG for our 4,000 support articles.",
+    "result": "Chunk by heading at about 350 tokens with 50 overlap and the article title prefixed. Hybrid retrieval (30 candidates), cross-encoder rerank to 6. Answers cite [article-id#section]. Test set of 30 questions: recall at 6 rose from 62% (vector only) to 87% (hybrid plus rerank). Open risk: 140 articles are screenshots with no text, so they need OCR first."
+  },
+  "faq": [
+    {
+      "question": "Which vector database should I pick?",
+      "answer": "For under a few million chunks, the one you already run (pgvector, for example) is usually enough. The skill makes the store a swappable part, because chunking and reranking matter more."
+    },
+    {
+      "question": "Why a test set before any code?",
+      "answer": "Without known question and passage pairs you cannot tell whether a change helped. The set turns tuning into measurement."
+    }
+  ],
+  "access": [
+    "Reads the documents and code you point it at",
+    "Writes design notes, an evaluation set and pipeline code on request"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

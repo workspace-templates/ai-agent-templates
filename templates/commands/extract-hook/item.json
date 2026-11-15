@@ -1,0 +1,47 @@
+{
+  "slug": "extract-hook",
+  "title": "Extract Hook",
+  "kind": "command",
+  "category": "frontend",
+  "summary": "Moves stateful logic out of a React component into a custom hook, keeps behavior identical and adds tests for the hook.",
+  "description": [
+    "Components that mix data fetching, state, effects and markup are hard to read and harder to test. This command picks out the logic that belongs together and moves it into a hook with a clear name and a small return value.",
+    "Rendering stays unchanged, and the hook gets its own tests, so the refactor can be checked rather than trusted."
+  ],
+  "stacks": [
+    "react"
+  ],
+  "topics": [
+    "refactoring",
+    "testing"
+  ],
+  "useWhen": [
+    "A component is over 200 lines and half of it is state and effects",
+    "The same fetching or toggling logic appears in two places",
+    "You want to test logic without rendering the whole component",
+    "Effect dependencies have become confusing"
+  ],
+  "body": "Extract a custom hook from the component: $ARGUMENTS\n\n1. Read the component. Group the `useState`, `useReducer`, `useEffect`, `useMemo` and `useCallback` calls by purpose. Pick the group that has no JSX dependency, or the one named in the arguments.\n2. Name the hook `use` plus what it manages (`useDebouncedSearch`, not `useLogic`). Place it next to the component or in the project's hooks folder, following existing files.\n3. Move the code unchanged first. Return only what the component needs, as an object for more than two values. Pass inputs as parameters; do not read from outer scope.\n4. Preserve effect cleanup and dependency arrays exactly. Run the exhaustive-deps lint rule and fix real warnings.\n5. Write tests with `renderHook` (Testing Library) covering the initial state, one update and cleanup on unmount.\n\nRun the component's existing tests, the new hook tests and the type check. Report the hook's signature and any behavior you suspect was already buggy but left alone.",
+  "argumentHint": "[component path and optionally the logic to extract]",
+  "example": {
+    "prompt": "/extract-hook src/components/SearchBox.tsx the debounced query and results fetch",
+    "result": "Created src/hooks/useDebouncedSearch.ts: (query, delay) => { results, loading, error }. SearchBox now only renders.\nAdded useDebouncedSearch.test.ts with fake timers (3 tests). Existing SearchBox tests, tsc and eslint pass. Note: the old code never aborted stale requests; flagged, not changed."
+  },
+  "faq": [
+    {
+      "question": "Does behavior change?",
+      "answer": "It should not. The code is moved first with dependencies and cleanup intact, and the existing component tests must still pass."
+    },
+    {
+      "question": "Will it fix bugs it notices?",
+      "answer": "It reports them but leaves them alone, so the refactor stays easy to review."
+    }
+  ],
+  "access": [
+    "Reads the component and related hooks",
+    "Creates a hook file and its test, edits the component"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

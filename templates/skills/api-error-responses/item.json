@@ -1,0 +1,45 @@
+{
+  "slug": "api-error-responses",
+  "title": "API Error Responses",
+  "kind": "skill",
+  "category": "backend",
+  "summary": "Defines one error format with stable machine codes and problem details, then applies it to every endpoint so clients can handle failures reliably.",
+  "description": [
+    "Every API drifts into five error shapes: a bare string here, a framework stack trace there, a 200 with \"success: false\" somewhere else. Clients end up parsing messages with regular expressions. This skill makes the agent inventory what your endpoints return today and converge on a single format.",
+    "The format follows RFC 9457 problem details, plus a stable code string that clients can switch on. The agent also maps exceptions to status codes in one place, so new endpoints inherit the behavior instead of inventing it."
+  ],
+  "stacks": [],
+  "topics": [
+    "api-design",
+    "logging"
+  ],
+  "useWhen": [
+    "Your endpoints return errors in more than one shape",
+    "Mobile or frontend teams parse error messages as text",
+    "You are adding validation and need field-level failures",
+    "An incident showed that stack traces leak to clients"
+  ],
+  "body": "# API error responses\n\nOne error shape, one place that produces it.\n\n## Steps\n\n1. Inventory first. Grep for every place that builds an error response (`res.status(4`, `raise HTTPException`, `ResponseEntity.badRequest`, exception handlers). List the distinct shapes you find.\n2. Define the envelope, based on RFC 9457: `type` (a stable URL or slug), `title`, `status`, `detail`, `instance` (the request id), plus `code` (SCREAMING_SNAKE, stable forever) and, for validation, `errors: [{ field, code, message }]`.\n3. Build one error class and one global handler. Domain code throws typed errors; only the handler touches status codes and serialization. Set `Content-Type: application/problem+json`.\n4. Map consistently: 400 malformed input, 401 no identity, 403 identity but not allowed, 404 missing or hidden, 409 state conflict, 422 failed validation, 429 limited, 500 unexpected.\n5. Migrate endpoint by endpoint. Add a contract test per status that asserts the full body shape.\n\n## Rules\n\n- Never return a stack trace, SQL text, file path or internal hostname. Log them with the request id instead.\n- Never change a published `code`; add a new one and deprecate the old.\n- Messages are for humans and may change; clients switch on `code` only.\n- Unexpected errors return a generic 500 body with the request id and nothing else.\n- Do not use 200 for failures.\n\n## Report\n\nThe shapes found, the new envelope, the files changed, and endpoints you left on the old format with the reason.",
+  "example": {
+    "prompt": "Our API returns errors in three different shapes. Unify them.",
+    "result": "Found 3 shapes across 41 handlers. Added ApiError and a global handler in src/http/errors.ts using application/problem+json with a stable code field. Migrated 38 handlers and added 9 contract tests. Left /legacy/export on the old shape because a partner depends on it; noted in the report."
+  },
+  "faq": [
+    {
+      "question": "Do I have to use RFC 9457?",
+      "answer": "No, but starting from a standard saves you design debates and many client libraries already understand it. The skill adapts if your team has a house format."
+    },
+    {
+      "question": "Will it break existing clients?",
+      "answer": "It lists any endpoint whose shape changes and asks before touching one that outside consumers rely on."
+    }
+  ],
+  "access": [
+    "Reads source files in your project",
+    "Edits handlers and adds tests when you approve the plan",
+    "Runs your test command"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

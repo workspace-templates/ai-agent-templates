@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{let j={};try{j=JSON.parse(d)}catch(e){}const c=String((j.tool_input||{}).command||'')+' ';if(/(^|[;&|(][ ]*)(npm|npx)[ ]/.test(c)){const fs=require('fs'),p=require('path');const w=j.cwd||process.cwd();const has=n=>fs.existsSync(p.join(w,n));if(!has('package-lock.json')){const t=has('pnpm-lock.yaml')?['pnpm','pnpm dlx']:has('yarn.lock')?['yarn','yarn dlx']:(has('bun.lockb')||has('bun.lock'))?['bun','bunx']:null;if(t){console.error('This project uses '+t[0]+' (its lockfile is committed). Run the command with '+t[0]+' instead of npm, and use '+t[1]+' in place of npx.');process.exit(2)}}}process.exit(0)})\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

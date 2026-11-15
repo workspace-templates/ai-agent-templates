@@ -1,0 +1,43 @@
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "qdrant_url",
+      "description": "URL of your Qdrant server, for example http://localhost:6333",
+      "password": true
+    },
+    {
+      "type": "promptString",
+      "id": "qdrant_api_key",
+      "description": "API key for Qdrant Cloud; leave unset for a local server",
+      "password": true
+    },
+    {
+      "type": "promptString",
+      "id": "collection_name",
+      "description": "Default collection to store into and search",
+      "password": true
+    },
+    {
+      "type": "promptString",
+      "id": "qdrant_read_only",
+      "description": "Set to true to disable the store tool",
+      "password": true
+    }
+  ],
+  "servers": {
+    "qdrant": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "mcp-server-qdrant"
+      ],
+      "env": {
+        "QDRANT_URL": "${input:qdrant_url}",
+        "QDRANT_API_KEY": "${input:qdrant_api_key}",
+        "COLLECTION_NAME": "${input:collection_name}",
+        "QDRANT_READ_ONLY": "${input:qdrant_read_only}"
+      }
+    }
+  }
+}

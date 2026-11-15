@@ -1,0 +1,81 @@
+{
+  "slug": "redis-mcp",
+  "title": "Redis MCP Server",
+  "kind": "mcp",
+  "category": "database",
+  "summary": "Let your agent read and write Redis strings, hashes, streams and vector indexes through the official Redis MCP server, run with uvx.",
+  "description": [
+    "The Redis MCP server from Redis itself gives an agent typed tools for strings, hashes, lists, sets, sorted sets, JSON documents, pub/sub and streams, plus vector search through the query engine.",
+    "It runs locally over stdio with uvx and connects with the usual REDIS_ variables. The server has no read-only switch, so the safe route is a Redis ACL user that can only read, passed in as the username and password."
+  ],
+  "stacks": [],
+  "topics": [
+    "debugging",
+    "performance"
+  ],
+  "useWhen": [
+    "Inspect what a cache key actually holds while debugging",
+    "Look at a stream and its consumer groups",
+    "Check TTLs on session keys before changing expiry",
+    "Try a vector index query against sample data"
+  ],
+  "mcp": {
+    "name": "redis",
+    "transport": "stdio",
+    "command": "uvx",
+    "args": [
+      "--from",
+      "redis-mcp-server@latest",
+      "redis-mcp-server"
+    ],
+    "env": [
+      {
+        "name": "REDIS_HOST",
+        "description": "Hostname of the Redis server, default 127.0.0.1"
+      },
+      {
+        "name": "REDIS_PORT",
+        "description": "Port, default 6379"
+      },
+      {
+        "name": "REDIS_USERNAME",
+        "description": "Redis ACL user, use a read-only one for safety"
+      },
+      {
+        "name": "REDIS_PWD",
+        "description": "Password for that user"
+      }
+    ],
+    "headers": [],
+    "source": "https://github.com/redis/mcp-redis",
+    "access": [
+      "Reads and writes keys in the Redis database it connects to",
+      "Can publish to channels and add or delete stream entries unless the ACL user forbids it"
+    ]
+  },
+  "example": {
+    "prompt": "List the keys that start with session: and tell me which ones have no expiry set.",
+    "result": "Found 48 session: keys. 3 have no TTL (session:legacy-12, session:legacy-40, session:admin-tmp); the other 45 expire within 24 hours."
+  },
+  "faq": [
+    {
+      "question": "Is there a read-only mode?",
+      "answer": "Not as a flag. Create an ACL user with read commands only, for example +@read -@write, and give its name and password to the server."
+    },
+    {
+      "question": "Do I need Node?",
+      "answer": "No. Install uv instead: the server is distributed on PyPI and launched by uvx."
+    },
+    {
+      "question": "Can it reach a hosted Redis with TLS?",
+      "answer": "Yes. The server documents a REDIS_SSL variable and certificate path variables for TLS connections."
+    }
+  ],
+  "access": [
+    "Runs a local process that connects to the Redis instance you point it at",
+    "Writes allowed unless the Redis user is limited"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

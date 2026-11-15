@@ -1,0 +1,69 @@
+{
+  "slug": "pinecone-mcp",
+  "title": "Pinecone MCP Server",
+  "kind": "mcp",
+  "category": "data",
+  "summary": "Let your coding agent manage Pinecone indexes and run vector searches and upserts through Pinecone's own MCP server, started with npx.",
+  "description": [
+    "Pinecone publishes an MCP server that gives an agent direct access to your vector indexes. It can list and describe indexes, create new ones, upsert records, and run searches with filters and reranking, so you can test retrieval without writing a script first.",
+    "It starts locally with npx and needs a Pinecone API key and Node.js 22 or later. Without the key it still searches the Pinecone documentation, but it cannot touch your data. Pinecone documents no read-only switch, so use a key with limited rights when you only want to look around."
+  ],
+  "stacks": [],
+  "topics": [
+    "vector-search",
+    "data"
+  ],
+  "useWhen": [
+    "Check what indexes exist and how many records each namespace holds",
+    "Try a semantic query against an index before wiring it into an app",
+    "Create a small test index and load sample documents",
+    "Ask a Pinecone docs question while you write the client code"
+  ],
+  "mcp": {
+    "name": "pinecone",
+    "transport": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "@pinecone-database/mcp"
+    ],
+    "env": [
+      {
+        "name": "PINECONE_API_KEY",
+        "description": "Your Pinecone API key"
+      }
+    ],
+    "headers": [],
+    "source": "https://github.com/pinecone-io/pinecone-mcp",
+    "access": [
+      "Lists, describes, creates and searches indexes in your Pinecone project",
+      "Can upsert records into indexes, which changes stored data",
+      "Searches the public Pinecone documentation"
+    ]
+  },
+  "example": {
+    "prompt": "List my Pinecone indexes, then search the support-articles index for 'refund after 30 days' and show the top three matches.",
+    "result": "2 indexes: support-articles (1,204 records) and product-faq (310). Top matches in support-articles: 'Refund policy' (0.82), 'Returns window' (0.77), 'Chargebacks' (0.61)."
+  },
+  "faq": [
+    {
+      "question": "Which Node.js version does it need?",
+      "answer": "Pinecone lists Node.js 22 or later. Older versions may fail when npx starts the package."
+    },
+    {
+      "question": "Is there a read-only mode?",
+      "answer": "The README documents none. The upsert and create tools are always present, so scope the API key and review each write the agent proposes."
+    },
+    {
+      "question": "What works without an API key?",
+      "answer": "Only the documentation search. Listing or querying indexes needs PINECONE_API_KEY."
+    }
+  ],
+  "access": [
+    "Reads and queries indexes in the project your key belongs to",
+    "Can create indexes and upsert records"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,55 @@
+{
+  "slug": "vercel-mcp",
+  "title": "Vercel MCP Server",
+  "kind": "mcp",
+  "category": "devops",
+  "summary": "Connect your agent to Vercel's official remote MCP server to inspect projects, deployments and build logs and search the Vercel docs.",
+  "description": [
+    "Vercel hosts its own MCP server at mcp.vercel.com. An agent can search the docs, look at projects and deployments, read build and runtime logs and query Web Analytics.",
+    "Clients authorize through OAuth, so the config holds only the URL. The CLI command vercel mcp can set up several clients for you."
+  ],
+  "stacks": [],
+  "topics": [
+    "debugging",
+    "ci"
+  ],
+  "useWhen": [
+    "Find out why the latest deployment failed",
+    "Read runtime errors for a production project",
+    "List recent deployments for a branch",
+    "Look up a Vercel setting in the docs"
+  ],
+  "mcp": {
+    "name": "vercel",
+    "transport": "http",
+    "url": "https://mcp.vercel.com",
+    "env": [],
+    "headers": [],
+    "source": "https://vercel.com/docs/mcp",
+    "access": [
+      "Projects, deployments and logs in the Vercel teams you authorize",
+      "Can manage projects and deployments through the tools it exposes"
+    ]
+  },
+  "example": {
+    "prompt": "Why did the last deployment of my marketing site fail?",
+    "result": "The build stopped at step 3: next build exited with code 1 because app/pricing/page.tsx imports a missing module, ./Plans. The previous deployment is still live."
+  },
+  "faq": [
+    {
+      "question": "Does it need a token?",
+      "answer": "No. It uses OAuth; your client opens a Vercel sign-in page the first time."
+    },
+    {
+      "question": "Can I limit it to one project?",
+      "answer": "Vercel's CLI command vercel mcp accepts a project option to scope a session to the linked project."
+    }
+  ],
+  "access": [
+    "Reads deployment logs and analytics for authorized teams",
+    "Can change project settings and deployments"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

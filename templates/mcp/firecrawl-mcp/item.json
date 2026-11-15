@@ -1,0 +1,69 @@
+{
+  "slug": "firecrawl-mcp",
+  "title": "Firecrawl MCP Server",
+  "kind": "mcp",
+  "category": "data",
+  "summary": "Scrape pages, crawl whole sites and pull structured data into your agent as clean markdown with the official Firecrawl MCP server.",
+  "description": [
+    "Firecrawl turns web pages into text an agent can use. Its MCP server can scrape a single URL, map a site's links, search the web, crawl many pages and extract structured fields, returning markdown instead of raw HTML.",
+    "This setup runs the npm package locally with your Firecrawl API key. Requests go to Firecrawl's service, so the pages you ask about are fetched by that service and each call uses credits on your plan. Firecrawl also offers hosted endpoints and a self-hosted option, described in its README."
+  ],
+  "stacks": [],
+  "topics": [
+    "web-scraping",
+    "data"
+  ],
+  "useWhen": [
+    "Pull a documentation site into markdown before asking questions about it",
+    "Collect product names and prices from a listing page as structured data",
+    "Map every URL on a site before planning a migration",
+    "Search the web and read the top results in one step"
+  ],
+  "mcp": {
+    "name": "firecrawl",
+    "transport": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "firecrawl-mcp"
+    ],
+    "env": [
+      {
+        "name": "FIRECRAWL_API_KEY",
+        "description": "Your Firecrawl API key"
+      }
+    ],
+    "headers": [],
+    "source": "https://github.com/firecrawl/firecrawl-mcp-server",
+    "access": [
+      "Sends URLs and search queries you or the agent choose to Firecrawl's service",
+      "Returns the fetched page content to the agent",
+      "Spends credits from your Firecrawl plan"
+    ]
+  },
+  "example": {
+    "prompt": "Scrape https://example.com/pricing and list each plan with its monthly price.",
+    "result": "3 plans: Free at $0, Team at $24 per seat, Business at $60 per seat. Source: the pricing table, scraped as markdown."
+  },
+  "faq": [
+    {
+      "question": "Does it cost money?",
+      "answer": "Calls use credits from your Firecrawl account. Check your plan's allowance before asking for a large crawl."
+    },
+    {
+      "question": "Can it read pages behind a login?",
+      "answer": "Not by default. It fetches public pages. Never paste a session cookie into a prompt for it."
+    },
+    {
+      "question": "Is there a self-hosted option?",
+      "answer": "Yes. The README describes FIRECRAWL_API_URL for pointing the server at your own Firecrawl instance."
+    }
+  ],
+  "access": [
+    "Fetches any public URL the agent names, through Firecrawl",
+    "Does not change files on your machine"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

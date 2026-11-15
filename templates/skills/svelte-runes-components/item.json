@@ -1,0 +1,45 @@
+{
+  "slug": "svelte-runes-components",
+  "title": "Svelte Runes Components",
+  "kind": "skill",
+  "category": "frontend",
+  "summary": "Builds Svelte 5 components with runes and snippets, and replaces stores and legacy reactive statements. Use it when writing or upgrading Svelte code.",
+  "description": [
+    "Models still produce Svelte 4 code by habit: export let, the dollar-label reactive statements, slots and writable stores. Those still compile in Svelte 5, but they fight the new compiler and confuse a reader who expects runes.",
+    "This skill makes the agent write runes-first components, choose between state, derived and effect with care, and use snippets instead of slots for anything that needs arguments."
+  ],
+  "stacks": [
+    "svelte"
+  ],
+  "topics": [
+    "refactoring"
+  ],
+  "useWhen": [
+    "You are creating a Svelte 5 component from scratch",
+    "A SvelteKit project is being moved off export let and stores",
+    "An effect keeps looping or runs too often",
+    "You need a reusable piece of markup that takes parameters"
+  ],
+  "body": "# Svelte runes components\n\nWrite Svelte 5. If the file uses `export let`, `$:` or `<slot>`, convert it unless the user said to leave it.\n\n## Rules\n\n1. Props: `let { title, items = [], onselect }: Props = $props();` with an `interface Props` above it. Callback props replace `createEventDispatcher`.\n2. Local state is `$state`. When two components need the same state, export it from a `.svelte.ts` module as an object, never as a bare reassigned primitive.\n3. Anything computed from state is `$derived` (use `$derived.by` for multi-line logic). Never assign to another `$state` inside an effect to mirror a value.\n4. `$effect` is the last resort: DOM measurement, third-party widgets, syncing to storage. Return a cleanup function for every listener or timer. Reading a signal after an `await` inside an effect does not track it.\n5. Replace `<slot>` with `{#snippet}` and `{@render children?.()}`. Typed snippet props use `Snippet<[Item]>`.\n6. Bindable props need `$bindable()` and a reason: prefer a callback.\n7. Deeply mutated arrays and objects are fine in `$state` (they are proxied); use `$state.raw` for large read-only data from an API.\n\n## Verify\n\nRun `npx svelte-check` and fix every warning that mentions state or reactivity. Open the dev server only if the user asked.\n\n## Report\n\nList each legacy construct you replaced and any `$effect` you kept, with the reason it could not be `$derived`.",
+  "example": {
+    "prompt": "Convert Cart.svelte to Svelte 5 and get rid of the cart store",
+    "result": "Converted Cart.svelte to runes. The writable store became cart.svelte.ts exporting a `$state` object with add and remove functions. The total is a `$derived`; the old reactive block that wrote it is gone. One `$effect` remains, persisting to localStorage with a cleanup. svelte-check reports 0 warnings."
+  },
+  "faq": [
+    {
+      "question": "Will it break components that still use Svelte 4 syntax?",
+      "answer": "It only converts files it is working on. Mixed projects run fine, so you can move one component at a time."
+    },
+    {
+      "question": "Why is effect treated as a last resort?",
+      "answer": "Effects run after render and invite loops. A derived value is computed on demand and cannot get out of sync."
+    }
+  ],
+  "access": [
+    "Edits .svelte and .svelte.ts files",
+    "Runs svelte-check through npx"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

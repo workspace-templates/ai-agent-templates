@@ -1,0 +1,22 @@
+# Project rules: ASP.NET Core Web API
+
+## Structure
+- Pick one style per project: minimal APIs grouped with `MapGroup` and one static class per feature, or controllers with `[ApiController]`. Do not mix them.
+- Enable nullable reference types and treat warnings as errors. Use `record` types for DTOs.
+- Never return or accept EF entities in endpoints. Map to request and response DTOs explicitly.
+
+## Async and DI
+- Async all the way: `async Task<T>`, pass the `CancellationToken` to every I/O call. Never call `.Result` or `.Wait()`.
+- Register services with the narrowest lifetime. Use `IOptions<T>` with validation on start for settings. Secrets come from user secrets or the environment, never from appsettings in git.
+
+## Data
+- Use `AsNoTracking()` for reads. Project with `Select` instead of loading whole graphs. Avoid N+1 by using `Include` or projection.
+- Schema changes only through EF migrations; review the generated SQL.
+
+## Errors and validation
+- Validate input with FluentValidation or data annotations before the handler runs. Return `ProblemDetails` through `AddProblemDetails()` and an exception handler; never expose exception messages.
+- Return correct status codes: 201 with Location, 204, 404, 409, 422.
+
+## Quality
+- Version public routes. Document with OpenAPI and `Produces` metadata.
+- Test with `WebApplicationFactory`. Run `dotnet build`, `dotnet test` and `dotnet format --verify-no-changes` before finishing.

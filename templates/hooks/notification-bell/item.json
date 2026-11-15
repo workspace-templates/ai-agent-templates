@@ -1,0 +1,47 @@
+{
+  "slug": "notification-bell",
+  "title": "Notification Bell",
+  "kind": "hook",
+  "category": "productivity",
+  "summary": "Beeps in your terminal whenever Claude Code asks for permission or waits on you, so an agent that is blocked never sits unnoticed.",
+  "description": [
+    "An agent that waits for a yes can sit idle for an hour. This Notification hook fires whenever Claude Code raises an alert, such as a permission request or a long idle wait, and sounds the terminal bell.",
+    "The bell character goes to the terminal device itself, with standard error as a fallback. It does not read the alert text and it never blocks anything."
+  ],
+  "stacks": [],
+  "topics": [
+    "debugging"
+  ],
+  "useWhen": [
+    "Leave an agent running with approvals on",
+    "Know when a permission request is waiting",
+    "Stay in another window without missing a prompt",
+    "Run several sessions and tell when one needs you"
+  ],
+  "hook": {
+    "event": "Notification",
+    "command": "node -e \"let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{let j={};try{j=JSON.parse(d)}catch(e){}const B=String.fromCharCode(7);const w=process.platform==='win32';try{require('fs').writeFileSync(w?'CON':'/dev/tty',B)}catch(e){try{process.stderr.write(B)}catch(x){}}process.exit(0)})\"",
+    "timeout": 5
+  },
+  "example": {
+    "prompt": "Update the lockfile and run the build.",
+    "result": "Claude asks to run a shell command, the terminal beeps, and you approve it from the other window."
+  },
+  "faq": [
+    {
+      "question": "How is this different from the Stop bell?",
+      "answer": "It sounds when Claude needs you, not when it is done. Use both if you want a sound for each."
+    },
+    {
+      "question": "Can I limit it to permission prompts?",
+      "answer": "Yes. Add a matcher such as permission_prompt to the hook entry in your settings."
+    }
+  ],
+  "access": [
+    "Writes one bell character to the terminal",
+    "Reads nothing from the project"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

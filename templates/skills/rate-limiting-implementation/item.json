@@ -1,0 +1,45 @@
+{
+  "slug": "rate-limiting-implementation",
+  "title": "Rate Limiting Implementation",
+  "kind": "skill",
+  "category": "backend",
+  "summary": "Adds token bucket rate limits per API key or user, with a shared store, correct 429 responses and RateLimit headers, and tests for the edge cases.",
+  "description": [
+    "A limiter kept in one process memory stops nothing once you run two instances, and one that keys on IP address punishes whole offices behind a single address. This skill has the agent decide the key, the budget and the store before writing code.",
+    "It implements a token bucket with an atomic update, returns the standard headers so well-behaved clients slow down, and tests the burst, refill and failure paths, including what happens when the store is down."
+  ],
+  "stacks": [],
+  "topics": [
+    "api-design",
+    "security"
+  ],
+  "useWhen": [
+    "Your API has no limits and one client can saturate it",
+    "Login or password reset endpoints need brute-force protection",
+    "You run several instances and per-process counters are not enough",
+    "Clients ask how many requests they have left"
+  ],
+  "body": "# Rate limiting implementation\n\nDecide who is limited, by how much, and where the counter lives.\n\n## Steps\n\n1. Choose the key per route: API key or user id for authenticated routes, IP plus account name for login, IP only for anonymous public routes. Check how the real client IP arrives behind your proxy (`X-Forwarded-For` is spoofable unless the proxy overwrites it).\n2. Choose budgets from data. Read access logs for the 99th percentile of requests per client per minute and set the limit above it. Give expensive routes (search, export, login) their own lower limits.\n3. Implement a token bucket: capacity is the burst, refill rate is the sustained rate. Store tokens and the last refill time under the key in Redis and update them in one Lua script or atomic command; read-then-write races let bursts through.\n4. Set a TTL on the keys equal to the time to refill from empty, so memory does not grow.\n5. On rejection return 429 with `Retry-After` in seconds and the problem body your API already uses. On success send `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset`.\n6. Decide the failure mode when the store is unreachable. Fail open for general API traffic; fail closed for login.\n7. Test: burst up to capacity passes, the next request gets 429, waiting one refill interval restores one token, and two keys do not affect each other.\n\n## Rules\n\n- Never trust a client-supplied header as the identity.\n- Never use a fixed window counter for strict limits; it allows double the rate at the window boundary.\n- Never log full API keys.\n\n## Report\n\nKeys and budgets per route, store and script, failure mode chosen, and tests added.",
+  "example": {
+    "prompt": "Add rate limiting to our public API, 100 requests a minute per key.",
+    "result": "Added a Redis token bucket (capacity 100, refill 100/min) in src/middleware/rate-limit.ts using one Lua script. POST /login gets 5 per 15 minutes per account and fails closed. Responses carry RateLimit headers; 429 includes Retry-After. 7 tests cover burst, refill, key isolation and Redis outage."
+  },
+  "faq": [
+    {
+      "question": "Why a token bucket instead of a fixed window?",
+      "answer": "It allows short bursts but caps the sustained rate, and it avoids the double-rate spike at window edges."
+    },
+    {
+      "question": "Do I need Redis?",
+      "answer": "You need a store all instances share. Redis is the common choice; the same logic works with another atomic store."
+    }
+  ],
+  "access": [
+    "Reads source files and access log samples you point it to",
+    "Edits middleware, config and tests when approved",
+    "Runs your test command and may start a local Redis if you allow it"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

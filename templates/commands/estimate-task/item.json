@@ -1,0 +1,45 @@
+{
+  "slug": "estimate-task",
+  "title": "Estimate Task",
+  "kind": "command",
+  "category": "productivity",
+  "summary": "Estimates a task by inspecting the code it touches, then gives an hour range with assumptions and the unknowns behind it.",
+  "description": [
+    "Estimates made from a ticket title are guesses. This command opens the files the task would change, counts what depends on them and checks how well they are tested before giving a number.",
+    "The answer is a range with a stated confidence and a list of assumptions, so the person asking sees what could move it."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation",
+    "code-review"
+  ],
+  "useWhen": [
+    "A manager asks how long a change will take",
+    "You are sizing tickets for the next sprint",
+    "A request sounds small but might touch shared code",
+    "You want the risky parts named before committing to a date"
+  ],
+  "body": "Estimate this task from the code, not from the title: $ARGUMENTS\n\n1. Identify the likely entry points with search. List the files and functions that would change.\n2. Measure the blast radius: how many callers, imports or routes use them (use grep counts), whether there are migrations, public APIs or shared components involved.\n3. Check safety nets: test coverage around those files, whether CI runs them, how old and how often changed they are (`git log --since=1.year --oneline -- <path> | wc -l`).\n4. Break the work into pieces: implementation, tests, migration or data work, review fixes, deploy and verification. Give each a best and worst case in hours.\n5. Add the unknowns: anything you could not read, external services, missing specs, decisions owed by others.\n\nOutput: total range (for example 6 to 14 hours), confidence (low, medium or high), a table of pieces, the assumptions, and the top two things that would blow the estimate. Do not pad the number with a hidden buffer; show any buffer on its own line. Change no files.",
+  "argumentHint": "<task or ticket text>",
+  "example": {
+    "prompt": "/estimate-task add SSO login for the admin panel",
+    "result": "Range: 14 to 30 hours, confidence medium. Auth lives in one module (lib/auth) with 9 callers and good tests. Unknown: whether the identity provider needs SCIM. Biggest risk: existing local accounts must link to SSO users."
+  },
+  "faq": [
+    {
+      "question": "Is the number a commitment?",
+      "answer": "No. It is a range with assumptions, meant to start a conversation about scope."
+    },
+    {
+      "question": "Can it estimate work in a repo it has not seen?",
+      "answer": "It needs to read the code. Without access it says so rather than inventing a figure."
+    }
+  ],
+  "access": [
+    "Reads source files, tests and git history",
+    "Makes no changes"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

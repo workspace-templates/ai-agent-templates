@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"process.on('uncaughtException',()=>process.exit(0));let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{let j={};try{j=JSON.parse(d)||{}}catch(e){process.exit(0)}const i=j.tool_input||{};const f=String(i.file_path||'');const fs=require('fs');const rd=()=>{try{return fs.readFileSync(f,'utf8')}catch(e){return null}};const e=require('path').extname(f).toLowerCase();const ok=['.js','.jsx','.ts','.tsx','.mjs','.cjs','.py','.rb','.go','.rs','.java','.kt','.cs','.php','.swift','.c','.cpp','.h','.vue','.svelte'];if(!ok.includes(e)||f.includes('.min.'))process.exit(0);const t=rd();if(t===null)process.exit(0);const max=Number(process.env.WARN_LINES)||500;const n=t.split('\\n').length-(t.endsWith('\\n')?1:0);if(n>max){console.error(f+' now has '+n+' lines (limit '+max+'). Split it into smaller modules by responsibility, or tell the user why it stays long.');process.exit(2)}process.exit(0)})\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}

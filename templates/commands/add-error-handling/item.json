@@ -1,0 +1,45 @@
+{
+  "slug": "add-error-handling",
+  "title": "Add Error Handling",
+  "kind": "command",
+  "category": "code-quality",
+  "summary": "Adds real error handling to one function: lists its failure modes, handles each with a clear message and cleans up resources.",
+  "description": [
+    "Most functions only work on the happy path. This command takes one function, reads what it calls, and writes down every way it can fail before touching a line.",
+    "Each failure gets a specific response in the style the codebase already uses, whether that is typed errors, result values or exceptions, with cleanup that still runs when things go wrong."
+  ],
+  "stacks": [],
+  "topics": [
+    "debugging",
+    "logging"
+  ],
+  "useWhen": [
+    "A function crashes with a vague stack trace in production",
+    "You wrapped an API call and never handled a timeout",
+    "Reviewers keep asking what happens when this fails",
+    "A file or connection is opened and not reliably closed"
+  ],
+  "body": "Add error handling to: $ARGUMENTS\n\n1. Locate the function and read it, its callers and its tests. Note how this codebase reports errors already (exceptions, Result types, error codes, HTTP responses) and copy that style.\n2. List every failure mode before editing: invalid input, null or missing data, I/O and network errors, timeouts, partial writes, permission problems, and errors thrown by each dependency.\n3. For each one decide: recover, retry with a limit, translate into a domain error, or let it propagate. Say which and why.\n4. Write messages that name the operation and the offending value, never secrets or full payloads.\n5. Make cleanup unconditional (finally, defer, using, context managers).\n6. Never add an empty catch or a blanket catch that hides bugs. Do not change the function's successful behavior.\n\nAdd a test for each failure mode that can be triggered. Show the failure table and the diff, run the tests, then ask before changing any caller's signature.",
+  "argumentHint": "[function name or file:line]",
+  "example": {
+    "prompt": "/add-error-handling uploadAvatar in src/users/avatar.ts",
+    "result": "Failure modes: file over 5 MB, wrong MIME type, storage timeout, DB update fails after upload.\nAdded AvatarError with 4 codes, retry once on timeout, deletes the orphan file if the DB write fails.\n4 new tests pass. Callers unchanged. Update the route to map codes to HTTP statuses?"
+  },
+  "faq": [
+    {
+      "question": "Will it wrap everything in try and catch?",
+      "answer": "No. It decides per failure whether to recover, translate or let it pass up, and refuses empty catches."
+    },
+    {
+      "question": "Does it change what callers see?",
+      "answer": "Only if you agree. Changes to a signature or thrown type are proposed and wait for your answer."
+    }
+  ],
+  "access": [
+    "Reads the function, its callers and tests",
+    "Edits the named function and adds tests"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

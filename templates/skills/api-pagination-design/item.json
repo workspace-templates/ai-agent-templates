@@ -1,0 +1,45 @@
+{
+  "slug": "api-pagination-design",
+  "title": "API Pagination Design",
+  "kind": "skill",
+  "category": "backend",
+  "summary": "Picks cursor or offset pagination for a list endpoint, then implements stable ordering, hard limits and next links that never skip or repeat rows.",
+  "description": [
+    "Offset pagination looks fine in a demo and then returns duplicates and gaps once rows are inserted during paging, or crawls once the offset reaches the millions. This skill has the agent look at the actual table and traffic before choosing.",
+    "It then implements the choice end to end: the query, the index that backs it, the limit cap and the response links. A test inserts rows between page requests to prove the pages stay consistent."
+  ],
+  "stacks": [],
+  "topics": [
+    "api-design",
+    "performance"
+  ],
+  "useWhen": [
+    "A list endpoint gets slower the deeper clients page",
+    "Clients report duplicate or missing items while scrolling",
+    "You are adding a new collection endpoint",
+    "An export job needs to walk a table of millions of rows"
+  ],
+  "body": "# API pagination design\n\nChoose with evidence, then make paging deterministic.\n\n## Steps\n\n1. Read the endpoint, the table and its indexes. Note the expected size, whether rows are inserted while clients page, and whether users need to jump to page N.\n2. Choose. Use cursor (keyset) pagination for feeds, logs and anything large or changing. Use offset only for small, stable lists where a page number is a real feature, and cap the maximum offset.\n3. Make the order total. Sort by a column plus a unique tiebreaker, for example `ORDER BY created_at DESC, id DESC`. Without the tiebreaker, equal timestamps cause skipped rows.\n4. For keyset, filter with a row comparison: `WHERE (created_at, id) < (:c, :i)`. Fetch `limit + 1` rows to learn whether a next page exists.\n5. Encode the cursor as opaque base64 of the sort values. Never let clients build it.\n6. Add a composite index that matches the sort and filters. Run `EXPLAIN` and show that it avoids a sort step.\n7. Enforce a default and a maximum limit (for example 25 and 100). Reject larger values with a 400.\n8. Return `items`, `next` (a URL or null) and, when cheap, no total. Counting millions of rows on every request is a bug.\n\n## Rules\n\n- Never paginate without a deterministic order.\n- Never expose raw database ids or timestamps in the cursor contract.\n- Tests must insert a row between page 1 and page 2 and assert no duplicates and no gaps.\n\n## Report\n\nThe choice and why, the index added, the query plan before and after, and the response shape.",
+  "example": {
+    "prompt": "GET /events gets slow on deep pages. Fix the pagination.",
+    "result": "Switched /events from offset to keyset on (occurred_at, id). Added index events_occurred_at_id_idx; page 4,000 dropped from 1.8 s to 6 ms. Default limit 50, max 200, opaque cursor, next link in the response. Added a test that inserts 5 rows between pages and asserts no duplicates. Dropped the total count."
+  },
+  "faq": [
+    {
+      "question": "When is offset still the right answer?",
+      "answer": "For small admin tables where people jump to page 7 and the data barely changes. The skill keeps offset there but caps how deep it can go."
+    },
+    {
+      "question": "How do I show a total count?",
+      "answer": "Prefer an approximate count or none at all. If a product truly needs it, the skill caches it rather than counting on every request."
+    }
+  ],
+  "access": [
+    "Reads source files and schema or migration files",
+    "Runs read-only EXPLAIN queries only if you point it at a database",
+    "Edits queries and adds an index migration when approved"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

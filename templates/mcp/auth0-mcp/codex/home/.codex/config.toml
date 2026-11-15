@@ -1,0 +1,6 @@
+[mcp_servers.auth0]
+command = "npx"
+args = ["-y","@auth0/auth0-mcp-server","run","--read-only"]
+
+[mcp_servers.auth0.env]
+AUTH0_MCP_ANALYTICS = "${AUTH0_MCP_ANALYTICS}"

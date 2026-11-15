@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"let d='';process.stdin.on('data',x=>d+=x).on('end',()=>{let j={};try{j=JSON.parse(d)}catch(e){return}const i=j.tool_input||{};const c=String(i.command||'').replace(/\\x22[^\\x22]*\\x22|\\x27[^\\x27]*\\x27/g,' ')+' ';const t=c.split(/&&|[|][|]|[;|]/).map(s=>s+String.fromCharCode(32));const h=t.find(s=>/^[ ]*git[ ]/.test(s)&&(/--no-verify/.test(s)||(/[ ]commit[ ]/.test(s)&&/[ ]-[a-zA-Z]*n[a-zA-Z]*[ ]/.test(s))));if(h){console.error('Blocked: skipping git hooks hides failing checks. Fix what the pre-commit or pre-push hook reports, then run the command again without --no-verify.');process.exitCode=2}})\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

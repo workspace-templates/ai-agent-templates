@@ -1,0 +1,47 @@
+{
+  "slug": "inject-git-branch",
+  "title": "Inject Git Branch",
+  "kind": "hook",
+  "category": "git",
+  "summary": "A Claude Code hook that adds the current Git branch and a count of uncommitted files to every prompt you send, so the agent always knows where it is.",
+  "description": [
+    "Long sessions drift: you switch branches in another terminal and the agent keeps assuming the old one. This UserPromptSubmit hook runs two quick Git queries before each prompt and prints one line that Claude Code adds to the context.",
+    "The line names the branch, or the short commit when HEAD is detached, and says how many files are modified or untracked. Outside a Git repository it prints nothing."
+  ],
+  "stacks": [],
+  "topics": [
+    "git"
+  ],
+  "useWhen": [
+    "Switch branches often during one session",
+    "Ask for commit messages that should name the branch",
+    "Stop the agent from assuming it is on main",
+    "Work in several worktrees at once"
+  ],
+  "hook": {
+    "event": "UserPromptSubmit",
+    "command": "node -e \"let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{let j={};try{j=JSON.parse(d)}catch(e){}const cp=require('child_process');const g=a=>cp.execFileSync('git',a,{cwd:j.cwd||process.cwd(),encoding:'utf8',stdio:['ignore','pipe','ignore']});try{const b=g(['branch','--show-current']).trim()||('detached at '+g(['rev-parse','--short','HEAD']).trim());const n=g(['status','--porcelain']).split(String.fromCharCode(10)).filter(Boolean).length;console.log('Git context: branch '+b+', '+(n?n+' uncommitted file'+(n>1?'s':''):'working tree clean')+'.')}catch(e){}process.exit(0)})\"",
+    "timeout": 10
+  },
+  "example": {
+    "prompt": "Write a commit message for what I have staged.",
+    "result": "Claude sees 'Git context: branch fix/login-redirect, 3 uncommitted files.' with the prompt and can mention the branch when it drafts the message."
+  },
+  "faq": [
+    {
+      "question": "Does it slow each prompt down?",
+      "answer": "Barely. Two local Git calls finish in a few milliseconds, and nothing touches the network."
+    },
+    {
+      "question": "What does it print on a detached HEAD?",
+      "answer": "It names the short commit hash instead of a branch, for example 'detached at 4f2a9c1'."
+    }
+  ],
+  "access": [
+    "Runs git branch and git status in the project folder",
+    "Writes one line of context; changes no files"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

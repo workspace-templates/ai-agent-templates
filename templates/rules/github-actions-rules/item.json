@@ -1,0 +1,45 @@
+{
+  "slug": "github-actions-rules",
+  "title": "GitHub Actions Rules",
+  "kind": "rules",
+  "category": "devops",
+  "summary": "Project rules for GitHub Actions workflows: pinned actions, minimal token permissions, caching, reusable workflows and safe secret handling.",
+  "description": [
+    "These rules shape how an agent writes and edits workflow files under .github/workflows. They push every job toward the same safe defaults, so a generated pipeline does not start with broad permissions or floating action versions.",
+    "They also cover speed and reuse: dependency caching, concurrency groups and shared workflows, so CI stays fast and a fix lands in one place."
+  ],
+  "stacks": [
+    "github-actions"
+  ],
+  "topics": [
+    "ci",
+    "security"
+  ],
+  "useWhen": [
+    "You ask an agent to add or change a CI workflow",
+    "Workflows copy the same steps in many repositories",
+    "A security review flagged unpinned actions or write-all tokens",
+    "Pull request builds queue up behind stale runs"
+  ],
+  "body": "# Project rules: GitHub Actions\n\n## Workflow layout\n- One workflow per concern: `ci.yml`, `release.yml`, `deploy.yml`. Name jobs and steps in plain words so the checks list reads clearly.\n- Pull shared logic into reusable workflows (`workflow_call`) or composite actions in `.github/actions`. Never paste the same ten steps twice.\n\n## Security\n- Declare `permissions:` at the top of every workflow as `contents: read`, then raise it per job only where needed.\n- Pin third-party actions to a full commit SHA with the version in a trailing comment. First-party `actions/*` may use a major tag.\n- Never interpolate `github.event.*` text (titles, branch names) into a `run:` script. Pass it through `env:` and quote the variable.\n- Secrets come from `secrets.*` or OIDC federation to the cloud provider. Do not echo them, and do not use `pull_request_target` to run code from forks.\n\n## Speed and reliability\n- Set `concurrency` with `cancel-in-progress: true` for pull request runs, never for deploys.\n- Cache dependencies with the setup action's built-in cache option, keyed on the lockfile.\n- Set `timeout-minutes` on every job. Use a `matrix` for versions, with `fail-fast: false` when results are independent.\n- Gate deploys with `environments` and required reviewers.\n\n## Before finishing\n- Lint the files with `actionlint`. Run the same build and test commands locally that the workflow runs.\n- Explain any permission you raised in the pull request description.",
+  "example": {
+    "prompt": "Add a workflow that tests the Node app on pull requests",
+    "result": "The agent creates ci.yml with read-only permissions, a pinned setup-node step with lockfile caching, a concurrency group, a job timeout and a matrix over two Node versions, then runs actionlint."
+  },
+  "faq": [
+    {
+      "question": "Why pin to a commit SHA?",
+      "answer": "A tag can be moved after you review it. A full SHA fixes the exact code your pipeline runs, which blocks a hijacked release from reaching your secrets."
+    },
+    {
+      "question": "Does this work for GitLab CI?",
+      "answer": "No. The syntax and security model are specific to GitHub Actions, so keep a separate rules file for other CI systems."
+    }
+  ],
+  "access": [
+    "Guidance text for the agent; it adds no scripts and makes no network calls"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

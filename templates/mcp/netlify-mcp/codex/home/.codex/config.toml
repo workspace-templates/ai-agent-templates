@@ -1,0 +1,3 @@
+[mcp_servers.netlify]
+command = "npx"
+args = ["-y","@netlify/mcp"]

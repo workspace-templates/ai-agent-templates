@@ -1,0 +1,45 @@
+{
+  "slug": "fix-type-errors",
+  "title": "Fix Type Errors",
+  "kind": "command",
+  "category": "code-quality",
+  "summary": "Runs your type checker and fixes each reported error at its root cause, never with casts, any or suppression comments.",
+  "description": [
+    "A wall of type errors tempts people to add casts until it goes quiet. This command works through them properly, grouping errors by cause, since one wrong type often explains dozens of messages.",
+    "Where an error points at a real bug, it tells you. The checker output at the end is the proof that the work is done."
+  ],
+  "stacks": [],
+  "topics": [
+    "typescript",
+    "debugging"
+  ],
+  "useWhen": [
+    "A dependency upgrade produced dozens of type errors",
+    "The build fails in CI on tsc, mypy or pyright",
+    "You are migrating a project to strict mode",
+    "A refactor left mismatched types behind"
+  ],
+  "body": "Fix the type errors in this project. Scope: $ARGUMENTS (everything if empty).\n\n1. Find the checker command in package.json scripts, pyproject, tox or CI config (`tsc --noEmit`, `mypy .`, `pyright`, `go vet`, `cargo check`). Run it and save the full error list with the count.\n2. Group errors by root cause: a changed library type, a wrong interface, a missing null check, an outdated mock. Fix the root first and re-run, since many errors usually vanish together.\n3. Fix each one with a correct type or a real guard. Never add `as any`, `as unknown as`, `!` non-null assertions, `@ts-ignore`, `@ts-expect-error` or `# type: ignore`, and never loosen the compiler options.\n4. If the fix would require changing behavior, or the error reveals a genuine bug, stop on that item and describe it with the file and line.\n5. Re-run the checker until clean or until only the stopped items remain. Then run the tests.\n\nReport the count before and after, the root causes found, any bugs, and the files changed. Ask before changing any public type that other packages consume.",
+  "argumentHint": "[optional file or error code]",
+  "example": {
+    "prompt": "/fix-type-errors",
+    "result": "tsc --noEmit: 87 errors before, 0 after. Root causes: 61 from the upgraded @types/express Request, 18 missing null checks, 8 stale test mocks.\nReal bug: orders.ts:140 reads item.price before it is loaded; added the guard.\nTests pass."
+  },
+  "faq": [
+    {
+      "question": "Why not just add casts?",
+      "answer": "Casts hide the mismatch, so the bug moves to runtime. This command fixes the type or the code that disagrees with it."
+    },
+    {
+      "question": "What if a fix needs behavior changes?",
+      "answer": "It stops on that error, explains it and waits, because that decision belongs to you."
+    }
+  ],
+  "access": [
+    "Runs the type checker and tests",
+    "Edits source files to fix the errors, public types only after you agree"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

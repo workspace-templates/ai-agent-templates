@@ -1,0 +1,45 @@
+{
+  "slug": "schema-diff-review",
+  "title": "Schema Diff Review",
+  "kind": "command",
+  "category": "database",
+  "summary": "Reviews a schema change or migration diff for risk, missing indexes and rollback, and returns a verdict with line references.",
+  "description": [
+    "Schema changes are the riskiest part of a pull request because they cannot be undone as easily as code. This command reads the diff and the schema around it, then judges it the way a careful database engineer would.",
+    "You get a verdict of approve, change or block, each finding tied to a file and line, and a plan for how to roll back if the deploy goes wrong."
+  ],
+  "stacks": [],
+  "topics": [
+    "migrations",
+    "code-review"
+  ],
+  "useWhen": [
+    "A pull request contains a migration file",
+    "You are about to run a schema change on a large table",
+    "A teammate changed an ORM model and you want the SQL impact",
+    "You want a second opinion on foreign keys and constraints"
+  ],
+  "body": "Review the schema change: $ARGUMENTS (branch, commit range, or empty for the current diff against main).\n\n1. Run `git diff <base>...HEAD --stat` and read every changed migration, model and schema file, and the tables they touch.\n2. Check each statement for: locks on large tables, rewrites of the table, dropped or truncated columns, narrowing type changes, NOT NULL or unique constraints added to existing data, renamed columns that old code still reads.\n3. Check design: missing foreign keys, missing indexes on new foreign keys and filtered columns, duplicate or unused indexes, wrong types for money and time, missing defaults.\n4. Check order: can the old application version run against the new schema, and the new code against the old schema?\n5. Check rollback: is there a working down step, and what data is lost if used?\n6. Do not edit or run anything.\n\nReturn a verdict (approve, change, block), then findings in a table: severity, file:line, problem, fix. End with the rollback plan in 3 steps and ask if you should draft the fixes.",
+  "argumentHint": "[branch or commit range, default current diff]",
+  "example": {
+    "prompt": "/schema-diff-review feature/invoices",
+    "result": "Verdict: change.\nHigh: migrations/0061.sql:14 creates index on payments(invoice_id) without CONCURRENTLY, locks writes.\nMedium: invoices.total is FLOAT, use numeric(12,2).\nLow: no index on invoices.customer_id.\nRollback: down step drops the table, so export first. Draft fixes?"
+  },
+  "faq": [
+    {
+      "question": "Does it run the migration to check it?",
+      "answer": "No. It judges the diff by reading, and suggests testing on a copy of the data."
+    },
+    {
+      "question": "What do the verdicts mean?",
+      "answer": "Approve means no blockers, change means fix the listed items first, and block means the change can cause data loss or an outage."
+    }
+  ],
+  "access": [
+    "Reads the git diff, migrations and models",
+    "Makes no changes until you ask for fixes"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

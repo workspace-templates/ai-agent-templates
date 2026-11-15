@@ -1,0 +1,48 @@
+{
+  "slug": "log-bash-commands",
+  "title": "Log Bash Commands",
+  "kind": "hook",
+  "category": "productivity",
+  "summary": "A Claude Code hook that appends every shell command the agent runs to .claude/command-log.txt with a timestamp, for review afterward.",
+  "description": [
+    "When an agent works for a while it is hard to remember what it ran. This PreToolUse hook writes each Bash command to a plain text log next to your project settings.",
+    "Each line holds an ISO timestamp and the command as a JSON string, so multi-line commands stay on one line. Nothing leaves your machine."
+  ],
+  "stacks": [],
+  "topics": [
+    "logging"
+  ],
+  "useWhen": [
+    "Audit what an agent ran during a long session",
+    "Reconstruct the steps that fixed a problem",
+    "Review commands before you trust a workflow",
+    "Keep a record for a team or compliance"
+  ],
+  "hook": {
+    "event": "PreToolUse",
+    "matcher": "Bash",
+    "command": "node -e \"let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{let j={};try{j=JSON.parse(d)}catch(e){process.exit(0)}const i=j.tool_input||{};const c=(j.tool_input||{}).command;if(!c)process.exit(0);const fs=require('fs');fs.mkdirSync('.claude',{recursive:true});fs.appendFileSync('.claude/command-log.txt',new Date().toISOString()+' '+JSON.stringify(c)+String.fromCharCode(10))})\"",
+    "timeout": 10
+  },
+  "example": {
+    "prompt": "Run the tests and fix any failures.",
+    "result": ".claude/command-log.txt gains lines such as: 2026-11-15T09:12:44.120Z \"npm test\". Add the file to .gitignore if you do not want to commit it."
+  },
+  "faq": [
+    {
+      "question": "Where is the log?",
+      "answer": "In .claude/command-log.txt under the folder Claude Code was started in."
+    },
+    {
+      "question": "Does it block anything?",
+      "answer": "No. It always lets the command run and only writes the line."
+    }
+  ],
+  "access": [
+    "Reads each shell command",
+    "Writes to .claude/command-log.txt"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

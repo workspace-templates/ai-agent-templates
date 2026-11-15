@@ -1,0 +1,55 @@
+{
+  "slug": "css-refactorer",
+  "title": "CSS Refactorer",
+  "kind": "agent",
+  "category": "frontend",
+  "summary": "Subagent that merges duplicated CSS into tokens and shared classes, proving the rendered result is unchanged.",
+  "description": [
+    "Stylesheets grow by copy and paste: the same blue in forty places, the same card padding written six ways. This subagent finds the repeats and folds them into custom properties and a small set of shared classes.",
+    "The rule is that nothing visible changes. It records computed values before and after where it can, edits in small steps, and stops to ask when two near-identical values might have been meant to differ."
+  ],
+  "stacks": [
+    "css"
+  ],
+  "topics": [
+    "refactoring"
+  ],
+  "useWhen": [
+    "The same hex colors and pixel values repeat across many files",
+    "You are about to add dark mode or theming and need tokens first",
+    "Several components share almost identical button or card styles",
+    "A stylesheet doubled in size and nobody knows what is still used"
+  ],
+  "body": "# CSS refactorer\n\nConsolidate duplicated CSS into design tokens and shared classes. The rendered result must not change.\n\n## Steps\n\n1. Inventory first. Grep all stylesheets for color values, font sizes, spacing, radii and shadows. Count how often each distinct value appears and list them before touching anything.\n2. Find the token candidates: values used three or more times. Group near-duplicates (#333 and #343434, 15px and 16px) and ask before merging values that differ, because merging changes pixels.\n3. Define tokens as custom properties on `:root` in one file, named by role (`--color-text-muted`, `--space-3`), not by value (`--gray-666`).\n4. Replace literals with `var(--token)`. Do one property family at a time, such as colors, then spacing, so each step can be checked.\n5. Extract repeated rule blocks into a shared class only when three or more selectors carry the same declarations. Keep specificity the same or lower; never add `!important`.\n6. Remove rules that are provably dead: selectors with no match in templates, components or scripts. When a class is built dynamically, keep it.\n7. Verify. Run the build and any visual or snapshot tests. Where none exist, compare file size and list the exact values that were substituted.\n\n## Rules\n\n- No renames of classes used in markup unless you update every usage.\n- No reordering of rules that depend on cascade order.\n- Stop and report if a change cannot be proven equivalent.\n\n## Report\n\nTokens created, selectors merged, rules deleted, lines saved, and the checks that passed.",
+  "agent": {
+    "tools": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Edit",
+      "Bash"
+    ],
+    "model": "sonnet"
+  },
+  "example": {
+    "prompt": "Pull the repeated colors and spacing in src/styles into tokens.",
+    "result": "Created tokens.css with 11 color and 7 spacing properties. Replaced 148 literals across 9 files. Merged .card, .panel and .tile (identical except border color) into .surface plus one modifier. Left #2a2a2a and #2b2b2b separate and asked which is intended. Build passes, stylesheet is 18 percent smaller."
+  },
+  "faq": [
+    {
+      "question": "How does it know nothing changed visually?",
+      "answer": "It only substitutes values that resolve identically, runs your visual or snapshot tests if you have them, and asks before merging values that are merely close."
+    },
+    {
+      "question": "Does it work with Sass or CSS modules?",
+      "answer": "The approach is the same. It writes tokens as native custom properties, which every preprocessor and module setup can consume."
+    }
+  ],
+  "access": [
+    "Reads and edits stylesheet files",
+    "Runs your build and test commands"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,45 @@
+{
+  "slug": "dbt-modeling",
+  "title": "dbt Modeling",
+  "kind": "skill",
+  "category": "data",
+  "summary": "Builds dbt models in staging, intermediate and mart layers with tests and generated docs. Use it when adding or restructuring warehouse transformations.",
+  "description": [
+    "A dbt project stays maintainable when each layer has one job. This skill puts raw renaming and casting in staging, business logic in intermediate and marts, and attaches tests and descriptions to the model in the same change that creates it.",
+    "The agent follows your project's naming and materialization conventions, runs the models it touched, and reports test results rather than assuming they pass."
+  ],
+  "stacks": [],
+  "topics": [
+    "sql",
+    "documentation"
+  ],
+  "useWhen": [
+    "You are adding a new source and need clean staging models for it",
+    "A mart model has grown into a 300 line query with repeated logic",
+    "Tests are missing and nobody knows which columns are unique or required",
+    "New teammates cannot find what a model means because nothing is documented"
+  ],
+  "body": "# dbt modeling\n\nOne model, one purpose. Tests and docs ship with the model.\n\n## Steps\n\n1. Read `dbt_project.yml` and two existing models to learn the naming, folder layout and default materializations. Match them.\n2. Declare the raw tables in a `sources.yml` with a `loaded_at_field` and a freshness rule where one exists.\n3. Staging (`stg_<source>__<table>`): one model per source table, `{{ source() }}` only here. Rename columns to snake case, cast types, convert timestamps to UTC, and do no joins or aggregation. Materialize as view.\n4. Intermediate (`int_<entity>__<verb>`): joins, deduplication and reusable logic. Reference upstream models with `{{ ref() }}` only.\n5. Marts (`dim_` and `fct_`): one grain per table, stated in the description. Materialize as table, or incremental with a `unique_key` and a lookback filter for large facts.\n6. Write the YAML next to each model: a description, and tests on every key (`unique`, `not_null`), foreign keys (`relationships`), and enums (`accepted_values`).\n7. Run `dbt build --select +<model>` and read the failures. Fix the model, not the test, unless the test is wrong.\n8. Run `dbt docs generate` if the project publishes docs.\n\n## Rules\n\n- No `select *` in marts. List columns.\n- Do not hardcode schema names; use refs.\n- Keep logic out of YAML tests; put it in singular tests under `tests/`.\n\n## Report\n\nModels created with their layer and grain, tests added, `dbt build` result, and any data problem the tests exposed.",
+  "example": {
+    "prompt": "Add the Stripe charges source and a fct_payments mart.",
+    "result": "Added sources.yml for stripe.charges, stg_stripe__charges (view), int_payments__enriched joining customers, and fct_payments (incremental, unique_key payment_id, grain: one row per charge). 11 tests added. dbt build passes except one: accepted_values on currency found \"XBT\" on 3 rows, reported rather than silenced."
+  },
+  "faq": [
+    {
+      "question": "Does it need a warehouse connection?",
+      "answer": "To run and test models, yes: it uses the profile you already have. Without one it still writes models and YAML and tells you they were not run."
+    },
+    {
+      "question": "Will it change my existing models?",
+      "answer": "Only when you ask for a refactor. For new work it adds files and leaves current models alone."
+    }
+  ],
+  "access": [
+    "Reads dbt project files and compiled SQL",
+    "Creates and edits models and YAML",
+    "Runs dbt commands against your configured warehouse profile"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

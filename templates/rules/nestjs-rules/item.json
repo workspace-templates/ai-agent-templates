@@ -1,0 +1,46 @@
+{
+  "slug": "nestjs-rules",
+  "title": "NestJS Rules",
+  "kind": "rules",
+  "category": "backend",
+  "summary": "Project rules for NestJS: feature modules, injectable providers, class-validator DTOs, guards, typed ConfigService and supertest e2e tests.",
+  "description": [
+    "NestJS brings a module system and decorators, and an agent can easily bypass both by importing services across the tree or skipping validation. These rules keep the dependency graph honest.",
+    "They explain where each concern belongs: pipes validate, guards authorize, interceptors shape output, filters format errors."
+  ],
+  "stacks": [
+    "node",
+    "typescript"
+  ],
+  "topics": [
+    "typescript",
+    "api-design"
+  ],
+  "useWhen": [
+    "You are adding a feature module to a Nest app",
+    "Providers import each other in circles",
+    "Request bodies reach services without validation",
+    "You want e2e tests that boot the real module graph"
+  ],
+  "body": "# Project rules: NestJS\n\n## Modules\n- One module per feature under `src/<feature>/`: module, controller, service, `dto/`, `entities/`. Export from a module only what others need and import the module, never the provider file.\n- Avoid `forwardRef`; a circular dependency means the design needs a third module or an event.\n\n## Controllers and DTOs\n- Controllers parse and delegate; services hold logic. Return plain objects or serialized DTOs, never persistence entities with secrets.\n- Define input as classes with `class-validator` decorators. Enable a global `ValidationPipe` with `whitelist`, `forbidNonWhitelisted` and `transform`.\n- Use `ParseUUIDPipe` and friends for path parameters.\n\n## Auth and errors\n- Protect routes with guards (`@UseGuards`) and read roles with a custom decorator and `Reflector`. Keep global guards for authentication.\n- Throw built-in HTTP exceptions from services only when meaningful; map domain errors in an exception filter that returns one JSON shape.\n\n## Config\n- Use `@nestjs/config` with a validated schema and inject typed config through `ConfigService`. Do not read `process.env` in providers.\n\n## Data\n- Inject repositories (TypeORM or Prisma service) into services. Use migrations, not `synchronize: true`.\n\n## Tests\n- Unit-test services with `Test.createTestingModule` and mocked providers. Write e2e tests under `test/` with supertest against `createNestApplication`.\n\n## Before finishing\nRun `npm run lint`, `npm run build`, `npm test` and `npm run test:e2e`.",
+  "example": {
+    "prompt": "Create a tags module with list and create endpoints",
+    "result": "The agent scaffolds a tags module with a DTO, validation pipe coverage, a service on the repository, an exported provider only where needed, and an e2e test for both routes."
+  },
+  "faq": [
+    {
+      "question": "Does it choose an ORM?",
+      "answer": "No. The data rules say how to inject and migrate, so TypeORM, Prisma or MikroORM can all follow them."
+    },
+    {
+      "question": "Why forbid synchronize: true?",
+      "answer": "It alters tables from entity changes at startup, which can drop columns in production. Migrations make the change reviewable."
+    }
+  ],
+  "access": [
+    "Instructions only; it does not read or change files by itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

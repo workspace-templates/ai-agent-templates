@@ -1,0 +1,45 @@
+{
+  "slug": "summarize-diff",
+  "title": "Summarize Diff",
+  "kind": "command",
+  "category": "productivity",
+  "summary": "Explains a diff in plain language for a product manager or support lead: what changed, who is affected and what could go wrong.",
+  "description": [
+    "Engineers write for engineers, and a pull request description full of function names tells a product manager nothing. This command reads the change and describes it by its effect on users and the business.",
+    "It avoids jargon, says when something is a risk and flags anything it could not understand from the code alone."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation",
+    "code-review"
+  ],
+  "useWhen": [
+    "A product manager wants to know what a pull request does",
+    "You are writing release notes for customers",
+    "Support needs to know what changed before a complaint arrives",
+    "A stakeholder must approve a change without reading code"
+  ],
+  "body": "Summarize a code change for a non-engineer. Target: $ARGUMENTS (current branch against main if empty).\n\n1. Get the change: a range through `git diff <base>...<head>`, a commit with `git show`, or a pull request with `gh pr diff <n>`. Read the commit messages too.\n2. Work out what a user or customer would notice. Look at UI text, endpoints, emails, pricing logic, permissions, data stored, and defaults. Ignore pure refactors, but say they exist.\n3. Write for someone who has never seen the code: no file names, no function names, no acronyms without a short explanation.\n\nFormat:\n**In one sentence**\n**What changes for users** (bullets, plain words)\n**Who is affected** (which customers, roles or plans)\n**Risks and what to watch** (support load, data changes, rollout order)\n**Needs a decision** (anything the code leaves open)\n**Not covered** (what you could not tell from the diff)\n\nKeep it under 200 words. Never guess a business reason; if the diff does not show it, say so. Make no changes.",
+  "argumentHint": "[branch, commit range or pull request number]",
+  "example": {
+    "prompt": "/summarize-diff 482",
+    "result": "In one sentence: customers can now pause a subscription for up to 3 months. Affected: paying monthly plans only. Risk: paused accounts keep their data but lose API access, so support may get questions. Not covered: whether annual plans should pause too."
+  },
+  "faq": [
+    {
+      "question": "Does it include code in the summary?",
+      "answer": "No. The output is written for readers who do not code, with technical terms explained or left out."
+    },
+    {
+      "question": "What if the diff is huge?",
+      "answer": "It groups changes by their effect on users and says which parts it skimmed."
+    }
+  ],
+  "access": [
+    "Reads diffs, commit messages and optionally a pull request through gh",
+    "Makes no changes"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

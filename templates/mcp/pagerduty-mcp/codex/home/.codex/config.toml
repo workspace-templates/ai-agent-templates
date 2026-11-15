@@ -1,0 +1,6 @@
+[mcp_servers.pagerduty]
+command = "uvx"
+args = ["pagerduty-mcp"]
+
+[mcp_servers.pagerduty.env]
+PAGERDUTY_USER_API_KEY = "${PAGERDUTY_USER_API_KEY}"

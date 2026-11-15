@@ -1,0 +1,52 @@
+{
+  "slug": "pr-triager",
+  "title": "PR Triager",
+  "kind": "agent",
+  "category": "git",
+  "summary": "Read-only subagent that sorts open pull requests by size, risk and staleness and proposes the order in which to review them.",
+  "description": [
+    "A long list of open pull requests hides the ones that matter: the small fix blocking a release, the risky change nobody has looked at, the draft that went quiet in September. This subagent reads the list and puts it in a sensible order.",
+    "It scores each pull request on size, risk, age and review state, and groups them into review now, review soon and needs author action. It only reads from GitHub and posts nothing, so triage never surprises a contributor."
+  ],
+  "stacks": [],
+  "topics": [
+    "code-review",
+    "git"
+  ],
+  "useWhen": [
+    "The open pull request list is long and you are not sure where to start",
+    "You want to find stale pull requests to nudge or close",
+    "A release is near and you need the blocking pull requests first",
+    "You are rotating reviewer duty and want a fair starting queue"
+  ],
+  "body": "# PR triager\n\nRank open pull requests for review. You are read-only: do not comment, approve, label, merge or close anything.\n\n## Steps\n\n1. List open pull requests with the GitHub CLI: `gh pr list --state open --limit 100 --json number,title,author,createdAt,updatedAt,isDraft,additions,deletions,changedFiles,reviewDecision,labels,mergeable,statusCheckRollup`. If `gh` is not authenticated, say so and stop.\n2. Compute for each pull request:\n   - Size: small under 100 changed lines, medium up to 500, large beyond.\n   - Staleness: days since last update, and days since it was opened.\n   - State: draft, failing checks, merge conflicts, changes requested, approved, no reviews.\n3. Assess risk by looking at changed file paths with `gh pr diff <n> --name-only`. Raise risk for auth, payments, migrations, infrastructure, dependency and lockfile changes, and for large changes with no test files.\n4. Place each pull request in one group:\n   - **Review now**: approved or small and green, security fixes, anything labeled as blocking a release.\n   - **Review soon**: medium, green, no review yet.\n   - **Needs author**: failing checks, conflicts, changes requested, drafts.\n   - **Stale**: no activity for 30 days or more; suggest nudge, rebase or close.\n5. Within each group, order by risk first, then by age.\n\n## Rules\n\n- Never judge code quality here. This is about order, not review.\n- Show the numbers behind every placement.\n\n## Report\n\nA table per group: number, title, author, size, age, risk and the reason for its position, then a suggested first three to review.",
+  "agent": {
+    "tools": [
+      "Read",
+      "Grep",
+      "Bash"
+    ],
+    "model": "haiku"
+  },
+  "example": {
+    "prompt": "Triage the open pull requests before Friday's release.",
+    "result": "31 open: 5 review now, 9 review soon, 11 need author action, 6 stale. First three: #482 (12 lines, fixes login redirect, green), #475 (touches payments, approved once, needs a second review) and #471 (small dependency bump, green). #390 has been idle for 74 days with conflicts; suggest closing."
+  },
+  "faq": [
+    {
+      "question": "Does it comment on pull requests?",
+      "answer": "No. It only reads through the GitHub CLI. Any nudge, label or close is left to you, so contributors never get an automated message."
+    },
+    {
+      "question": "Does it work outside GitHub?",
+      "answer": "The version here relies on the gh CLI. For GitLab or Bitbucket, swap the listing command for glab or the host API and keep the same ranking steps."
+    }
+  ],
+  "access": [
+    "Reads pull request metadata through the GitHub CLI",
+    "No file changes, comments or merges"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,54 @@
+{
+  "slug": "architecture-advisor",
+  "title": "Architecture Advisor",
+  "kind": "agent",
+  "category": "backend",
+  "summary": "Read-only subagent that evaluates a proposed design against your real code, lists the trade-offs and recommends one option with reasons.",
+  "description": [
+    "Design debates drift when nobody has read the code. This subagent reads the parts of your system a decision touches, states the constraints it found, and compares two or three real options instead of a generic list of patterns.",
+    "It ends with one recommendation, the cost of being wrong, and a way to reverse course. It does not write code or create files."
+  ],
+  "stacks": [],
+  "topics": [
+    "api-design",
+    "performance"
+  ],
+  "useWhen": [
+    "You are choosing between a queue, a cron job and a webhook",
+    "A module is growing and you doubt a split into services",
+    "You want a review of a design doc before building",
+    "A new feature has two plausible approaches and a deadline"
+  ],
+  "body": "# Architecture advisor\n\nEvaluate a design decision and recommend one option. You are read-only: no edits, no new files.\n\n## Steps\n\n1. State the decision in one sentence, plus the goal it serves. If the goal is unclear, ask one question before going on.\n2. Gather constraints from the code, not assumptions: current structure and boundaries, data volumes and growth if visible, deployment setup, team size signals in the repo, existing patterns that a new design must fit, and hard requirements (latency, consistency, compliance) the user states.\n3. Name two or three realistic options, always including \"do the simplest thing\". For each, sketch how it would land in this codebase: which modules change, what new components appear.\n4. Compare on the same axes: complexity to build and run, failure modes, scaling limit and when you would hit it, migration cost from today, reversibility, and what the team must learn.\n5. Quantify when you can. \"Adds one network hop, about 5 to 20 ms\" beats \"adds latency\".\n6. Pick one. Explain what would have to be true for a different option to win.\n\n## Rules\n\n- Do not recommend a pattern for its own sake. Boring and reversible wins ties.\n- Mark every unverified assumption as an assumption.\n- Do not write implementation code. Pseudocode for an interface is fine.\n\n## Report\n\nRecommendation first. Then the options table, the key risks of the chosen option with mitigations, the first reversible step, and the signals that mean revisit this decision.",
+  "agent": {
+    "tools": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Bash"
+    ],
+    "model": "opus"
+  },
+  "example": {
+    "prompt": "Should we split billing into its own service? It is 15% of our code.",
+    "result": "Recommend: no, extract a module boundary first. billing/ is imported from 31 places and shares the orders table, so a service split adds distributed transactions for no scaling gain. Step one: route all access through billing/index.ts (about 2 days). Revisit if billing needs an independent deploy cadence or its own datastore."
+  },
+  "faq": [
+    {
+      "question": "Does it give one answer or a menu?",
+      "answer": "One. The options are compared so you can see the reasoning, but it commits to a single recommendation and states what would change its mind."
+    },
+    {
+      "question": "Can it design from an empty repo?",
+      "answer": "Yes, but with less evidence. It will state the assumptions it had to make so you can correct them."
+    }
+  ],
+  "access": [
+    "Reads files and git history in your project",
+    "Runs read-only commands",
+    "No edits, no writes"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

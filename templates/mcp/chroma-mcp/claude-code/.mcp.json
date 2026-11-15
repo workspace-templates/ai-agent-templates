@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "chroma": {
+      "command": "uvx",
+      "args": [
+        "chroma-mcp"
+      ],
+      "env": {
+        "CHROMA_CLIENT_TYPE": "${CHROMA_CLIENT_TYPE}",
+        "CHROMA_DATA_DIR": "${CHROMA_DATA_DIR}"
+      }
+    }
+  }
+}

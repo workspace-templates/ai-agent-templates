@@ -1,0 +1,45 @@
+{
+  "slug": "llm-evals",
+  "title": "LLM Evals",
+  "kind": "skill",
+  "category": "data",
+  "summary": "Builds an eval set and scorer for an LLM feature and tracks regressions with each change. Use it so prompt and model changes are measured, not guessed.",
+  "description": [
+    "Changing a prompt without an eval is guessing with extra steps. This skill builds the smallest useful test harness for an LLM feature: a set of real cases, a scorer for each kind of answer, and a report that shows what got better and what got worse.",
+    "The agent prefers cheap code checks where an answer can be checked by code, and uses a model as a judge only for qualities that need reading, with the judge itself spot checked against human labels."
+  ],
+  "stacks": [],
+  "topics": [
+    "testing",
+    "python"
+  ],
+  "useWhen": [
+    "You change a prompt or switch models and need to know if quality dropped",
+    "Bug reports arrive from users and you want each one to become a permanent test",
+    "Stakeholders ask how good the feature is and you have only anecdotes",
+    "You want a gate in CI that fails when quality falls below a bar"
+  ],
+  "body": "# LLM evals\n\nNo change ships without a before and after number on the same cases.\n\n## Steps\n\n1. Define what a good answer means for this feature in one or two sentences, and list the failure types that hurt most: wrong fact, wrong format, refusal, unsafe content, too long.\n2. Build the case file (JSONL): id, input, and either an expected value, a rule, or a reference answer. Start with 30 to 50 cases drawn from real logs and bug reports, cover each failure type, and label edge cases. Add every new bug as a case.\n3. Score with the cheapest reliable method: exact or regex match, JSON schema validation, a unit test over generated code, or a numeric tolerance. Use an LLM judge only for qualities like helpfulness, with a written rubric of 3 to 5 points and a different model than the one being tested.\n4. Validate any judge: hand label 20 cases, compare, and report the agreement rate. Do not trust a judge below about 85 percent agreement.\n5. Run each case more than once if outputs vary, and report the pass rate, not a single sample.\n6. Store results per run with the prompt version, model name and date. Print a diff against the last run: cases that flipped to fail first, then to pass.\n7. Wire a command (`make eval`) and, if wanted, a CI check with a threshold.\n\n## Rules\n\n- Never put eval cases into the prompt as examples; keep them held out.\n- Do not average away a critical failure; report those separately.\n\n## Report\n\nOverall pass rate, pass rate per failure type, regressions against the last run with case IDs, and the cost of the run.",
+  "example": {
+    "prompt": "Set up evals for our support reply drafter before we switch models.",
+    "result": "Created evals/cases.jsonl with 42 cases from 6 weeks of tickets, scored by 3 regex checks, a policy rule list and a judge with a 4 point rubric (agreement with 20 human labels: 90%). Current model passes 81%. Candidate passes 84% overall but regresses 3 refund cases, listed by ID. Run with: make eval MODEL=candidate."
+  },
+  "faq": [
+    {
+      "question": "Is an LLM judge reliable enough?",
+      "answer": "For some qualities, yes, once checked. The skill measures the judge against human labels first and prefers code checks wherever an answer can be verified by code."
+    },
+    {
+      "question": "How many cases do I need?",
+      "answer": "Thirty to fifty real ones are enough to start and catch big regressions. The set grows as bugs appear, which is the point."
+    }
+  ],
+  "access": [
+    "Reads your LLM feature code and example logs you point it at",
+    "Writes eval cases and a scoring script",
+    "Calls a model API from your environment when you run the evals"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

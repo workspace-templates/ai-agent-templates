@@ -1,0 +1,44 @@
+{
+  "slug": "integration-testing",
+  "title": "Integration Testing",
+  "kind": "skill",
+  "category": "testing",
+  "summary": "Writes integration tests that use real databases and services, each with isolated data and fixed setup, so they are trustworthy and repeatable.",
+  "description": [
+    "Unit tests with every collaborator mocked cannot tell you whether the SQL runs, the migration applied or the HTTP client sends what the other side expects. Integration tests cover that gap, as long as they are deterministic.",
+    "This skill builds them around real dependencies, usually in containers, and gives each test its own data so order never matters. It also keeps the suite fast enough that people still run it before pushing."
+  ],
+  "stacks": [],
+  "topics": [
+    "testing",
+    "sql"
+  ],
+  "useWhen": [
+    "A bug slipped past mocked tests and showed up at the database",
+    "You add a repository, queue consumer or API client",
+    "Tests pass alone but fail when run together",
+    "You are setting up a CI database for the first time"
+  ],
+  "body": "# Integration testing\n\nTest the seams: your code against the real database, queue, cache or HTTP service.\n\n## Steps\n\n1. Pick the seams worth covering: repositories and migrations, HTTP routes with the real middleware, message consumers, clients of external APIs. Leave pure logic to unit tests.\n2. Provide real dependencies. Use Testcontainers or docker compose with pinned image versions that match production. For third-party HTTP services use a local fake server or recorded fixtures (WireMock, nock, MSW), never the live service.\n3. Setup once per run: start containers, apply real migrations, wait for readiness by health check, not by sleep.\n4. Isolate each test: wrap it in a transaction that rolls back, or truncate touched tables, or give each worker its own schema. Create the data the test needs inside the test with small factory helpers. No shared fixtures that tests mutate.\n5. Make time and randomness deterministic: inject a clock, seed generators, fix the time zone and locale.\n6. Assert on observable results: rows stored, response status and body, messages published. Avoid asserting on SQL text or call counts.\n7. Test failure paths too: unique violation, timeout, a 500 from the fake service, a retry.\n8. Keep it quick: reuse the container, run files in parallel when data is isolated, and tag slow tests so they run in CI.\n\n## Rules\n\n- No `sleep` for synchronization; poll with a timeout.\n- Tests must pass in any order and when run alone.\n- Never point a test at a shared or production database.\n\n## Report\n\nSeams covered, the setup used, how isolation works, run time, and flakiness checks (run the suite three times).",
+  "example": {
+    "prompt": "Add integration tests for the invoice repository and POST /invoices.",
+    "result": "Added tests using a Postgres 16 container with real migrations. 9 tests: insert, unique number conflict, tenant isolation, rollback on line item failure, and POST /invoices happy path, validation error, duplicate, and auth failure. Each test runs in a rolled back transaction. Suite takes 6.8 s and passed 3 runs in random order."
+  },
+  "faq": [
+    {
+      "question": "Why not use SQLite instead of the real database?",
+      "answer": "Different engines differ in types, locking and SQL features, so passing there proves little. A pinned container of your actual database is close to free now."
+    },
+    {
+      "question": "How do I stop slow tests from putting people off?",
+      "answer": "Share one container per run, isolate with transactions, parallelize by file and keep the heaviest cases behind a tag that CI runs."
+    }
+  ],
+  "access": [
+    "Reads and edits test files and test configuration",
+    "Starts local containers through Docker and runs your test command"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,51 @@
+{
+  "slug": "warn-skipped-tests",
+  "title": "Warn Skipped Tests",
+  "kind": "hook",
+  "category": "testing",
+  "summary": "Claude Code hook that flags an edit to a JavaScript or TypeScript test file when it adds .skip, .only, xit, xdescribe, fit or fdescribe.",
+  "description": [
+    "A quiet way to turn a red test green is to switch it off. This PostToolUse hook inspects edits to test files, counts the skip and focus markers in the new text against the old text, and complains when there are more than before.",
+    "The check applies to files named .test or .spec with a JavaScript or TypeScript extension, and to anything inside a __tests__ folder. The agent gets the warning right after the edit and must restore the test or explain."
+  ],
+  "stacks": [
+    "javascript"
+  ],
+  "topics": [
+    "testing"
+  ],
+  "useWhen": [
+    "Ask an agent to make a failing suite pass",
+    "Stop a leftover .only from hiding the rest of the tests",
+    "Review test changes made while you were away",
+    "Keep a Jest or Vitest suite honest"
+  ],
+  "hook": {
+    "event": "PostToolUse",
+    "matcher": "Edit|Write|MultiEdit",
+    "command": "node -e \"let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{let j={};try{j=JSON.parse(d)||{}}catch(e){process.exit(0)}const i=j.tool_input||{};const q=String.fromCharCode(34),sq=String.fromCharCode(39),bs=String.fromCharCode(92),nl=String.fromCharCode(10);const f=String(i.file_path||'').split(bs).join('/');if(!/([.](test|spec)[.][cm]?[jt]sx?$|[/]__tests__[/])/.test(f))process.exit(0);const pat=/(^|[^A-Za-z0-9_.])(x(it|describe|test)|f(it|describe)|(it|test|describe|context)[.](skip|only))([.]|[(])/g;const n=s=>(String(s||'').match(pat)||[]).length;const edits=Array.isArray(i.edits)?i.edits:[i];const added=edits.reduce((s,e)=>s+Math.max(0,n(e.new_string!==undefined?e.new_string:e.content)-n(e.old_string)),0);if(added>0){console.error('Warning: '+f+' now holds '+added+' skipped or focused test(s) (.skip, .only, xit, fit). Turn them back on, or tell the user why they stay off.');process.exit(2)}})\"",
+    "timeout": 10
+  },
+  "example": {
+    "prompt": "Get the checkout tests passing again.",
+    "result": "After the agent adds it.skip to a failing case, the hook reports one skipped test in checkout.test.ts and the agent fixes the case."
+  },
+  "faq": [
+    {
+      "question": "Why does a whole-file Write count every skip?",
+      "answer": "A Write has no old text to compare with, so every marker in the new content is counted, including ones that were already there."
+    },
+    {
+      "question": "Does it cover Mocha or Playwright?",
+      "answer": "Yes for the shared patterns such as it.only and describe.skip. Playwright's test.skip and test.only are matched as well."
+    }
+  ],
+  "access": [
+    "Reads the edited text sent with each Edit, MultiEdit or Write",
+    "Only looks at test file names and test markers",
+    "Reports back to the agent; changes no file"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

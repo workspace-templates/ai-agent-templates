@@ -1,0 +1,44 @@
+{
+  "slug": "branch-cleanup",
+  "title": "Branch Cleanup",
+  "kind": "command",
+  "category": "git",
+  "summary": "Lists merged and stale local branches, shows exactly what would be removed and deletes only the ones you approve.",
+  "description": [
+    "Old branches pile up until nobody knows which ones still matter. This command separates branches already merged from those that are simply old, and shows unpushed work that would be lost.",
+    "Nothing is deleted before you confirm the list. Protected branches such as main, develop and the current branch are never touched."
+  ],
+  "stacks": [],
+  "topics": [
+    "git"
+  ],
+  "useWhen": [
+    "`git branch` scrolls past one screen",
+    "After a release when many feature branches are merged",
+    "You are handing over a repository and want it tidy",
+    "You want to know which stale branches hold unmerged commits"
+  ],
+  "body": "Clean up local branches. Options from the user: $ARGUMENTS (for example a staleness window like 90d).\n\n1. Run `git fetch --prune` and `git branch -vv`. Identify the default branch and the current branch; both are protected, with `main`, `master`, `develop` and `release*`.\n2. Group the rest: **merged** (`git branch --merged <default>`), **gone** (upstream deleted), **stale** (no commit in 90 days or the given window) and **active**.\n3. For each non-merged candidate show last commit date, author, and the count of commits not in the default branch (`git rev-list --count <default>..<branch>`). Mark any with unpushed commits as at risk.\n4. Print the plan as a table of branch, group, last commit and risk, with the exact command for each deletion.\n5. Delete nothing yet. Ask which groups to remove. Use `git branch -d` for merged ones; use `-D` only for branches the user names one by one after seeing their unmerged commits. Never touch remote branches.\n\nAfter deleting, print the commit hash of each removed branch so it can be restored with `git branch <name> <hash>`.",
+  "argumentHint": "[staleness window, default 90d]",
+  "example": {
+    "prompt": "/branch-cleanup 60d",
+    "result": "Merged (safe): feat/login-form, fix/typo-footer, chore/deps-march.\nGone upstream: feat/export-csv (2 unmerged commits, at risk).\nStale: spike/graphql, 140 days, 9 commits not in main.\nDelete the merged group? Restore tip: git branch feat/login-form 3fa91c2."
+  },
+  "faq": [
+    {
+      "question": "Can I recover a deleted branch?",
+      "answer": "Yes. It prints each removed branch tip hash, and git reflog also keeps it for a while."
+    },
+    {
+      "question": "Does it delete remote branches?",
+      "answer": "No, only local ones. Remote cleanup is left to you or your hosting platform."
+    }
+  ],
+  "access": [
+    "Reads branch and commit data",
+    "Deletes local branches only after you confirm the list"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

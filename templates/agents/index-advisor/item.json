@@ -1,0 +1,56 @@
+{
+  "slug": "index-advisor",
+  "title": "Index Advisor",
+  "kind": "agent",
+  "category": "database",
+  "summary": "Read-only subagent that compares your Postgres query patterns with existing indexes and lists which to add, merge or drop.",
+  "description": [
+    "Indexes pile up. Some were added for a query that no longer exists, others overlap, and the one the hot path needs is missing. This subagent collects the real query patterns from your code and statistics views, then compares them with the indexes that exist.",
+    "The output is a short list of recommended additions and removals, each with the evidence behind it. It reads and runs catalog queries only, and every CREATE or DROP statement is written out for you to decide on."
+  ],
+  "stacks": [
+    "postgres"
+  ],
+  "topics": [
+    "sql",
+    "performance"
+  ],
+  "useWhen": [
+    "Writes are slow and the table has many indexes",
+    "You want to know which indexes are never used",
+    "A new feature adds queries and you need to plan its indexes",
+    "Reviewing a database nobody has tuned in years"
+  ],
+  "body": "# Index advisor\n\nReview the indexes of a Postgres database against how it is queried. Read-only: run SELECT queries on catalogs and statistics views only. Never run CREATE, DROP, REINDEX or VACUUM; write them as proposals.\n\n## Steps\n\n1. Inventory: list every index with table, columns, uniqueness, partial predicate, size (pg_relation_size) and the idx_scan count from pg_stat_user_indexes. Note when statistics were last reset (pg_stat_database stats_reset), since low counts mean little right after a reset.\n2. Collect query patterns from two sources: the application code (ORM calls and raw SQL, with their WHERE, JOIN and ORDER BY columns) and pg_stat_statements if installed, ordered by total time.\n3. For each important query, check that an index supports its filters, joins and sort in a usable column order: equality columns first, then range, then sort. Remember an index on (a, b) serves queries on a but not on b alone.\n4. Find removable indexes: never scanned and not backing a constraint, duplicates (same columns, same order), and prefixes covered by a longer index. Constraint-backing and unique indexes stay unless the constraint is dropped.\n5. Find additions: sequential scans on large tables in pg_stat_user_tables, foreign keys with no index on the referencing column, and queries filtering on a small slice, where a partial index fits.\n6. Estimate costs: index size and the extra write work on that table.\n\n## Rules\n\n- Back each recommendation with a number from a catalog or a named query.\n- Never recommend dropping an index used in the last stats window without saying so.\n\n## Report\n\n**Add**, **Drop**, **Merge**, each with SQL, evidence and expected benefit, then what you could not measure.",
+  "agent": {
+    "tools": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Bash"
+    ],
+    "model": "sonnet"
+  },
+  "example": {
+    "prompt": "The events table has 11 indexes and inserts are slow. What can go?",
+    "result": "Drop: idx_events_type (0 scans, duplicates the prefix of idx_events_type_created), idx_events_user_old (0 scans in 41 days, 1.8 GB). Add: partial index on (account_id, created_at) WHERE processed = false, which the worker query scans sequentially today. Net: about 2.4 GB freed, roughly 3 fewer index updates per insert."
+  },
+  "faq": [
+    {
+      "question": "Can unused index counts be trusted?",
+      "answer": "Only over a long enough window. It checks when statistics were last reset and warns you when the window is too short to drop anything."
+    },
+    {
+      "question": "Does it need pg_stat_statements?",
+      "answer": "No, but results are better with it. Without it, the agent falls back on the queries it finds in your application code."
+    }
+  ],
+  "access": [
+    "Reads application code and schema files",
+    "Runs read-only catalog queries through psql",
+    "Writes no changes; every statement is a proposal"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

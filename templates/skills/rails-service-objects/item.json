@@ -1,0 +1,48 @@
+{
+  "slug": "rails-service-objects",
+  "title": "Rails Service Objects",
+  "kind": "skill",
+  "category": "backend",
+  "summary": "Extracts business logic out of fat Rails controllers and models into small service and query objects, with specs that prove behavior stays the same.",
+  "description": [
+    "A Rails controller action that creates a record, charges a card, sends mail and enqueues a job is hard to test and harder to change. This skill moves that sequence into a plain Ruby object with one public method and a clear result.",
+    "It also pulls tangled scopes and joins into query objects. Each extraction is small, covered by a spec first, and leaves the callers easier to read."
+  ],
+  "stacks": [
+    "ruby",
+    "rails"
+  ],
+  "topics": [
+    "refactoring",
+    "code-review"
+  ],
+  "useWhen": [
+    "A controller action is longer than fifteen lines",
+    "A model callback triggers email, payments or other side effects",
+    "A model has grown past 300 lines of mixed concerns",
+    "You cannot test a workflow without hitting the whole request stack"
+  ],
+  "body": "# Rails service objects\n\nExtract only when it makes a flow easier to test. Do not wrap a one-line `save` in a class.\n\n## Steps\n\n1. Pick one fat action or callback. Read it with its model, routes and existing specs. Write the list of side effects it performs, in order.\n2. If no spec covers it, write a request spec or model spec for the current behavior first and run it green.\n3. Create `app/services/<verb>_<noun>.rb`, for example `PlaceOrder`. One public method, `call`, plus a class method `self.call(...)` that delegates to it. Pass plain arguments, not the controller or params object.\n4. Return a result object (`Result.new(success?, record, errors)`) instead of raising for expected failures. Raise only for bugs.\n5. Move callbacks that cause side effects (mail, webhooks, charges) into the service. Keep validations and data integrity in the model.\n6. For a growing chain of `where` and `joins`, create a query object in `app/queries` that takes a relation and returns a relation, so it can be chained.\n7. The controller now parses params, calls the service, and renders by result.\n\n## Rules\n\n- Wrap multi-record writes in `ActiveRecord::Base.transaction` and enqueue jobs after commit.\n- Never let a service call another service through a hidden global; pass collaborators as arguments.\n- Services must not render, redirect or read `current_user` implicitly.\n- Run `bundle exec rspec` after every extraction.\n\n## Report\n\nName each new class, the lines removed from the old location, and the spec that proves behavior is unchanged.",
+  "example": {
+    "prompt": "Refactor OrdersController#create, it does too much.",
+    "result": "Extracted `PlaceOrder` (app/services/place_order.rb) covering stock check, payment and confirmation mail. The controller dropped from 41 lines to 12. Moved the after_create mailer callback into the service and enqueued it after commit. Added spec/services/place_order_spec.rb; the existing request spec still passes."
+  },
+  "faq": [
+    {
+      "question": "Is a service object always the right fix?",
+      "answer": "No. A long method with one responsibility can simply be split into private methods. The skill extracts only flows with several steps or side effects."
+    },
+    {
+      "question": "Why a result object instead of exceptions?",
+      "answer": "A declined card is a normal outcome, not a bug. A result lets the controller branch without rescue blocks."
+    }
+  ],
+  "access": [
+    "Reads Rails app code and specs",
+    "Creates and edits Ruby files",
+    "Runs bundle exec rspec"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

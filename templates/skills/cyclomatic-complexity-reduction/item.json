@@ -1,0 +1,44 @@
+{
+  "slug": "cyclomatic-complexity-reduction",
+  "title": "Cyclomatic Complexity Reduction",
+  "kind": "skill",
+  "category": "code-quality",
+  "summary": "Flattens deeply nested conditionals with guard clauses, lookup tables and extraction, and proves with tests that the behavior did not change.",
+  "description": [
+    "A function with six levels of if and else is not only ugly, it hides which branch handles which case. This skill reduces nesting step by step, running the tests between steps so a refactoring never turns into a rewrite.",
+    "It measures complexity before and after with a tool already in your project when one exists, and with a manual count of branches when not."
+  ],
+  "stacks": [],
+  "topics": [
+    "refactoring",
+    "testing"
+  ],
+  "useWhen": [
+    "A function has more than four levels of indentation",
+    "A linter reports complexity above your limit",
+    "You need to add a case to a conditional and cannot tell where it belongs",
+    "A switch or if-chain repeats in several places"
+  ],
+  "body": "# Cyclomatic complexity reduction\n\nChange the shape, never the behavior. Tests decide whether a step is allowed to stay.\n\n## Steps\n\n1. Find the target: the function the user named, or the worst offenders from the project's linter (`eslint --rule 'complexity: [error, 10]'`, `radon cc -s`, `gocyclo`, or similar). Record the current score.\n2. Check for tests that reach every branch. If a branch is untested, write a characterization test for it first and see it pass on the unchanged code.\n3. Apply these moves, one per commit-sized step, in this order:\n   - Guard clauses: invert the condition and return or throw early, so the happy path sits at the lowest indentation.\n   - Remove else after return.\n   - Replace nested conditions on the same value with a lookup table or a map of handlers.\n   - Name complicated boolean expressions by extracting them into predicates (`isEligibleForRefund`).\n   - Extract the body of each remaining branch into a function when it exceeds about 8 lines.\n   - Replace a repeated type switch with polymorphism only if it appears in three or more places.\n4. Run the tests after each move. If one fails, undo that move and try a smaller one.\n5. Recount complexity and confirm it fell.\n\n## Rules\n\n- Keep evaluation order and short-circuit behavior; a reordered condition can change which side effect runs.\n- Do not merge branches that look alike but differ in a subtle way; flag them.\n- No new dependencies and no renamed public functions.\n\n## Report\n\nBefore and after complexity score, the moves applied, test results, and branches you left alone with the reason.",
+  "example": {
+    "prompt": "Reduce the complexity of shippingCost() in src/shipping.js",
+    "result": "Complexity 19 down to 6. Added 5 characterization tests first (all passed before changes). Applied 4 guard clauses, replaced the country if-chain with a rates table and extracted isOversized(). Tests green after each step. Left the holiday surcharge branch untouched: two conditions look duplicated but differ on weekends."
+  },
+  "faq": [
+    {
+      "question": "What if the function has no tests?",
+      "answer": "It writes tests that record today's output first. Without that safety net the skill will not restructure anything."
+    },
+    {
+      "question": "Is a lower number always better?",
+      "answer": "No. The goal is code you can read. If a split makes the flow harder to follow, the skill keeps the larger function."
+    }
+  ],
+  "access": [
+    "Reads and edits source files",
+    "Runs your test command and an optional complexity linter"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "upstash": {
+      "httpUrl": "https://mcp.upstash.com/mcp"
+    }
+  }
+}

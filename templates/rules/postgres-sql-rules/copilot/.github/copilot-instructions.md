@@ -1,0 +1,23 @@
+# Project rules: PostgreSQL
+
+## Naming and types
+- Use lowercase snake_case, plural table names and singular column names. Primary keys are `id`; foreign keys are `<table>_id`.
+- Use `timestamptz` for times, `numeric` for money, `uuid` or `bigint generated always as identity` for keys, `text` with a check instead of arbitrary varchar limits, and `jsonb` only for truly flexible data.
+- Never use `float` for currency, or `timestamp` without a zone.
+
+## Constraints
+- Declare `NOT NULL`, `UNIQUE`, `CHECK` and `FOREIGN KEY` in the schema. Choose `ON DELETE` behavior deliberately. Add `created_at` and `updated_at` columns.
+
+## Indexes
+- Index foreign keys and the columns used in frequent filters and sorts. Use partial and composite indexes where the query shape justifies them. Create them with `CREATE INDEX CONCURRENTLY` on live tables.
+- Check plans with `EXPLAIN (ANALYZE, BUFFERS)` before claiming a query is fast.
+
+## Migrations
+- One change per migration, with a down step where possible. Add columns as nullable, backfill in batches, then add the constraint with `NOT VALID` and `VALIDATE`. Set a `lock_timeout`. Do not rewrite big tables in one transaction.
+
+## Queries
+- Always use bound parameters. List columns instead of `SELECT *`. Page with keyset pagination for large sets, and use `ON CONFLICT` for upserts.
+- Wrap multi-statement changes in a transaction.
+
+## Checks
+- Run the migration on a copy of the schema and lint SQL with sqlfluff or squawk.

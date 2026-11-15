@@ -1,0 +1,50 @@
+{
+  "slug": "block-force-push",
+  "title": "Block Force Push",
+  "kind": "hook",
+  "category": "security",
+  "summary": "A Claude Code hook that stops git push --force, -f and --force-with-lease aimed at main or master, including bare pushes made from those branches.",
+  "description": [
+    "Rewriting shared history is the git mistake your teammates feel first. This PreToolUse hook reads each Bash command, finds git push calls carrying a force flag or a plus refspec, and refuses them when the target is main or master.",
+    "When a push names no branch at all, the hook opens .git/HEAD in the working folder to learn which branch is checked out. Force pushes to feature branches pass through untouched, so rebasing your own work stays easy."
+  ],
+  "stacks": [],
+  "topics": [
+    "git",
+    "security"
+  ],
+  "useWhen": [
+    "Let an agent rebase and push without risking trunk",
+    "Protect main on a repo with no branch rules",
+    "Stop a pasted force push from landing on master",
+    "Keep release history linear and intact"
+  ],
+  "hook": {
+    "event": "PreToolUse",
+    "matcher": "Bash",
+    "command": "node -e \"let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{let j={};try{j=JSON.parse(d)||{}}catch(e){process.exit(0)}const i=j.tool_input||{};const q=String.fromCharCode(34),sq=String.fromCharCode(39),bs=String.fromCharCode(92),nl=String.fromCharCode(10);const fs=require('fs'),path=require('path');for(const sg of String(i.command||'').split(/[;&|]+/)){const a=sg.trim().split(/[ ]+/);const k=a.indexOf('push');if(a[0]!=='git'||k<0)continue;const r=a.slice(k+1);const fl=r.filter(t=>t[0]==='-'),pos=r.filter(t=>t[0]!=='-');const force=fl.some(t=>t==='--force'||t.indexOf('--force-with-lease')===0||/^-[a-zA-Z]*f/.test(t))||pos.some(t=>t[0]==='+');if(!force)continue;const refs=pos.slice(1).map(t=>t.replace(/^[+]/,'').split(':').pop().replace('refs/heads/',''));let hit=refs.some(t=>t==='main'||t==='master');if(!hit&&(refs.length===0||refs.indexOf('HEAD')>=0)){try{hit=/^ref: refs[/]heads[/](main|master)$/.test(fs.readFileSync(path.join(j.cwd||'.','.git','HEAD'),'utf8').trim())}catch(e){}}if(hit){console.error('Blocked: force push to main or master. Use a normal push or open a pull request, and ask the user before rewriting shared history.');process.exit(2)}}})\"",
+    "timeout": 10
+  },
+  "example": {
+    "prompt": "Rebase onto main and publish it with git push --force origin main.",
+    "result": "The command is refused with a message about force pushing to main or master, and the agent proposes a normal push or a pull request."
+  },
+  "faq": [
+    {
+      "question": "Does the lease form get through?",
+      "answer": "No. A lease still overwrites remote history, so it is refused for main and master just like the plain flag."
+    },
+    {
+      "question": "How do I protect a branch such as release?",
+      "answer": "Only main and master are named in the command. Add your own branch names to that comparison and save the file again."
+    }
+  ],
+  "access": [
+    "Looks at the text of each shell command before it runs",
+    "Opens .git/HEAD in the working folder when no branch is named",
+    "Only blocks; it never pushes or changes anything"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

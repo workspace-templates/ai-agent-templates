@@ -1,0 +1,24 @@
+# Project rules: Ktor server
+
+## Structure
+- `Application.module()` only installs plugins and calls feature functions such as `Route.orderRoutes(service)`. One file per feature with routes, service and repository.
+- Wire dependencies by constructor, using Koin or plain functions. No global singletons.
+
+## Plugins
+- Install `ContentNegotiation` with kotlinx.serialization and `@Serializable` request and response classes. Do not reflect over domain objects.
+- Use `StatusPages` to map exceptions to a single error body and status. Use `CallLogging` with a call id.
+- Authenticate with the `Authentication` plugin (JWT or session); wrap protected routes in `authenticate("name") { ... }`. Keep keys and secrets in environment config.
+
+## Coroutines
+- Handlers are `suspend`. Run blocking JDBC or file work in `withContext(Dispatchers.IO)`, or use a driver that suspends.
+- Never use `GlobalScope` or `runBlocking` in server code. Launch background work from an application-scoped `CoroutineScope`.
+- Respect cancellation; do not swallow `CancellationException`.
+
+## Data and config
+- Read settings from `application.conf` or YAML with environment overrides. Use Exposed or jOOQ transactions with explicit boundaries.
+
+## Tests
+- Use `testApplication { }` with the real module and a test config; call endpoints through `client`. Test auth failures as well as happy paths.
+
+## Before finishing
+Run `./gradlew ktlintCheck test build`.

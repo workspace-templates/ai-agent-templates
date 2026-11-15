@@ -1,0 +1,51 @@
+{
+  "slug": "block-npm-publish",
+  "title": "Block npm Publish",
+  "kind": "hook",
+  "category": "devops",
+  "summary": "A Claude Code hook that blocks npm publish, pnpm publish and yarn publish in the shell, so shipping a package always stays a human decision.",
+  "description": [
+    "A published package cannot be fully taken back, and the registry keeps the version number forever. This hook watches Bash commands and refuses any publish call from npm, pnpm or yarn.",
+    "Dry runs are let through, so the agent can still check what would be packed. Everything else about releases, such as version bumps and changelogs, stays open to the agent."
+  ],
+  "stacks": [
+    "node"
+  ],
+  "topics": [
+    "ci",
+    "security"
+  ],
+  "useWhen": [
+    "Prepare a release without risking an early publish",
+    "Run an agent in a repo that owns a public package",
+    "Keep registry tokens from being used by mistake",
+    "Let the agent test npm pack but not push the result"
+  ],
+  "hook": {
+    "event": "PreToolUse",
+    "matcher": "Bash",
+    "command": "node -e \"let d='';process.stdin.on('data',x=>d+=x).on('end',()=>{let j={};try{j=JSON.parse(d)}catch(e){return}const i=j.tool_input||{};const c=String(i.command||'').replace(/\\x22[^\\x22]*\\x22|\\x27[^\\x27]*\\x27/g,' ')+' ';const t=c.split(/&&|[|][|]|[;|]/).map(s=>s+String.fromCharCode(32));const h=t.find(s=>/^[ ]*(npm|pnpm|yarn)[ ]+(npm[ ]+)?publish[ ]/.test(s)&&!/--dry-run/.test(s));if(h){console.error('Blocked: publishing a package is a human step. Run the build and tests, then ask the user to publish. A dry run (--dry-run) is allowed.');process.exitCode=2}})\"",
+    "timeout": 10
+  },
+  "example": {
+    "prompt": "Bump to 2.4.0, run the tests and publish it.",
+    "result": "The version and tests go through. The publish step is refused and the agent tells you the package is ready for you to publish."
+  },
+  "faq": [
+    {
+      "question": "Can the agent still run npm publish --dry-run?",
+      "answer": "Yes. A command with the dry-run flag is allowed, so you can inspect the file list that would ship."
+    },
+    {
+      "question": "What about publishing from CI?",
+      "answer": "This hook only guards the local agent. A CI workflow that publishes on a tag is not affected."
+    }
+  ],
+  "access": [
+    "Reads each Bash command before it runs",
+    "Blocks publish commands and runs nothing itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

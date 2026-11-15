@@ -1,0 +1,60 @@
+{
+  "slug": "neon-mcp",
+  "title": "Neon MCP Server",
+  "kind": "mcp",
+  "category": "database",
+  "summary": "Manage Neon Postgres projects and branches from your agent, and test schema changes on a temporary branch before they touch your main data.",
+  "description": [
+    "Neon's official MCP server lets an agent list projects, create branches, inspect schema, run SQL and explain slow queries. Neon branches are cheap copies, which is what makes its migration tools safe: the change is prepared on a temporary branch and only applied to the main one after you confirm.",
+    "This setup uses Neon's hosted endpoint with readonly set in the URL. You sign in through OAuth in the browser, so no key goes into the config. In read-only mode each query runs in a read-only transaction and the transaction and migration tools are not offered. Take the readonly parameter out of the URL once you are ready for the agent to make changes."
+  ],
+  "stacks": [],
+  "topics": [
+    "sql",
+    "migrations"
+  ],
+  "useWhen": [
+    "Inspect tables and indexes in a Neon project",
+    "Find the slowest queries and ask for an explanation",
+    "Review a branch's schema against its parent",
+    "Plan a migration, then switch off read-only to apply it on a test branch"
+  ],
+  "mcp": {
+    "name": "neon",
+    "transport": "http",
+    "url": "https://mcp.neon.tech/mcp?readonly=true",
+    "env": [],
+    "headers": [],
+    "source": "https://github.com/neondatabase/mcp-server-neon",
+    "access": [
+      "Reads projects, branches, schema and query statistics in your Neon account",
+      "Read-only queries only while readonly=true is in the URL",
+      "Without that flag it can create and delete projects and run migrations"
+    ]
+  },
+  "example": {
+    "prompt": "List my Neon projects, then show the five slowest queries in the orders project.",
+    "result": "2 projects: orders and staging-copy. Slowest in orders: a join on line_items taking 1.8 s on average, with a note that line_items.order_id has no index."
+  },
+  "faq": [
+    {
+      "question": "How does it sign in?",
+      "answer": "OAuth. Your client opens a browser window the first time and you approve access to your Neon account."
+    },
+    {
+      "question": "Can I use an API key instead?",
+      "answer": "Yes. Neon accepts a key as a bearer token in the Authorization header, and an organization key limits access to that organization."
+    },
+    {
+      "question": "How do I allow changes later?",
+      "answer": "Drop readonly=true from the URL and authorize again. Neon's migration tools work on a temporary branch first."
+    }
+  ],
+  "access": [
+    "Reads your Neon projects and databases, read-only by default here",
+    "Writes only if you remove the readonly flag"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

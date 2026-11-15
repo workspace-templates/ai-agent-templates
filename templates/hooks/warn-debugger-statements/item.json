@@ -1,0 +1,49 @@
+{
+  "slug": "warn-debugger-statements",
+  "title": "Warn Debugger Statements",
+  "kind": "hook",
+  "category": "code-quality",
+  "summary": "A Claude Code hook that flags debugger, breakpoint() and pdb calls the agent leaves behind in JavaScript, Python and Ruby files after an edit.",
+  "description": [
+    "A stray breakpoint hangs a test run or ships to production. After each Edit or Write this PostToolUse hook scans the changed file for debugger statements, Python breakpoint and pdb calls, and Ruby pry or byebug lines.",
+    "Comment lines are ignored. The message lists up to five lines with file and line number, and the agent removes them before moving on."
+  ],
+  "stacks": [],
+  "topics": [
+    "debugging",
+    "code-review"
+  ],
+  "useWhen": [
+    "Keep debug calls out of commits",
+    "Avoid CI jobs that hang on a breakpoint",
+    "Review agent output for leftovers automatically",
+    "Work across JavaScript, Python and Ruby code"
+  ],
+  "hook": {
+    "event": "PostToolUse",
+    "matcher": "Edit|Write",
+    "command": "node -e \"process.on('uncaughtException',()=>process.exit(0));let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{let j={};try{j=JSON.parse(d)||{}}catch(e){process.exit(0)}const i=j.tool_input||{};const f=String(i.file_path||'');const fs=require('fs');const rd=()=>{try{return fs.readFileSync(f,'utf8')}catch(e){return null}};const e=require('path').extname(f).toLowerCase();const rules=[[['.js','.jsx','.ts','.tsx','.mjs','.cjs','.vue','.svelte'],/(^|[^A-Za-z0-9_.])debugger([^A-Za-z0-9_]|)/],[['.py'],/(^|[^A-Za-z0-9_])(breakpoint[(][)]|(i?pdb|pudb)[.]set_trace|import i?pdb)/],[['.rb'],/binding[.](pry|irb)|(^|[^A-Za-z0-9_])byebug/]];const r=rules.find(x=>x[0].includes(e));const t=r?rd():null;if(t===null)process.exit(0);const hits=[];t.split('\\n').forEach((l,n)=>{const s=l.trim();if(s.startsWith('//')||s.startsWith('#')||s.startsWith('*'))return;if(r[1].test(' '+l+' '))hits.push(f+':'+(n+1)+': '+s.slice(0,80))});if(hits.length){console.error('Debugger statement left in code. Remove it before you finish:\\n'+hits.slice(0,5).join('\\n'));process.exit(2)}process.exit(0)})\"",
+    "timeout": 15
+  },
+  "example": {
+    "prompt": "Find why parse_order returns None and fix it.",
+    "result": "The fix is saved, then the hook reports app/orders.py line 42 still calls breakpoint(). The agent deletes it."
+  },
+  "faq": [
+    {
+      "question": "Which languages are covered?",
+      "answer": "JavaScript and TypeScript family files, Vue and Svelte, Python and Ruby. Other extensions are skipped."
+    },
+    {
+      "question": "Does it block the edit?",
+      "answer": "The edit is already saved. The exit code only sends the message back so the agent cleans up."
+    }
+  ],
+  "access": [
+    "Reads the file that was just edited",
+    "Reports findings; changes no files"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

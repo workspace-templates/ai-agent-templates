@@ -1,0 +1,47 @@
+{
+  "slug": "log-session-end",
+  "title": "Log Session End",
+  "kind": "hook",
+  "category": "productivity",
+  "summary": "A Claude Code hook that appends a timestamped line with the working folder and session id to a local log file each time a turn ends.",
+  "description": [
+    "A plain log answers questions like when you last worked on a project and which session to resume. This Stop hook adds one line to session-log.txt inside your .claude folder at the end of every turn.",
+    "Each line holds an ISO timestamp, the working directory and the session id. The file stays on your machine, is never sent anywhere and can be deleted at any time."
+  ],
+  "stacks": [],
+  "topics": [
+    "logging"
+  ],
+  "useWhen": [
+    "Keep a record of when you used the agent",
+    "Find the session id to resume later",
+    "Track which folders you worked in today",
+    "Estimate how long a task took"
+  ],
+  "hook": {
+    "event": "Stop",
+    "command": "node -e \"let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{let j={};try{j=JSON.parse(d)}catch(e){}const fs=require('fs'),p=require('path'),o=require('os');try{const f=p.join(o.homedir(),'.claude','session-log.txt');fs.mkdirSync(p.dirname(f),{recursive:true});fs.appendFileSync(f,new Date().toISOString()+'  '+(j.cwd||process.cwd())+'  '+(j.session_id||'no-session-id')+String.fromCharCode(10))}catch(e){}process.exit(0)})\"",
+    "timeout": 10
+  },
+  "example": {
+    "prompt": "Fix the flaky date test.",
+    "result": "After the turn, ~/.claude/session-log.txt gains a line such as '2026-11-15T09:42:10.000Z  /home/ana/shop  8f3c-2b1a'."
+  },
+  "faq": [
+    {
+      "question": "Where is the file kept?",
+      "answer": "In the .claude folder of your home directory, created on first use."
+    },
+    {
+      "question": "Does a line mean the whole session ended?",
+      "answer": "No. Stop fires after every finished turn, so a long session adds many lines with the same session id."
+    }
+  ],
+  "access": [
+    "Appends a line to session-log.txt in your home .claude folder",
+    "Reads the clock and the event data only"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

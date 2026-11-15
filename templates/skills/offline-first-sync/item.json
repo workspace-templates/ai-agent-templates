@@ -1,0 +1,50 @@
+{
+  "slug": "offline-first-sync",
+  "title": "Offline First Sync",
+  "kind": "skill",
+  "category": "mobile",
+  "summary": "Designs local storage and background sync with conflict handling, so an app stays usable on flaky networks and never silently loses edits.",
+  "description": [
+    "Adding a cache is not the same as going offline first. The hard parts are what happens to an edit made on a train, who wins when two devices changed the same record, and how to retry without duplicating anything. This skill makes the agent settle those questions before writing code.",
+    "It produces a short design, then an implementation in small steps: a local store as the source of truth, a queue of pending changes, and a sync loop that is safe to run twice."
+  ],
+  "stacks": [],
+  "topics": [
+    "api-design",
+    "testing"
+  ],
+  "useWhen": [
+    "Users lose work when the connection drops mid-save",
+    "Two devices edit the same record and one change vanishes",
+    "You are adding an offline mode to an app that only reads from an API",
+    "Sync sometimes creates duplicates after a retry",
+    "You need to choose between last-write-wins and merging"
+  ],
+  "body": "# Offline first sync\n\nThe local database is the source of truth for the UI. The network is a background job.\n\n## Steps\n\n1. Inventory the data. For each entity record: who edits it, how often, whether concurrent edits are realistic, and whether deleting matters. Ask the user only for facts the code cannot answer.\n2. Choose a conflict rule per entity, not one rule for all. Last-write-wins on a server timestamp suits settings. Field-level merge suits profiles. Append-only suits messages and logs. Explicit user resolution suits documents. State the choice and its cost.\n3. Local schema. Every synced row gets a client-generated id (UUIDv7 or ULID), `updatedAt`, a `version` or server revision, a `deletedAt` tombstone instead of hard delete, and a `syncState` of `synced`, `pending` or `conflict`.\n4. Write path. UI writes to the local store and appends an operation to an outbox in one transaction. The outbox entry holds an idempotency key, entity, operation and payload.\n5. Sync loop. Push the outbox in order, sending the idempotency key so the server ignores repeats. On success mark rows synced. Then pull changes since the last cursor, apply them in a transaction, and advance the cursor only after commit. Retry with exponential backoff and jitter. Trigger on connectivity change, app foreground and a periodic job.\n6. Conflicts. On a version mismatch the server answers with its copy. Apply the entity's rule. Never discard the losing change without keeping it somewhere the user or a log can recover.\n7. Tests: airplane-mode edit then reconnect, same edit sent twice, two clients editing one field, a crash between push and cursor save, and a deleted record edited elsewhere.\n\n## Rules\n\n- Never use auto-increment ids generated on the server for rows created offline.\n- Never show a spinner for data already stored locally.\n\n## Report\n\nThe conflict rule per entity, schema changes, and which failure tests pass.",
+  "example": {
+    "prompt": "Make the notes app work offline. Notes can be edited on phone and tablet.",
+    "result": "Design: notes use field-level merge (title and body separately), tags use set union, deletes use tombstones. Added a notes table with id (ULID), updatedAt, syncState and deletedAt, an outbox table, and a SyncEngine with push, pull and backoff. Server endpoint now accepts Idempotency-Key. Tests: 7 added, covering duplicate pushes, concurrent body edits and a crash before cursor save. All pass."
+  },
+  "faq": [
+    {
+      "question": "Why client-generated ids?",
+      "answer": "A record created offline needs an identity right away. If the server assigns ids, you must remap every reference later, which is a common source of broken relations."
+    },
+    {
+      "question": "Does this need a CRDT library?",
+      "answer": "Usually not. Per-field rules and append-only logs cover most apps. The skill only suggests a CRDT for collaborative text editing."
+    },
+    {
+      "question": "Which storage does it use?",
+      "answer": "Whatever your platform already has, such as SQLite, Room, Core Data or Realm. The design is the same and the code follows your stack."
+    }
+  ],
+  "access": [
+    "Reads files in your project",
+    "Runs your test commands",
+    "Edits storage, networking and sync code, and may propose server API changes"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

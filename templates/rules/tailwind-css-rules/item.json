@@ -1,0 +1,45 @@
+{
+  "slug": "tailwind-css-rules",
+  "title": "Tailwind CSS Rules",
+  "kind": "rules",
+  "category": "frontend",
+  "summary": "Project rules for Tailwind CSS: design tokens in theme config, class ordering, component extraction, dark mode and limited arbitrary values.",
+  "description": [
+    "This file keeps Tailwind markup consistent across a project and across authors. Colors, spacing and type come from the theme, and long class lists are handled by components instead of copy and paste.",
+    "It also sets limits on escape hatches such as arbitrary values and important flags, so a stylesheet does not turn into a pile of one-off numbers."
+  ],
+  "stacks": [
+    "tailwind"
+  ],
+  "topics": [
+    "accessibility",
+    "refactoring"
+  ],
+  "useWhen": [
+    "You style a new page with an agent",
+    "Class lists differ for the same button in many places",
+    "Hex colors and pixel sizes appear inline in classes",
+    "You are adding dark mode to an existing design"
+  ],
+  "body": "# Project rules: Tailwind CSS\n\n## Tokens\n- Define colors, fonts, spacing extensions, radii and breakpoints once in the theme (`tailwind.config` or the `@theme` block in CSS). Name colors by role (`brand`, `surface`, `danger`), not by hue.\n- Use only theme values. Allow an arbitrary value like `w-[37px]` only for a one-off layout need, and add a short comment; repeat it twice and it becomes a token.\n- Never write raw hex or rgb in class names or inline styles.\n\n## Classes\n- Order classes consistently, by layout, box, typography, color, state. Enforce it with `prettier-plugin-tailwindcss` and do not sort by hand.\n- Build mobile first: base classes for small screens, then `sm:`, `md:`, `lg:` for larger ones. Do not hide content with `hidden` at one size and re-show it at another when a layout change would do.\n- Avoid `!important` modifiers and avoid `@apply` for anything but base element styles.\n\n## Reuse\n- Extract a component (React, Vue, Svelte or a partial) when markup repeats three times. Do not extract a class.\n- Compose conditional classes with `clsx` or `tailwind-merge` so variants override cleanly. Never build class names by string concatenation, because the compiler cannot see them.\n\n## Dark mode and state\n- Use the `dark:` variant with one strategy for the whole project (class or media). Pair every color with its dark counterpart or use semantic tokens that switch.\n- Use `focus-visible:` styles on everything interactive and keep text contrast at WCAG AA.\n\n## Before finishing\n- Run the formatter, the linter and a production build to confirm no classes were purged.",
+  "example": {
+    "prompt": "Add a pricing card component with a highlighted plan",
+    "result": "The agent uses theme colors and spacing, builds a Card component with a variant prop merged by tailwind-merge, adds dark: pairs and focus-visible rings, and avoids arbitrary values."
+  },
+  "faq": [
+    {
+      "question": "Why not build class names dynamically?",
+      "answer": "Tailwind finds classes by scanning source text. A name assembled at runtime never appears, so its styles are missing from the build."
+    },
+    {
+      "question": "Does it work with Tailwind 3 and 4?",
+      "answer": "Yes. Where the config lives differs by version, and the rule just says to keep tokens in one place."
+    }
+  ],
+  "access": [
+    "Guidance text; it does not touch your files until you ask the agent to edit"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

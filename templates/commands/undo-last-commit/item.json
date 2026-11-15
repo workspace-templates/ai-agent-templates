@@ -1,0 +1,44 @@
+{
+  "slug": "undo-last-commit",
+  "title": "Undo Last Commit",
+  "kind": "command",
+  "category": "git",
+  "summary": "Undoes the most recent commit safely, keeps your work, and picks between soft reset, mixed reset and revert for your case.",
+  "description": [
+    "The right way to undo a commit depends on whether it was pushed and whether you want the changes back. Choosing wrong either loses work or rewrites shared history. This command checks the facts first and explains the choice.",
+    "Your changes stay on disk in every path it takes, and it asks before any step that discards them."
+  ],
+  "stacks": [],
+  "topics": [
+    "git"
+  ],
+  "useWhen": [
+    "You committed to the wrong branch",
+    "The commit was made too early and you want to keep editing",
+    "A pushed commit broke the build and must be reverted",
+    "You committed files that should have been ignored"
+  ],
+  "body": "Undo the last commit. What the user wants: $ARGUMENTS (for example \"keep changes staged\", \"it broke prod\").\n\n1. Run `git status`, `git log -n 3 --stat` and `git branch -vv`. Check whether the commit exists on the remote (`git branch -r --contains HEAD`).\n2. Choose and explain:\n   - Not pushed, want changes staged: `git reset --soft HEAD~1`.\n   - Not pushed, want changes unstaged: `git reset --mixed HEAD~1`.\n   - Only the message is wrong: tell the user `git commit --amend` fits, and do not run it unasked.\n   - Pushed or shared: `git revert HEAD` so history is not rewritten.\n   - Wrong branch: reset here, then offer `git switch` plus `git stash` or cherry-pick to move it.\n3. Never run `git reset --hard` or `git clean`. If the working tree has other uncommitted edits, tell the user before resetting.\n4. Print the hash of the commit being undone so it can be restored with `git reset --hard <hash>` or found in `git reflog`.\n\nShow the commands, wait for approval, run them, then show `git status` and the final log.",
+  "argumentHint": "[what you want to keep, e.g. staged or unstaged]",
+  "example": {
+    "prompt": "/undo-last-commit keep it staged",
+    "result": "HEAD is a1b2c3d \"add export\", not on any remote. Using git reset --soft HEAD~1: 4 files stay staged, nothing is lost. Restore with git reset --soft a1b2c3d if needed. Run it?"
+  },
+  "faq": [
+    {
+      "question": "What if I already pushed?",
+      "answer": "It uses git revert, which adds a new commit that cancels the old one and does not rewrite shared history."
+    },
+    {
+      "question": "Will I lose my changes?",
+      "answer": "No. It avoids hard resets, and it prints the commit hash so the old state can be recovered from the reflog."
+    }
+  ],
+  "access": [
+    "Reads status, log and remote branches",
+    "Runs a reset or revert on the current branch only after your confirmation"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

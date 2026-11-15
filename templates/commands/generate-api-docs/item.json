@@ -1,0 +1,45 @@
+{
+  "slug": "generate-api-docs",
+  "title": "Generate API Docs",
+  "kind": "command",
+  "category": "docs",
+  "summary": "Builds API reference pages from your source code in the docs format and folder your project already uses.",
+  "description": [
+    "Reference docs written by hand fall behind the code within a sprint. This command reads the public surface, whether routes or exported functions, and writes pages in the style of the documentation you already have.",
+    "Every entry comes from the source: names, parameters, types and error cases. Anything the code does not make clear is flagged for you instead of guessed, and existing pages are updated rather than duplicated."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation",
+    "api-design"
+  ],
+  "useWhen": [
+    "A service has endpoints but no reference page",
+    "Docs and code disagree on parameter names",
+    "You are publishing a library with public exports",
+    "Your docs site expects Markdown or OpenAPI files"
+  ],
+  "body": "Generate API reference documentation for: $ARGUMENTS (folder, module or route file; whole public API if empty).\n\n1. Find the existing docs format first: look in docs/, a docs site config (mkdocs.yml, docusaurus, typedoc, sphinx), or an openapi file. Match its folder, front matter, heading levels and page layout. If nothing exists, use one Markdown page per module.\n2. Enumerate the public surface. For web services: every route with method, path, auth requirement, path and query parameters, request body and response shapes. For libraries: exported functions and types with signatures.\n3. Take descriptions from existing doc comments. Where there are none, write a plain description from the code and mark it `(inferred)`.\n4. Document errors: status codes or exceptions and when each occurs, read from the handler code.\n5. Include one runnable example per entry, such as a curl command or a short code call, using realistic values.\n6. Compare with the pages already there. Update changed entries and list entries that no longer exist in code; do not delete them.\n\nShow a summary of pages created and updated and the list of inferred items, then ask before writing files.",
+  "argumentHint": "[module, folder or route file]",
+  "example": {
+    "prompt": "/generate-api-docs src/routes/orders",
+    "result": "Plan: update docs/api/orders.md (3 endpoints changed), add DELETE /orders/{id}. 5 descriptions marked (inferred). 1 documented endpoint, GET /orders/export, no longer exists in code. Write the pages?"
+  },
+  "faq": [
+    {
+      "question": "Which doc formats can it produce?",
+      "answer": "Whatever your project already uses, such as Markdown pages, OpenAPI YAML or doc-site files. It starts with Markdown if there is nothing yet."
+    },
+    {
+      "question": "Will it remove pages for deleted endpoints?",
+      "answer": "No. It lists them for you to decide."
+    }
+  ],
+  "access": [
+    "Reads source code and existing docs",
+    "Writes or updates documentation files after you approve"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

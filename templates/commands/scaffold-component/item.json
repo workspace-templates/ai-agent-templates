@@ -1,0 +1,46 @@
+{
+  "slug": "scaffold-component",
+  "title": "Scaffold Component",
+  "kind": "command",
+  "category": "frontend",
+  "summary": "Creates a new UI component with props, styles, a test and a story, copying the folder layout your project already uses.",
+  "description": [
+    "A new component usually starts by copying a neighbor and renaming things, which drags old props and stale styles along. This command studies how existing components are laid out and builds the new one to the same pattern.",
+    "It generates the component file, its style file, a test and a story when the project has Storybook. Nothing outside the new folder is edited, except an index export when the project keeps one."
+  ],
+  "stacks": [],
+  "topics": [
+    "refactoring",
+    "testing"
+  ],
+  "useWhen": [
+    "You need a new button, card or form field that should look like the rest",
+    "A teammate asks for a component and you want the same file layout every time",
+    "You are adding a design system piece with a story and a test",
+    "You want props typed and documented from the first commit"
+  ],
+  "body": "Scaffold a component named and described by: $ARGUMENTS\n\n1. Find two or three existing components of similar size (`Glob` for `*.tsx`, `*.vue`, `*.svelte`). Note the folder layout, naming case, styling approach (CSS modules, Tailwind, styled), prop typing, and how tests and stories are named.\n2. If the name collides with an existing component, stop and ask.\n3. Create the folder and files exactly as the neighbors do: component, styles, test, story, and an index export if siblings have one.\n4. Type the props with sensible defaults, forward `className` and refs when siblings do, and use semantic elements with labels for anything interactive.\n5. The test renders the component, checks one default case and one prop variation. The story shows each variant.\n6. Run the project's lint, type check and the new test only.\n\nList the files created and the commands that passed. Do not modify existing components; if a shared file needs a change, show the diff and ask first.",
+  "argumentHint": "[ComponentName and a short description]",
+  "example": {
+    "prompt": "/scaffold-component Badge small status pill with success, warning and error tones",
+    "result": "Created src/components/Badge/Badge.tsx, Badge.module.css, Badge.test.tsx, Badge.stories.tsx and added an export to src/components/index.ts.\nProps: tone (\"success\" | \"warning\" | \"error\"), children, className.\nPassed: tsc --noEmit, eslint, vitest Badge."
+  },
+  "faq": [
+    {
+      "question": "How does it know my conventions?",
+      "answer": "It reads a few similar components first and copies their folder layout, naming and styling method instead of using a generic template."
+    },
+    {
+      "question": "Will it change existing files?",
+      "answer": "Only the new folder is written. If a barrel file needs one new export line, it shows that diff before applying it."
+    }
+  ],
+  "access": [
+    "Reads existing components to learn the layout",
+    "Creates files in one new component folder",
+    "Runs lint, type check and the new test"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

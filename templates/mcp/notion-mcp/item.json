@@ -1,0 +1,57 @@
+{
+  "slug": "notion-mcp",
+  "title": "Notion MCP Server",
+  "kind": "mcp",
+  "category": "docs",
+  "summary": "Connect your agent to Notion's hosted MCP server to search workspace pages, read databases and write notes, specs and tasks back.",
+  "description": [
+    "Notion runs its own MCP server, so an agent can search your workspace, read a spec or a meeting page, query a database and create or update pages. It is a good fit when requirements or runbooks already live in Notion and you want them in the same chat as the code.",
+    "Setup is a URL and a browser sign-in. The agent only sees what your Notion account can see in the workspace you pick. Business and Enterprise workspaces can also use a token created by a workspace owner."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation"
+  ],
+  "useWhen": [
+    "Read the product spec before you start a feature",
+    "Write release notes into a Notion page when a release ships",
+    "Turn a task database into a list of tickets to work on",
+    "Save a design decision as a page the team can find later"
+  ],
+  "mcp": {
+    "name": "notion",
+    "transport": "http",
+    "url": "https://mcp.notion.com/mcp",
+    "env": [],
+    "headers": [],
+    "source": "https://developers.notion.com/docs/mcp",
+    "access": [
+      "Reads pages and databases your Notion account can open",
+      "Creates and edits pages and comments in the workspace you authorize"
+    ]
+  },
+  "example": {
+    "prompt": "Find the \"Billing retries\" spec in Notion and list the open questions at the bottom of it.",
+    "result": "Found \"Billing retries spec\" in Engineering Specs. Three open questions: max retry count, whether to email on the final failure, and how to treat expired cards."
+  },
+  "faq": [
+    {
+      "question": "How does it sign in?",
+      "answer": "The first use opens a Notion browser page where you choose the workspace and approve access. No token goes into the config."
+    },
+    {
+      "question": "Can it edit every page?",
+      "answer": "It acts as you, so it can change what you can change. Share only the pages you are comfortable with, or use a limited account."
+    },
+    {
+      "question": "Is the older /sse address still needed?",
+      "answer": "No. Notion says the SSE endpoint retires in February 2027. This setup uses the streamable HTTP address."
+    }
+  ],
+  "access": [
+    "Reads and writes Notion content as the signed-in user"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

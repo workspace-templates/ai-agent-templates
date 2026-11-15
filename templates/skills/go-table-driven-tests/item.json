@@ -1,0 +1,45 @@
+{
+  "slug": "go-table-driven-tests",
+  "title": "Go Table Driven Tests",
+  "kind": "skill",
+  "category": "testing",
+  "summary": "Writes idiomatic table-driven Go tests with named subtests, golden files and race detector runs, and refactors repetitive tests into tables.",
+  "description": [
+    "Go has a strong testing idiom: a slice of cases, a loop and a subtest per row. Done well, a new case costs one line. Done badly, it hides which case failed. This skill teaches the agent the version that reads and fails clearly.",
+    "It also covers golden files for large outputs, helper functions that mark themselves, parallel subtests without the loop variable trap, and running everything with the race detector."
+  ],
+  "stacks": [
+    "go"
+  ],
+  "topics": [
+    "testing"
+  ],
+  "useWhen": [
+    "You are adding tests to a Go package",
+    "A test file repeats the same arrange and assert block ten times",
+    "Output is large and you need a golden file workflow",
+    "Concurrency code needs race detection in the test run"
+  ],
+  "body": "# Go table-driven tests\n\nOne table, one loop, one subtest per case, and a failure message that names the case.\n\n## Steps\n\n1. Define the case struct next to the test: `name`, inputs, `want`, and `wantErr` when errors matter. Add a case for each branch: empty, boundary, invalid, and the bug that prompted the test.\n2. Loop and run subtests: `for _, tc := range tests { t.Run(tc.name, func(t *testing.T) { ... }) }`. Use descriptive names, because `go test -run 'TestParse/negative'` must target one row.\n3. Compare with `cmp.Diff(tc.want, got)` from go-cmp and print `(-want +got)`. Check errors with `errors.Is` or `errors.As`, not string matching.\n4. Call `t.Helper()` in helpers, `t.Cleanup` for teardown, `t.TempDir()` for files, `t.Setenv` for environment.\n5. For parallel subtests call `t.Parallel()` inside `t.Run` and, on Go before 1.22, copy the loop variable with `tc := tc`.\n6. For large output (rendered HTML, JSON, SQL) use golden files in `testdata/` with an `-update` flag, and review the diff before committing.\n7. Run `go test -race -count=1 ./...` and, for flaky suspects, `-count=20`.\n\n## Rules\n\n- Test through the exported API when you can; use an internal test file only for unexported logic that is hard to reach.\n- No assertions in goroutines that outlive the test.\n- Use `testing/fstest` and interfaces instead of the real file system or network.\n\n## Report\n\nCases added, packages covered, race detector result and any golden files created.",
+  "example": {
+    "prompt": "Add tests for ParseRange in internal/ranges",
+    "result": "Added TestParseRange with 14 rows: empty, single value, reversed bounds, overflow, whitespace, and the \"1-\" open range that previously returned nil. Used cmp.Diff and errors.Is for ErrBadRange. go test -race -count=5 ./internal/ranges passes. Found and fixed one bug in the open-range case."
+  },
+  "faq": [
+    {
+      "question": "Should I use testify?",
+      "answer": "Only if the repository already does. The standard library plus go-cmp covers most needs, and a consistent style matters more than the library."
+    },
+    {
+      "question": "When is a table the wrong shape?",
+      "answer": "When each case needs very different setup or steps. Separate named tests read better than a table with a dozen optional fields."
+    }
+  ],
+  "access": [
+    "Reads Go source and test files",
+    "Edits test files and testdata, and runs go test with the race detector"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

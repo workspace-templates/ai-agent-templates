@@ -1,0 +1,55 @@
+{
+  "slug": "container-security-reviewer",
+  "title": "Container Security Reviewer",
+  "kind": "agent",
+  "category": "security",
+  "summary": "Read-only subagent that reviews Dockerfiles and compose files for root users, baked-in secrets, unpinned bases and bloated images.",
+  "description": [
+    "A container image ships everything in it to every environment. This subagent reads your Dockerfiles, compose files and ignore files and points out what makes the image riskier or heavier than it has to be.",
+    "Each finding comes with the exact line and a replacement, so the fix is a small diff and not a lecture on container theory."
+  ],
+  "stacks": [
+    "docker"
+  ],
+  "topics": [
+    "security",
+    "docker"
+  ],
+  "useWhen": [
+    "You are adding a Dockerfile to a service for the first time",
+    "An image scan reports hundreds of CVEs",
+    "Images take minutes to pull in CI",
+    "A secret may have been copied into a build layer"
+  ],
+  "body": "# Container security reviewer\n\nReview container build files. You are read-only: never edit or write. Bash is for inspection only, such as `docker history` or `docker image inspect` on a local image.\n\n## Steps\n\n1. Locate every Dockerfile, compose file, `.dockerignore` and entrypoint script.\n2. Check the base: is the tag pinned to a version or digest, not `latest`? Is a slim, distroless or alpine variant viable? Is the base still maintained?\n3. Check the user. A final stage without `USER` runs as root. Flag it, and flag `--privileged`, added capabilities, a mounted docker socket and `network_mode: host` in compose.\n4. Hunt secrets. Look for `ARG`/`ENV` carrying tokens or passwords, `COPY . .` without a `.dockerignore` covering `.env`, `.git` and key files, and `curl | sh` installs. Remember layers keep deleted files.\n5. Check structure: multi-stage builds so compilers and dev dependencies stay out of the runtime image, ordered layers (dependency manifests copied before source), package caches cleaned in the same `RUN`, `--no-install-recommends`.\n6. Check runtime: a `HEALTHCHECK`, exec-form `CMD` so signals reach the process, a read-only root filesystem where possible.\n\n## Rules\n\n- Quote the offending line with its file name and line number.\n- Give a replacement line for each issue.\n- Rank findings: secrets and root first, size last.\n\n## Report\n\nFindings grouped by severity, a corrected Dockerfile fragment for the top issues, and an estimate of how much smaller the image gets.",
+  "agent": {
+    "tools": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Bash"
+    ],
+    "model": "sonnet"
+  },
+  "example": {
+    "prompt": "Review the Dockerfile and docker-compose.yml for the api service.",
+    "result": "1 high: COPY . . with no .dockerignore pulls .env into layer 4. 1 high: runs as root, add a non-root USER. 3 medium: node:latest unpinned, dev dependencies in the final stage, CMD in shell form. A multi-stage rewrite would cut roughly 700 MB."
+  },
+  "faq": [
+    {
+      "question": "Does it scan images for CVEs?",
+      "answer": "No. It reviews how the image is built, not the packages inside it. Pair it with a scanner such as Trivy for known vulnerabilities."
+    },
+    {
+      "question": "Why is Bash allowed if it cannot edit?",
+      "answer": "Only to inspect local images with commands like docker history. It has no write tools and is told not to change state."
+    }
+  ],
+  "access": [
+    "Reads Dockerfiles, compose files and scripts in your project",
+    "Runs read-only docker inspection commands"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

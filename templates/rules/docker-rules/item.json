@@ -1,0 +1,45 @@
+{
+  "slug": "docker-rules",
+  "title": "Docker Rules",
+  "kind": "rules",
+  "category": "devops",
+  "summary": "Project rules for Dockerfiles and Compose: multi-stage builds, pinned base images, non-root users, layer caching and health checks.",
+  "description": [
+    "Container images pick up bad habits quickly: huge layers, root processes and tags that change under you. These rules give an agent a checklist for every Dockerfile it writes or edits.",
+    "They aim at small, repeatable and safer images, and they name the commands to run before an image is called ready."
+  ],
+  "stacks": [
+    "docker"
+  ],
+  "topics": [
+    "docker",
+    "security"
+  ],
+  "useWhen": [
+    "You are writing or reviewing a Dockerfile",
+    "Images are very large or slow to build",
+    "The app runs as root inside the container",
+    "Builds give different results on different days"
+  ],
+  "body": "# Project rules: Docker\n\n## Dockerfile\n- Use multi-stage builds: a build stage with compilers and a final stage with only the runtime and the built output. Prefer slim or distroless bases.\n- Pin base images to a specific version, and to a digest for releases. Never use `latest`.\n- Order instructions for caching: copy dependency manifests, install, then copy source. Combine package manager steps and clean caches in the same `RUN`. Use BuildKit cache mounts for package downloads.\n- Use `COPY`, not `ADD`, unless you need extraction. Keep a strict `.dockerignore` that excludes `.git`, `node_modules`, local env files and build output.\n\n## Runtime\n- Create and switch to a non-root user with `USER`. Do not install sudo, SSH or debugging tools in the final image.\n- Use the exec form of `CMD` and `ENTRYPOINT` so signals reach the process. One process per container.\n- Add a `HEALTHCHECK` or an orchestrator probe. Log to stdout and stderr.\n- Read configuration from environment variables. Never bake secrets into layers or pass them as build args; use BuildKit secrets.\n\n## Compose\n- Name services and volumes explicitly, set restart policies, use `depends_on` with health conditions, and keep local overrides in a separate file.\n\n## Before finishing\n- Run `hadolint Dockerfile`, `docker build`, then scan the image with Trivy or Grype. Report the final image size and confirm the container starts and passes its health check.",
+  "example": {
+    "prompt": "Containerize this Node API for production",
+    "result": "The agent writes a two-stage Dockerfile on a pinned slim base, a dockerignore file, a non-root user and a health check, then builds it, runs hadolint and reports a final size."
+  },
+  "faq": [
+    {
+      "question": "Why pin by digest as well as version?",
+      "answer": "A version tag can be republished. A digest identifies the exact image bytes, so rebuilds stay identical."
+    },
+    {
+      "question": "Does it apply to Podman?",
+      "answer": "Yes for Dockerfiles. The Compose notes apply when you use a compatible compose tool."
+    }
+  ],
+  "access": [
+    "Instructions only; it does not read or run anything by itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

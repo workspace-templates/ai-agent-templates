@@ -1,0 +1,45 @@
+{
+  "slug": "explain-error",
+  "title": "Explain Error",
+  "kind": "command",
+  "category": "docs",
+  "summary": "Explains an error message or stack trace in plain words, points to the line most likely at fault and suggests what to check first.",
+  "description": [
+    "Stack traces are written for the runtime, not for the person reading them at 5pm. This command turns one into a short account: what happened, where in your code it started and what to look at first.",
+    "It reads the files named in the trace, ignores frames from libraries unless they matter, and says how sure it is. It explains and suggests; it does not edit code."
+  ],
+  "stacks": [],
+  "topics": [
+    "debugging",
+    "documentation"
+  ],
+  "useWhen": [
+    "A traceback has forty frames and none look familiar",
+    "You hit an error from a tool you have never used",
+    "A junior teammate needs the error explained",
+    "The message is vague, like \"undefined is not a function\""
+  ],
+  "body": "Explain this error: $ARGUMENTS (paste the message or stack trace; if empty, ask for it).\n\n1. Identify the language, runtime and tool from the trace format. Quote the exact error message and its type once.\n2. Say in two plain sentences what the error means, without jargon. Explain any technical term you must keep.\n3. Walk the stack from the bottom of your own code. Skip frames from libraries and the framework unless the fault is inside them. Open the files and lines from the trace in this repository and read the code around each one.\n4. Name the most likely cause and a second one, and say how sure you are for each. State which variable, value or call looks wrong and why.\n5. Give a short sequence of checks the user can run to confirm: a log line to add, a command to run, a value to print. Prefer checks that take under a minute.\n6. If the error comes from the environment (missing package, wrong version, permissions), say so and give the exact command that checks it.\n\nDo not edit any files. End by asking whether to apply the most likely fix, and show it as a diff first.",
+  "argumentHint": "[error text or stack trace]",
+  "example": {
+    "prompt": "/explain-error TypeError: Cannot read properties of undefined (reading \"map\") at OrderList.tsx:42",
+    "result": "Meaning: the code called .map on something that was not yet an array. Likely cause (high): orders is undefined on first render because fetchOrders resolves later. Check: log orders at line 41. Fix: default to an empty array. Show the diff?"
+  },
+  "faq": [
+    {
+      "question": "Does it fix the bug automatically?",
+      "answer": "No. It explains first and shows a diff only if you ask for the fix."
+    },
+    {
+      "question": "What if the trace has no file paths from my project?",
+      "answer": "Then it explains the message and the environment checks to run, and says plainly that it could not locate your code."
+    }
+  ],
+  "access": [
+    "Reads files named in the stack trace",
+    "Edits nothing unless you approve a fix"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

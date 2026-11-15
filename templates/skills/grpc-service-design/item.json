@@ -1,0 +1,46 @@
+{
+  "slug": "grpc-service-design",
+  "title": "gRPC Service Design",
+  "kind": "skill",
+  "category": "backend",
+  "summary": "Designs protobuf services with evolution-safe fields, proper status codes and deadlines, then checks changes with buf for breaking compatibility.",
+  "description": [
+    "A protobuf file is easy to write and painful to change: reusing a field number or renaming carelessly corrupts data between services running different versions. This skill has the agent treat the schema as a long-lived contract.",
+    "It shapes request and response messages, picks the right status codes, propagates deadlines through Go handlers, and runs buf lint and breaking checks so incompatible edits are caught before deployment."
+  ],
+  "stacks": [
+    "go"
+  ],
+  "topics": [
+    "api-design"
+  ],
+  "useWhen": [
+    "You are adding a new gRPC service or method",
+    "A proto change might break services deployed at older versions",
+    "Calls hang because nothing sets a deadline",
+    "Errors all come back as UNKNOWN or INTERNAL"
+  ],
+  "body": "# gRPC service design\n\nWrite the proto as if two versions will talk to each other for a year.\n\n## Steps\n\n1. Model one RPC per use case with its own request and response message, even when the response is a single field: `GetOrderRequest` and `GetOrderResponse`. Never reuse a request message across methods, because it ties their futures together.\n2. Number fields once and never change or reuse them. When removing a field, add `reserved 4; reserved \"old_name\";`. Use field numbers 1 to 15 for fields that are set often.\n3. Add enums with a zero value named `X_UNSPECIFIED`. Use wrapper types or `optional` when you must tell unset from zero.\n4. Use `google.protobuf.Timestamp` and `Duration` for time; money as integer minor units with a currency string; never floats for money.\n5. For lists, use page tokens: `page_size` and `page_token` in, `next_page_token` out.\n6. Return status codes deliberately: `INVALID_ARGUMENT`, `NOT_FOUND`, `ALREADY_EXISTS`, `FAILED_PRECONDITION`, `PERMISSION_DENIED`, `UNAUTHENTICATED`, `RESOURCE_EXHAUSTED`, `UNAVAILABLE` for retryable faults. Attach details with `errdetails` for field violations.\n7. In Go, every client call takes a `context.WithTimeout`; servers pass `ctx` to every downstream call so deadlines propagate and cancelled calls stop work.\n8. Run `buf lint` and `buf breaking --against .git#branch=main` before you finish.\n\n## Rules\n\n- Never change a field's type or number in a released message.\n- Never use `UNKNOWN` or `INTERNAL` for errors the caller caused.\n- Never block a handler without checking `ctx.Done()`.\n\n## Report\n\nThe proto diff, status code mapping, deadline defaults and buf results.",
+  "example": {
+    "prompt": "Add a CancelOrder RPC to the orders service.",
+    "result": "Added CancelOrder with its own request and response messages and a reason enum starting at CANCEL_REASON_UNSPECIFIED. Status mapping: missing order NOT_FOUND, already shipped FAILED_PRECONDITION with a field violation detail. Client wrapper sets a 3 s timeout. buf lint clean; buf breaking against main reports nothing."
+  },
+  "faq": [
+    {
+      "question": "Why a separate message for every method?",
+      "answer": "Methods change independently. A shared message forces every consumer to carry fields that only one method needs."
+    },
+    {
+      "question": "Is this Go specific?",
+      "answer": "The proto rules apply to any language. The deadline and error examples use Go because the skill is tuned for it."
+    }
+  ],
+  "access": [
+    "Reads .proto files and Go source",
+    "Edits proto files, handlers and generated code through your build when approved",
+    "Runs buf and your test command"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

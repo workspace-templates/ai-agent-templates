@@ -1,0 +1,45 @@
+{
+  "slug": "refactor",
+  "title": "Refactor",
+  "kind": "command",
+  "category": "code-quality",
+  "summary": "Refactors the code you name for clarity in small steps, running the tests after each step so behavior never changes.",
+  "description": [
+    "Big-bang refactors break things and are hard to review. This command works in small steps, each one a change that keeps behavior identical, and runs the tests between them so a failure points at one edit.",
+    "If the code has no tests, it writes a few that pin down current behavior before touching anything. Each step is commit-sized, so you can stop at any point with working code."
+  ],
+  "stacks": [],
+  "topics": [
+    "refactoring",
+    "testing"
+  ],
+  "useWhen": [
+    "A function has grown too long to follow",
+    "You must change code that nobody dares touch",
+    "Duplicate logic has spread over several files",
+    "Before adding a feature to a messy area"
+  ],
+  "body": "Refactor for clarity: $ARGUMENTS\n\n1. Read the code and everything that calls it. Write down in two lines what it does today. Behavior must not change.\n2. Run the test suite first and note the result. If the code is not covered, add characterization tests that capture current outputs, including odd cases, and run them green before any edit.\n3. List the smells you see (long function, deep nesting, duplicated block, unclear names, mixed concerns) and propose at most five steps, smallest first.\n4. Do one step at a time: make the change, run the tests, and move on only when green. If a test fails, undo that step with `git checkout -- <file>` on your own edit and rethink; do not edit the tests to pass.\n5. Do not change public signatures, file names or formatting unrelated to the task.\n6. Stop after the agreed steps; do not keep polishing.\n\nFinish with the list of steps done, the test results after each, and the diff stat. Ask before committing.",
+  "argumentHint": "[file, function or module]",
+  "example": {
+    "prompt": "/refactor src/billing/invoice.ts calculateTotals",
+    "result": "Added 6 characterization tests (green). Steps: 1) extracted taxFor(), 2) replaced nested ifs with early returns, 3) renamed tmp and x to subtotal and discount. Tests green after each step.\nDiff: 1 file, +41 -58.\nCommit these changes?"
+  },
+  "faq": [
+    {
+      "question": "What if there are no tests?",
+      "answer": "It writes tests that pin the present behavior first, since refactoring without a safety net is guessing."
+    },
+    {
+      "question": "Will it rename public functions?",
+      "answer": "Not unless you ask. Public names and signatures stay as they are, so callers keep working."
+    }
+  ],
+  "access": [
+    "Reads the target code and its callers",
+    "Edits source files and adds tests, then runs the suite"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

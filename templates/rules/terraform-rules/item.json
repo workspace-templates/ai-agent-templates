@@ -1,0 +1,45 @@
+{
+  "slug": "terraform-rules",
+  "title": "Terraform Rules",
+  "kind": "rules",
+  "category": "devops",
+  "summary": "Project rules for Terraform: module layout, naming, remote state with locking, typed variables, tagging and a reviewed plan before every apply.",
+  "description": [
+    "Infrastructure code changes real systems, so sloppy conventions cost more than they do in an application. These rules give an agent a structure for modules, state and variables that keeps changes small and reviewable.",
+    "They also make plans the unit of review: nothing is applied until someone has read exactly what will change."
+  ],
+  "stacks": [
+    "terraform"
+  ],
+  "topics": [
+    "ci",
+    "security"
+  ],
+  "useWhen": [
+    "You are adding resources or modules to a Terraform codebase",
+    "State is stored on a laptop or shared without locking",
+    "Variables have no types or descriptions",
+    "Teams apply changes without reading the plan"
+  ],
+  "body": "# Project rules: Terraform\n\n## Layout\n- Keep a root configuration per environment (`envs/dev`, `envs/prod`) that calls reusable modules in `modules/`. Each module has `main.tf`, `variables.tf`, `outputs.tf` and `versions.tf`, with a short README.\n- Pin the Terraform version and every provider with `required_version` and `required_providers`, and commit `.terraform.lock.hcl`.\n\n## State\n- Use a remote backend with locking and encryption, and separate state per environment. Never commit state files or secrets. Do not edit state by hand; use `moved` blocks, `import` blocks or `terraform state` commands with review.\n\n## Style\n- Use snake_case resource names, with `this` for a module's single main resource. Give every variable a `type` and `description`, add `validation` blocks where limits exist, and mark sensitive values.\n- Prefer `for_each` over `count` so removing an item does not shift others. Avoid over-nested modules and huge `locals`.\n- Apply consistent tags through provider `default_tags`, including owner and environment.\n\n## Safety\n- Set `prevent_destroy` on stateful resources and use `lifecycle` rules sparingly. Pass secrets from a secret manager, not variables files.\n\n## Before finishing\n- Run `terraform fmt -check -recursive`, `terraform validate`, `tflint` and a scanner such as Checkov or Trivy. Run `terraform plan -out=tfplan` and summarize the adds, changes and destroys. Never run `apply` without approval.",
+  "example": {
+    "prompt": "Add an S3 bucket for logs with a 90 day lifecycle rule",
+    "result": "The agent adds a module call with typed variables, encryption and public access blocks enabled, default tags applied, then runs fmt, validate, tflint and a plan, and reports one resource to add."
+  },
+  "faq": [
+    {
+      "question": "Why should the agent not apply on its own?",
+      "answer": "An apply changes live infrastructure. A person should read the plan first, so the agent stops at the plan and reports it."
+    },
+    {
+      "question": "Does it work with OpenTofu?",
+      "answer": "Yes. The structure and review rules are the same; use the tofu command in place of terraform."
+    }
+  ],
+  "access": [
+    "Instructions only; it does not read or run anything by itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

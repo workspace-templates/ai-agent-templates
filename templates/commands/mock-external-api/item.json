@@ -1,0 +1,45 @@
+{
+  "slug": "mock-external-api",
+  "title": "Mock External API",
+  "kind": "command",
+  "category": "testing",
+  "summary": "Builds a realistic mock of an external API for your tests, shaped from recorded or documented responses.",
+  "description": [
+    "Tests that call real services are slow and break on someone else's outage, but hand-made mocks drift from reality. This command builds the mock from real response shapes, including error replies, pagination and rate limits.",
+    "It adds a small contract check, so when the provider changes a field you find out from a failing test instead of production."
+  ],
+  "stacks": [],
+  "topics": [
+    "testing",
+    "api-design"
+  ],
+  "useWhen": [
+    "When tests hit a payment, email or maps API",
+    "Before adding a third-party integration",
+    "When mocks in the repo have gone stale",
+    "To make CI run without network or credentials"
+  ],
+  "body": "Create a mock of this external API for tests: $ARGUMENTS\n\n1. Find where the code calls the API (client module, SDK wrapper, fetch calls). List the endpoints, methods and fields the app actually uses.\n2. Gather real shapes from, in order: fixtures or logs already in the repo, the provider's OpenAPI file or docs, and a sample response the user pastes. Do not call the live API and do not read credentials.\n3. Pick the project's mocking tool (msw, nock, responses, WireMock, httpmock, vcr, Mockito) and build handlers there. Keep the mock in one folder with one file per endpoint group.\n4. Cover: a success reply, an empty result, pagination, a 4xx validation error, a 429 with Retry-After, a 5xx, and a timeout. Use realistic ids and timestamps.\n5. Add a contract test that checks each fixture against the schema (zod, JSON Schema or types) so drift is caught.\n6. Replace one existing slow test to prove it works, then run the suite offline.\n\nReport files created, scenarios covered and which fields were guessed rather than documented.",
+  "argumentHint": "[API name and the module that calls it]",
+  "example": {
+    "prompt": "/mock-external-api Stripe customers and refunds in src/payments",
+    "result": "Created tests/mocks/stripe/ (customers.ts, refunds.ts) with msw handlers for 7 scenarios and a schema check on each fixture.\nPayments tests now run offline in 2 s instead of 19 s.\nGuessed: refund.failure_reason values (not in samples). Confirm with the docs?"
+  },
+  "faq": [
+    {
+      "question": "Does it call the real API?",
+      "answer": "No. It builds from fixtures, documentation or samples you provide."
+    },
+    {
+      "question": "How are stale mocks caught?",
+      "answer": "A contract test validates each fixture against a schema, so a provider change shows up as a failing test."
+    }
+  ],
+  "access": [
+    "Reads the integration code and docs you point to",
+    "Adds mock and fixture files, runs tests offline"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

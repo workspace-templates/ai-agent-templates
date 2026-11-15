@@ -1,0 +1,60 @@
+{
+  "slug": "sequential-thinking-mcp",
+  "title": "Sequential Thinking MCP Server",
+  "kind": "mcp",
+  "category": "productivity",
+  "summary": "Add a step-by-step reasoning tool to your agent so it can plan hard problems, revise earlier thoughts and branch, using the reference MCP server.",
+  "description": [
+    "This server exposes a single tool, sequentialthinking. The agent records a numbered thought, says whether another is needed, and can mark a thought as a revision of an earlier one or start a branch.",
+    "It does not look anything up and does not touch your files. Its value is structure: a long task becomes a visible chain of steps you can read afterward.",
+    "It runs through npx over stdio and requires Node.js 24 or later."
+  ],
+  "stacks": [],
+  "topics": [
+    "debugging",
+    "refactoring"
+  ],
+  "useWhen": [
+    "Plan a multi-step refactor before touching code",
+    "Work out a tricky bug where the first guess may be wrong",
+    "Compare two designs by branching the reasoning",
+    "Break a vague request into ordered tasks"
+  ],
+  "mcp": {
+    "name": "sequential-thinking",
+    "transport": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "@modelcontextprotocol/server-sequential-thinking"
+    ],
+    "env": [],
+    "headers": [],
+    "source": "https://github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking",
+    "access": [
+      "Keeps the agent's thought steps in memory for the session",
+      "No file or network access"
+    ]
+  },
+  "example": {
+    "prompt": "Use sequential thinking to plan how to split our 2,000 line utils.ts without breaking imports.",
+    "result": "Thought 1 lists the export groups. Thought 2 maps each group to a new module. Thought 3 revises thought 2 after noticing a circular import. Thought 5 proposes the order of moves and a check after each."
+  },
+  "faq": [
+    {
+      "question": "Does it make the model smarter?",
+      "answer": "It does not change the model. It gives the model a place to lay out steps and revise them, which helps on problems where a first answer is often wrong."
+    },
+    {
+      "question": "Can I stop it from logging thoughts?",
+      "answer": "Set the environment variable DISABLE_THOUGHT_LOGGING to true. MAX_THOUGHT_HISTORY caps how many thoughts are kept per connection."
+    }
+  ],
+  "access": [
+    "Holds reasoning steps in memory only",
+    "Reads and changes nothing on disk"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

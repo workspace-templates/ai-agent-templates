@@ -1,0 +1,43 @@
+{
+  "slug": "database-migration-safety",
+  "title": "Database Migration Safety",
+  "kind": "skill",
+  "category": "database",
+  "summary": "Plans schema changes that run without downtime: expand and contract steps, safe backfills, lock checks and a tested rollback for each migration.",
+  "description": [
+    "A migration that works on your laptop can lock a production table for minutes. This skill reviews or writes migrations with that in mind, splitting risky changes into steps that old and new application versions can both survive.",
+    "It treats the rollback as part of the change and asks for it up front, so a bad deploy becomes a quick revert and not an incident."
+  ],
+  "stacks": [],
+  "topics": [
+    "migrations"
+  ],
+  "useWhen": [
+    "Adding, renaming or dropping a column on a busy table",
+    "Writing a backfill that touches millions of rows",
+    "Changing a type, constraint or index in production",
+    "Reviewing a migration file in a pull request"
+  ],
+  "body": "# Database migration safety\n\nAssume the old and the new application code run at the same time during the deploy.\n\n## Steps\n\n1. Read the migration and find the table size and traffic. Name the lock each statement takes (`ACCESS EXCLUSIVE` blocks all reads and writes).\n2. Split risky changes using expand and contract:\n   - Expand: add the new column as nullable with no default, or add the new table. Deploy code that writes both old and new.\n   - Backfill in batches.\n   - Switch reads to the new column, deploy, observe.\n   - Contract: drop the old column in a later release, never the same one.\n3. Safe forms (PostgreSQL): `CREATE INDEX CONCURRENTLY` outside a transaction; add a constraint as `NOT VALID` then `VALIDATE CONSTRAINT`; add a foreign key the same way; set `NOT NULL` only after a validated check constraint exists. Set `lock_timeout` (for example 3s) and retry, so a waiting migration cannot block traffic.\n4. Backfills: update by primary key ranges of 1,000 to 10,000 rows, commit each batch, sleep briefly between batches, make it resumable and idempotent. Never one giant UPDATE.\n5. Renames and type changes are breaking: add a new column and copy, do not rename in place.\n6. Write the down migration or a documented reverse plan, and say what data cannot be recovered (dropped columns).\n7. Run it on a restored copy of production-size data, record the duration and locks, then run the down path.\n\n## Rules\n\n- Never run a migration against production yourself.\n\n## Report\n\nVerdict (safe, safe with changes, unsafe), each risky statement with its lock and fix, the staged plan, the rollback.",
+  "example": {
+    "prompt": "Review migrations/0042_rename_status.sql",
+    "result": "Unsafe: ALTER TABLE orders RENAME COLUMN status TO state takes an ACCESS EXCLUSIVE lock and breaks the running app version. Plan: 1) add state, write both; 2) backfill 2.4M rows in batches of 5,000 (about 9 minutes); 3) read from state; 4) drop status next release. Rollback: stop writing state and read status again; no data is lost until step 4."
+  },
+  "faq": [
+    {
+      "question": "Does it run the migration?",
+      "answer": "Only on a local or test database you name. It never touches production; it hands you the plan and the commands."
+    },
+    {
+      "question": "Why drop the old column in a separate release?",
+      "answer": "If the new code has a bug you need the old column to roll back. Dropping it in the same deploy removes your way out."
+    }
+  ],
+  "access": [
+    "Reads migration files and schema in your project",
+    "Runs migrations only against a local or test database you specify"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

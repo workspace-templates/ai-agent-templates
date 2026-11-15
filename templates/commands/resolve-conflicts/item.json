@@ -1,0 +1,45 @@
+{
+  "slug": "resolve-conflicts",
+  "title": "Resolve Conflicts",
+  "kind": "command",
+  "category": "git",
+  "summary": "Finds every conflicted file after a merge or rebase, resolves each with written reasoning and runs the checks before you continue.",
+  "description": [
+    "A conflict marker is easy to delete and hard to resolve correctly. This command reads both sides, the base version and the commit messages behind them so that the result keeps the intent of each change.",
+    "Each file gets a short reason for the chosen resolution. Lines where the intent is unclear are left for you, and the project tests must pass before the merge or rebase is continued."
+  ],
+  "stacks": [],
+  "topics": [
+    "git",
+    "debugging"
+  ],
+  "useWhen": [
+    "Git halted your rebase or merge and many files show markers",
+    "Two people changed the same function in different ways",
+    "Lockfiles and generated files conflicted",
+    "You would like a check on your own fix before it goes in"
+  ],
+  "body": "Resolve the merge or rebase conflicts in this repository. Notes: $ARGUMENTS\n\n1. Run `git status` to see whether a merge, rebase or cherry-pick is in progress, and `git diff --name-only --diff-filter=U` for the conflicted files.\n2. For each file, view the three versions (`git show :1:file`, `:2:`, `:3:`) and the commit messages on each side (`git log --merge -p -n 3 -- file`). Decide what each side intended.\n3. Resolve by combining intents, not by picking a side. For lockfiles, regenerate with the package manager instead of editing markers. For generated files, rerun the generator.\n4. Remove every marker and check with `grep -rn \"<<<<<<<\\|>>>>>>>\" .` that none remain.\n5. If a conflict changes behavior and you cannot tell which intent wins, leave the file unresolved and ask.\n6. Run lint, type check and tests.\n\nPrint a table of file, resolution and reason. Then `git add` only the files you resolved, and ask before `git rebase --continue` or `git commit`. Never run `--abort` or `checkout --theirs` without asking.",
+  "argumentHint": "[hints on which side should win, optional]",
+  "example": {
+    "prompt": "/resolve-conflicts keep the new API names from main",
+    "result": "Rebase stopped on 4 files.\npackage-lock.json: regenerated with npm install.\nsrc/api/orders.ts: combined main's renamed fetchOrder with your pagination argument.\nsrc/ui/Cart.tsx: unclear, both sides rewrote the discount rule. Left for you.\n3 of 4 resolved, tests pass. Continue the rebase?"
+  },
+  "faq": [
+    {
+      "question": "Does it always pick my side or theirs?",
+      "answer": "No. It works out the goal of each change and keeps both when it can, and asks when the two goals contradict."
+    },
+    {
+      "question": "Can it finish the rebase for me?",
+      "answer": "Only after you confirm. It stages the files it resolved and waits for your go-ahead to continue."
+    }
+  ],
+  "access": [
+    "Reads conflicted files, their base versions and commit messages",
+    "Edits conflicted files and stages them; runs lint and tests"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

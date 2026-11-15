@@ -1,0 +1,45 @@
+{
+  "slug": "review-changes",
+  "title": "Review Changes",
+  "kind": "command",
+  "category": "git",
+  "summary": "Reviews your own uncommitted changes before you commit and lists problems by severity, so you catch them before a reviewer does.",
+  "description": [
+    "Most embarrassing review comments are things you would have spotted yourself with five minutes and fresh eyes: a leftover log line, a missing null check, a test that proves nothing. This command reads your working tree like a reviewer would.",
+    "It covers staged and unstaged changes plus new files, and sorts findings by how much they matter. It does not edit anything unless you ask."
+  ],
+  "stacks": [],
+  "topics": [
+    "code-review",
+    "debugging"
+  ],
+  "useWhen": [
+    "Right before running git commit",
+    "After a long coding session when you can no longer see the code clearly",
+    "Before opening a pull request, to avoid the obvious comments",
+    "When a change touches code you do not own"
+  ],
+  "body": "Review my uncommitted changes. Focus from the user: $ARGUMENTS\n\n1. Run `git status --short`, `git diff` and `git diff --staged`. Read untracked files that are new code too.\n2. For each changed function, open the surrounding file so you judge it in context, and search for its callers.\n3. Check, in order: bugs and unhandled cases (null, empty, off-by-one, async errors); security (user input, secrets, injection); behavior changes not mentioned by the user; missing or weak tests for new logic; leftover `console.log`, `print`, `debugger`, TODOs and commented-out code; unrelated edits that belong in another commit; files that should be ignored.\n4. Run the project's lint and fast tests and include failures.\n5. Do not edit anything.\n\nReport findings as **Critical**, **Should fix** and **Nit**, each with `file:line`, the problem and a one-line fix. If nothing is wrong, say what you checked. End with a suggestion for how to split the work into commits if it covers more than one concern, then ask which findings to fix.",
+  "argumentHint": "[area to focus on, optional]",
+  "example": {
+    "prompt": "/review-changes",
+    "result": "Critical: src/payments/refund.ts:58 awaits nothing, so errors from the gateway are swallowed.\nShould fix: new function applyCredit has no test; .env.local is untracked and not ignored.\nNit: console.log in Checkout.tsx:12.\nLint passes, 2 tests fail in refund.test.ts. Suggest two commits: refund fix, then credit feature. Fix the critical one?"
+  },
+  "faq": [
+    {
+      "question": "Does it change my files?",
+      "answer": "No. It only reports. You choose which findings it should fix afterward."
+    },
+    {
+      "question": "Does it look at untracked files?",
+      "answer": "Yes, new files that contain code are read as well, since they are part of what you are about to commit."
+    }
+  ],
+  "access": [
+    "Reads the working tree diff and new files",
+    "Runs lint and quick tests"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

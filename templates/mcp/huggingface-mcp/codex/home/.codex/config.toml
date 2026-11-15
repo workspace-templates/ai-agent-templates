@@ -1,0 +1,3 @@
+[mcp_servers.huggingface]
+url = "https://huggingface.co/mcp"
+bearer_token_env_var = "HF_TOKEN"

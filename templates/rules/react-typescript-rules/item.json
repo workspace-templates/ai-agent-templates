@@ -1,0 +1,47 @@
+{
+  "slug": "react-typescript-rules",
+  "title": "React TypeScript Rules",
+  "kind": "rules",
+  "category": "frontend",
+  "summary": "Project rules for React with TypeScript: typed props, hook discipline, feature-based layout, Testing Library tests and accessible markup.",
+  "description": [
+    "These rules set the shape of a React and TypeScript codebase so generated components look like the ones you already have. They favor small function components, strict types and state kept as close to its use as possible.",
+    "They also make accessibility and testing part of the definition of done, not an afterthought."
+  ],
+  "stacks": [
+    "react",
+    "typescript"
+  ],
+  "topics": [
+    "typescript",
+    "accessibility",
+    "testing"
+  ],
+  "useWhen": [
+    "You start a new React feature with an agent",
+    "Generated components use any or loose props",
+    "Effects fetch data and cause loops or races",
+    "Tests break whenever markup changes"
+  ],
+  "body": "# Project rules: React with TypeScript\n\n## Types\n- Turn on `strict`. Do not use `any`; use `unknown` and narrow. Define props as a `type` next to the component and do not use `React.FC`.\n- Model variants with discriminated unions instead of several optional booleans. Derive types from schemas (Zod) at boundaries.\n\n## Components and hooks\n- Function components only. Keep them small; extract a custom hook when logic repeats or exceeds a screen.\n- Follow the Rules of Hooks and keep the dependency arrays honest; fix the cause instead of silencing the lint rule.\n- Do not copy props into state. Compute derived values during render. Reach for `useMemo` and `useCallback` only after measuring.\n- Use effects to sync with outside systems, not to transform data. Fetch with TanStack Query or the framework's loader, and handle loading, error and empty states.\n- Give list items a stable `key` from the data, never the index for reorderable lists.\n\n## Layout\n- Group by feature: `features/orders/{components,hooks,api,index.ts}`. Export only the public surface from `index.ts`.\n- Name files after the component, one exported component per file.\n\n## Accessibility\n- Use semantic elements first (`button`, `nav`, `label`). Every input has a label, every image an `alt`, and every interactive element works by keyboard.\n\n## Testing and checks\n- Use Vitest or Jest with Testing Library. Query by role and accessible name, and simulate users with `user-event`. Do not test implementation details.\n- Run `tsc --noEmit`, the linter and the tests before finishing.",
+  "example": {
+    "prompt": "Build a searchable customer list with a detail drawer",
+    "result": "The agent creates a features/customers folder, typed props, a query hook with loading and error states, a labelled search field, a keyboard-closable drawer and role-based tests."
+  },
+  "faq": [
+    {
+      "question": "Why avoid React.FC?",
+      "answer": "Plain function signatures give clearer generics and no implicit children, and most teams find them simpler to read."
+    },
+    {
+      "question": "Does it cover Next.js?",
+      "answer": "Only the React and TypeScript parts. Add routing and server component rules for your framework in a separate section."
+    }
+  ],
+  "access": [
+    "Instructions the agent reads; it does not execute anything on its own"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

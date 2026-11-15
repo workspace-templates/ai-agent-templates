@@ -1,0 +1,48 @@
+{
+  "slug": "pandas-performance",
+  "title": "Pandas Performance",
+  "kind": "skill",
+  "category": "data",
+  "summary": "Speeds up slow pandas code by measuring first, then vectorizing, shrinking dtypes and chunking reads. Use it when a script is slow or runs out of memory.",
+  "description": [
+    "Most slow pandas code is slow for one of three reasons: a Python loop over rows, columns stored in a wasteful type, or a file read all at once. This skill finds which one applies by profiling, and only then changes the code.",
+    "Each change is checked against the original output so the faster version returns the same numbers. You get timings before and after, not a guess."
+  ],
+  "stacks": [
+    "python",
+    "pandas"
+  ],
+  "topics": [
+    "python",
+    "performance"
+  ],
+  "useWhen": [
+    "A script that took seconds on a sample takes an hour on the real file",
+    "A DataFrame no longer fits in memory and the process gets killed",
+    "Code uses iterrows or apply with a row-wise lambda on a large table",
+    "You need a before and after number to justify a rewrite"
+  ],
+  "body": "# Pandas performance\n\nMeasure, change one thing, measure again, and prove the output did not change.\n\n## Steps\n\n1. Build a representative sample and keep the current output as the reference. Time the slow path with `time.perf_counter()` or `%timeit`, and record memory with `df.memory_usage(deep=True).sum()`.\n2. Profile to find the hot line (`python -m cProfile -s cumtime script.py`). Do not optimize lines that are not hot.\n3. Replace row loops. `iterrows`, `itertuples` and `apply(axis=1)` become column arithmetic, `np.where`, `np.select`, `.map` with a dict, or `merge` for lookups.\n4. Shrink dtypes: `category` for low-cardinality strings, `int32` or `float32` where range allows (check with `pd.to_numeric(downcast=...)`), nullable ints only when nulls exist, and `datetime64` instead of strings.\n5. Read less: pass `usecols=`, set `dtype=` at load, and read big files with `chunksize=` or switch to Parquet. Aggregate per chunk, then combine.\n6. Avoid repeated `concat` in a loop; collect pieces in a list and concat once. Filter before merging, not after.\n7. Compare the new result with the reference using `pd.testing.assert_frame_equal`.\n\n## Rules\n\n- No optimization without a measurement showing it helps.\n- If the data is beyond one machine, say so and name polars or DuckDB rather than forcing pandas.\n\n## Report\n\nA table of step, time and memory before and after, the one change that mattered most, and the equality check result.",
+  "example": {
+    "prompt": "build_features.py takes 40 minutes on the full events file. Make it faster.",
+    "result": "Profiling showed 91% of time in apply(axis=1) at line 58. Replaced with np.select and a merge on the plan table. Converted user_id and country to category and read with usecols. Runtime 40 min to 2 min 10 s, memory 11.2 GB to 3.4 GB. assert_frame_equal passes against the saved reference."
+  },
+  "faq": [
+    {
+      "question": "Will it switch me to polars?",
+      "answer": "Not unless pandas cannot do the job. It stays in pandas, and only names an alternative when the data clearly outgrows it."
+    },
+    {
+      "question": "How does it make sure results stay the same?",
+      "answer": "It saves the original output first and compares the new output to it with a frame equality assertion after every change."
+    }
+  ],
+  "access": [
+    "Reads Python scripts and a sample of your data",
+    "Edits the slow script",
+    "Runs timing and profiling commands locally"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

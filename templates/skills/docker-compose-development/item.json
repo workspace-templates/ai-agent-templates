@@ -1,0 +1,45 @@
+{
+  "slug": "docker-compose-development",
+  "title": "Docker Compose Development",
+  "kind": "skill",
+  "category": "devops",
+  "summary": "Sets up a Docker Compose dev environment with health checks, ordered startup, sane volumes and seed data so a new teammate runs one command.",
+  "description": [
+    "A good compose file means a new developer clones the repository, runs one command and has a working app with data. A bad one starts the app before the database accepts connections and loses data every time a container restarts.",
+    "This skill builds the file around those failure points: health checks that gate startup, named volumes for state, bind mounts for code, and a seed step you can repeat safely."
+  ],
+  "stacks": [
+    "docker"
+  ],
+  "topics": [
+    "docker"
+  ],
+  "useWhen": [
+    "Onboarding takes a day because of local setup steps",
+    "The app crashes on start because the database is not ready",
+    "Hot reload is slow or does not work inside the container",
+    "You need the same services locally that you run in production"
+  ],
+  "body": "# Docker Compose development\n\nAim for `docker compose up` to give a working, seeded app with live reload.\n\n## Steps\n\n1. Read the app's start commands, ports and environment variables. List the services it needs: database, cache, queue, mail catcher.\n2. Write `compose.yaml` (no `version:` key). Give each service a pinned image tag, not `latest`.\n3. Add a `healthcheck` to every dependency, such as `pg_isready -U app` or `redis-cli ping`. Use `depends_on` with `condition: service_healthy` for the app.\n4. Mount source code as a bind mount for reload; keep `node_modules` or the virtualenv in a named volume so the host does not overwrite it. Use named volumes for database data.\n5. Put variables in `.env` and commit `.env.example`. Never commit real secrets.\n6. Seed data with a one-shot service or an idempotent script (`docker compose run --rm seed`) that can run twice without duplicating rows.\n7. Publish only the ports the developer needs, bound to `127.0.0.1`.\n8. Add a `.dockerignore` and a multi-stage Dockerfile with a `dev` target.\n9. Test it: `docker compose down -v`, then `docker compose up --build`, and confirm the app responds and the seed ran.\n\n## Rules\n\n- Never run containers as privileged or mount the Docker socket without saying why.\n- Never use `docker compose down -v` on a developer's real data without warning; it deletes volumes.\n\n## Report\n\nServices, ports, the one-line start command, and how to reset the data.",
+  "example": {
+    "prompt": "Make local setup a single command for this Rails and Postgres app",
+    "result": "Added compose.yaml with postgres:16 (healthcheck pg_isready), redis:7 and the web service waiting for healthy dependencies; bind mount for app/, named volumes for pgdata and bundle; bin/seed is idempotent. Verified from a clean state: localhost:3000 serves the seeded app in about 40 seconds."
+  },
+  "faq": [
+    {
+      "question": "Is this meant for production?",
+      "answer": "No. It targets local development, with bind mounts and open ports. Production images and orchestration need separate settings."
+    },
+    {
+      "question": "How do I reset my database?",
+      "answer": "Run docker compose down -v to remove the named volumes, then up again. The report states this so nobody does it by accident."
+    }
+  ],
+  "access": [
+    "Reads and edits compose.yaml, Dockerfile and env example files",
+    "Runs docker compose to build and start the stack locally"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,44 @@
+{
+  "slug": "review-comment-resolution",
+  "title": "Review Comment Resolution",
+  "kind": "skill",
+  "category": "git",
+  "summary": "Works through reviewer comments on a pull request: applies the fixes that are right, pushes back on the ones that are not and drafts a reply to every thread.",
+  "description": [
+    "Addressing review comments is mostly bookkeeping, and bookkeeping is where comments get missed. This skill pulls every open thread, sorts it, makes the changes and gives you one reply per thread, so nothing is left hanging.",
+    "It also treats a comment as an opinion, not an order. When a suggestion would introduce a bug or contradicts an earlier decision, it says so with evidence instead of applying it."
+  ],
+  "stacks": [],
+  "topics": [
+    "code-review",
+    "git"
+  ],
+  "useWhen": [
+    "A pull request came back with fifteen comments",
+    "Reviewers disagree with each other and you need to reconcile them",
+    "You want to be sure no thread was left unanswered",
+    "A comment is unclear and you need a polite way to ask"
+  ],
+  "body": "# Review comment resolution\n\nEvery open thread gets exactly one outcome: fixed, answered, or questioned.\n\n## Steps\n\n1. Fetch the open threads. With the GitHub CLI: `gh pr view --comments` and `gh api repos/{owner}/{repo}/pulls/{n}/comments`. Include file, line, author and whether the thread is resolved. Ignore resolved threads.\n2. Read the diff the comments refer to (`gh pr diff`) and the code around each line. A comment may be about a line that has since moved.\n3. Sort each thread:\n   - **Fix**: correct and in scope. Make the smallest change that satisfies it.\n   - **Discuss**: wrong, risky or out of scope. Prepare a short reason with evidence (a test, a caller, a line of the spec).\n   - **Ask**: ambiguous. Prepare one specific question.\n   - **Defer**: valid but separate. Suggest a follow-up issue.\n4. Apply the fixes. Group them into one commit per theme with a message such as \"Address review: validate input in importer\". Do not rewrite history on a shared branch.\n5. Run the tests and linter for what you touched.\n6. Draft the replies. Fix replies say what changed and cite the commit. Keep every reply under three sentences and polite; never defensive.\n\n## Rules\n\n- Do not mark threads resolved or post replies yourself. Give the drafts to the user.\n- If two reviewers conflict, say so and propose one option; do not pick silently.\n\n## Report\n\nA table: thread (file:line), author, outcome, change or reply text. List the tests you ran.",
+  "example": {
+    "prompt": "Handle the review comments on PR 214",
+    "result": "11 open threads: 7 fixed in 3 commits (null check in importer.ts:52, renamed `tmp` to `pendingRows`, added missing test), 2 answered with evidence (the suggested early return would skip the audit log), 1 question about the retry limit, 1 deferred as issue \"paginate export\". Tests pass. Reply drafts ready to post."
+  },
+  "faq": [
+    {
+      "question": "Will it post replies on the pull request?",
+      "answer": "No. It prepares each reply and leaves posting to you, so your tone and your decisions stay yours."
+    },
+    {
+      "question": "What if it disagrees with a reviewer?",
+      "answer": "It writes a respectful reply with the evidence, such as a failing case, and does not change the code for that thread."
+    }
+  ],
+  "access": [
+    "Reads pull request threads and diffs through the GitHub CLI",
+    "Edits files and creates local commits; runs your tests and linter"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

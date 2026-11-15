@@ -1,0 +1,58 @@
+{
+  "slug": "atlassian-mcp",
+  "title": "Atlassian MCP Server",
+  "kind": "mcp",
+  "category": "productivity",
+  "summary": "Connect your agent to Atlassian's hosted MCP server to search and update Jira work items and Confluence pages with your own permissions.",
+  "description": [
+    "Atlassian runs an official remote MCP server for its cloud products. Through it an agent can search and summarize Jira, Jira Service Management, Confluence and Bitbucket content, and create or edit Jira work items and Confluence pages.",
+    "You sign in with OAuth in the browser the first time, so no token goes into a config file. Every tool call follows the permissions your Atlassian account already has, and calls appear in the organization's audit log."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation"
+  ],
+  "useWhen": [
+    "Pull the acceptance criteria from a Jira ticket before you start coding",
+    "Summarize a long Confluence design page",
+    "File a bug in Jira from a failing test",
+    "Find every open ticket that mentions a service you are about to change"
+  ],
+  "mcp": {
+    "name": "atlassian",
+    "transport": "http",
+    "url": "https://mcp.atlassian.com/v2/mcp",
+    "env": [],
+    "headers": [],
+    "source": "https://github.com/atlassian/atlassian-mcp-server",
+    "access": [
+      "Reads Jira, Confluence and Bitbucket content your Atlassian account can see",
+      "Can create and edit Jira work items and Confluence pages; delete and manage actions are off until an admin enables them"
+    ]
+  },
+  "example": {
+    "prompt": "Find the Jira ticket about the checkout timeout and list its acceptance criteria.",
+    "result": "PAY-481 \"Checkout times out on slow cards\": 1) retry once after 8 seconds, 2) show a pending state, 3) log the gateway id. Status: In Progress, assigned to Dana."
+  },
+  "faq": [
+    {
+      "question": "How do I sign in?",
+      "answer": "In Claude Code add the URL with the http transport, then run /mcp in a session and finish the browser sign-in. Other clients use the same URL."
+    },
+    {
+      "question": "Can it run without a browser, for CI?",
+      "answer": "Atlassian documents API token auth for headless use, but an org admin has to turn it on first. This setup uses the OAuth flow."
+    },
+    {
+      "question": "Does it work for Jira Service Management?",
+      "answer": "Those tools accept only API token auth, so expect them to be missing after a plain OAuth sign-in."
+    }
+  ],
+  "access": [
+    "Your Atlassian cloud data, limited by your own permissions",
+    "Writes to Jira and Confluence when you ask for changes"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

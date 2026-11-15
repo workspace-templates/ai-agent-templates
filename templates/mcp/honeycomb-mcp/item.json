@@ -1,0 +1,59 @@
+{
+  "slug": "honeycomb-mcp",
+  "title": "Honeycomb MCP Server",
+  "kind": "mcp",
+  "category": "devops",
+  "summary": "Query Honeycomb traces, datasets and SLOs from your agent through Honeycomb's hosted MCP server, signed in with OAuth.",
+  "description": [
+    "Honeycomb runs the server itself, which means you install nothing locally. Once connected, an agent can run queries on your event data, fetch a trace, look up column definitions and review SLOs while it works on a slow endpoint or an error spike.",
+    "You sign in with OAuth in the browser. The consent screen lets you choose read-only access, so the agent can investigate without creating boards or triggers. Teams in the EU region use the eu1 address instead of the one in this setup."
+  ],
+  "stacks": [],
+  "topics": [
+    "performance",
+    "debugging"
+  ],
+  "useWhen": [
+    "Find what changed when p99 latency doubled",
+    "Pull the slowest traces for one endpoint",
+    "Check how much error budget an SLO has left",
+    "Look up which attributes exist on a dataset before writing a query"
+  ],
+  "mcp": {
+    "name": "honeycomb",
+    "transport": "http",
+    "url": "https://mcp.honeycomb.io/mcp",
+    "env": [],
+    "headers": [],
+    "source": "https://docs.honeycomb.io/integrations/mcp/",
+    "access": [
+      "Reads queries, traces, datasets and SLOs in the Honeycomb environments you authorize",
+      "Can create boards, triggers and SLOs only if you grant write access at sign-in"
+    ]
+  },
+  "example": {
+    "prompt": "In the checkout dataset, which route had the biggest rise in p99 duration since 13:00, and show one slow trace.",
+    "result": "POST /checkout/confirm: p99 went from 0.9 s to 3.4 s. Slow trace 7f3a...: 2.8 s of the 3.1 s sits in the inventory.reserve span, waiting on a database call."
+  },
+  "faq": [
+    {
+      "question": "How do I sign in?",
+      "answer": "Add the URL to your agent and start it. The agent opens a Honeycomb login page and asks which access to grant. Choose read-only for all resources."
+    },
+    {
+      "question": "I am in the EU region. Which URL?",
+      "answer": "Use https://mcp.eu1.honeycomb.io/mcp in place of the US address."
+    },
+    {
+      "question": "Can I use an API key instead?",
+      "answer": "Yes, for agents that cannot do an interactive login. Honeycomb documents a management key sent as a bearer token. OAuth is the preferred route."
+    }
+  ],
+  "access": [
+    "Reads telemetry from environments you approve",
+    "Write access only if granted at sign-in"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

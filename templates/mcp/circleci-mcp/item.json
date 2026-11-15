@@ -1,0 +1,64 @@
+{
+  "slug": "circleci-mcp",
+  "title": "CircleCI MCP Server",
+  "kind": "mcp",
+  "category": "devops",
+  "summary": "Read CircleCI build failures, test results and pipeline status from your agent, then get help fixing the config or the failing job.",
+  "description": [
+    "The CircleCI MCP server lets an agent pull the failure logs of a build, see which tests failed and check the latest pipeline on a branch, so you can say \"why is main red\" without opening the web app. It can also validate a config file and find flaky tests.",
+    "It runs through npx with a personal API token. Some tools do more than read: rerun_workflow and run_pipeline start work on your account. CircleCI marks this package deprecated in favor of its hosted server, so look at the source page for the current recommendation."
+  ],
+  "stacks": [],
+  "topics": [
+    "ci",
+    "debugging"
+  ],
+  "useWhen": [
+    "Find out why the latest pipeline on a branch failed",
+    "Read the logs of a failing job and propose a fix",
+    "List the flaky tests across recent runs",
+    "Validate a config.yml before you push it"
+  ],
+  "mcp": {
+    "name": "circleci",
+    "transport": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "@circleci/mcp-server-circleci@latest"
+    ],
+    "env": [
+      {
+        "name": "CIRCLECI_TOKEN",
+        "description": "A CircleCI personal API token"
+      }
+    ],
+    "headers": [],
+    "source": "https://github.com/CircleCI-Public/mcp-server-circleci",
+    "access": [
+      "Reads pipelines, job logs, test results and artifacts for projects your token can see",
+      "Can rerun workflows and trigger pipelines when you ask it to"
+    ]
+  },
+  "example": {
+    "prompt": "The build on branch fix/cart-total is red. Get the failure logs and tell me what broke.",
+    "result": "The test job failed in cart.spec.ts: \"expected 1999, received 2000\". The rounding change in totals.ts rounds before adding tax. Suggested fix: round once after the sum."
+  },
+  "faq": [
+    {
+      "question": "Does it work with self-hosted CircleCI?",
+      "answer": "Yes. Set the optional CIRCLECI_BASE_URL variable to your server address."
+    },
+    {
+      "question": "Can it trigger builds?",
+      "answer": "Yes, through run_pipeline and rerun_workflow. Tell the agent to ask first if you want a check before it starts anything."
+    }
+  ],
+  "access": [
+    "Reads CircleCI project data with your token",
+    "May start pipelines or reruns on request"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

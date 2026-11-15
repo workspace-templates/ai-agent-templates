@@ -1,0 +1,45 @@
+{
+  "slug": "triage-todos",
+  "title": "Triage Todos",
+  "kind": "command",
+  "category": "productivity",
+  "summary": "Collects to-do comments and open issues, then sorts them into do now, later and drop with a short reason for each.",
+  "description": [
+    "Old to-do comments pile up until nobody trusts them. This command gathers them from the code, compares each with git history and any open issues, and decides which are still real.",
+    "You get three clear groups and a reason per item. Removing stale comments or filing tickets happens only after you pick."
+  ],
+  "stacks": [],
+  "topics": [
+    "code-review",
+    "refactoring"
+  ],
+  "useWhen": [
+    "The repository has hundreds of forgotten to-do and FIXME markers",
+    "You are planning a cleanup sprint",
+    "Before a release when risky leftovers must be found",
+    "A new teammate needs to know which notes still matter"
+  ],
+  "body": "Triage the open TODOs in: $ARGUMENTS (whole repo if empty).\n\n1. Search with `rg -n \"T[O]DO|FIXME|HACK|XXX\"` excluding vendor, build and lock files. Record file, line and text.\n2. For each, check age and author with `git blame -L <line>,<line> <file>`. Check the surrounding code: has the condition it mentions already changed?\n3. If the arguments say \"with issues\" and gh is available, run `gh issue list --state open --limit 100 --json number,title,labels` and match issues to comments by keywords.\n4. Sort into:\n   - **Do now**: touches security, data loss, wrong results, or blocks a release.\n   - **Later**: real but low risk. Group by theme.\n   - **Drop**: obsolete, already done, vague, or older than the code it describes.\n5. Give each item one line of reasoning and the evidence (blame date, matching issue).\n\nShow counts per group, the do-now list in full and the other groups as short tables. Ask whether to delete the Drop comments and whether to draft issues for Later. Change nothing before the answer.",
+  "argumentHint": "[folder, or \"with issues\" to include gh issues]",
+  "example": {
+    "prompt": "/triage-todos src/",
+    "result": "87 markers. Do now (4): a note to remove debug bypass in auth/session.ts:63. Later (31), grouped as retries, naming, i18n. Drop (52): 40 reference removed code. Delete the 52 stale comments?"
+  },
+  "faq": [
+    {
+      "question": "Does it delete comments on its own?",
+      "answer": "No. Deletion is offered per group and only runs after your reply."
+    },
+    {
+      "question": "Does it need GitHub access?",
+      "answer": "Only to cross-check issues. Without gh it triages from the code and history alone."
+    }
+  ],
+  "access": [
+    "Reads source files, blame data and optionally open issues",
+    "Edits files only to remove comments you approve"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,45 @@
+{
+  "slug": "simplify-code",
+  "title": "Simplify Code",
+  "kind": "command",
+  "category": "code-quality",
+  "summary": "Cuts the length and nesting of one function without changing what it does, and proves it with before and after tests.",
+  "description": [
+    "Deeply nested code with flags and repeated branches is hard to read and easy to break. This command targets a single function and removes the accidental complexity: early returns, dead branches, needless variables.",
+    "It measures the result in plain numbers, such as line count and maximum nesting, and keeps the function signature and side effects exactly the same."
+  ],
+  "stacks": [],
+  "topics": [
+    "refactoring",
+    "code-review"
+  ],
+  "useWhen": [
+    "A function has four or more levels of nesting",
+    "You inherited a long method with many flags",
+    "A reviewer flagged cyclomatic complexity",
+    "You want a quick cleanup before extending a function"
+  ],
+  "body": "Simplify this function without changing behavior: $ARGUMENTS\n\n1. Read the function and its callers. Record the starting numbers: lines, deepest nesting level, count of branches.\n2. Make sure tests cover it. If a path is untested, add a test for it first, using real inputs from the code. Run them.\n3. Apply, in this order, and stop when the code reads cleanly: guard clauses instead of nested else; remove branches that cannot happen; merge duplicated branches; replace flag variables with direct returns; use the language's built-ins (map, filter, any, get with default) over hand loops; delete unused variables and parameters that no caller passes.\n4. Keep the same inputs, outputs, exceptions and side effects, including their order. If a change might alter behavior in an edge case, do not make it; list it instead.\n5. Run the tests after the edit and compare with the starting numbers.\n\nShow the old and new function side by side with the numbers. Do not touch other functions or ask to commit before showing the diff.",
+  "argumentHint": "[function name or file:line]",
+  "example": {
+    "prompt": "/simplify-code parseDiscountRules in src/cart/rules.js",
+    "result": "Before: 74 lines, nesting 5, 11 branches. After: 38 lines, nesting 2, 6 branches. Used guard clauses and removed 2 unreachable cases.\n9 existing tests plus 2 new ones pass.\nNot changed: the silent catch on line 52, it may be relied on."
+  },
+  "faq": [
+    {
+      "question": "How is this different from the Refactor command?",
+      "answer": "It works on one function only and aims at fewer lines and less nesting, while Refactor can restructure across modules in several steps."
+    },
+    {
+      "question": "Could it change behavior by accident?",
+      "answer": "It runs tests before and after, adds missing ones, and lists risky edge-case changes instead of applying them."
+    }
+  ],
+  "access": [
+    "Reads the function and its callers",
+    "Edits that function and adds tests, then runs the tests"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

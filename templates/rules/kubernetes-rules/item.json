@@ -1,0 +1,45 @@
+{
+  "slug": "kubernetes-rules",
+  "title": "Kubernetes Rules",
+  "kind": "rules",
+  "category": "devops",
+  "summary": "Project rules for Kubernetes manifests: standard labels, resource requests, probes, restricted security contexts, config handling and safe rollouts.",
+  "description": [
+    "A manifest that applies cleanly can still be unsafe or fragile in a real cluster. These rules guide an agent toward workloads that can be scheduled fairly, restarted safely and locked down by default.",
+    "They also say how configuration, secrets and rollouts should be written, and which commands validate a change before it reaches a cluster."
+  ],
+  "stacks": [
+    "kubernetes"
+  ],
+  "topics": [
+    "ci",
+    "security"
+  ],
+  "useWhen": [
+    "You are writing Deployments, Services or Helm and Kustomize overlays",
+    "Pods get evicted or starve their neighbors",
+    "A rollout caused downtime",
+    "Containers run as root with writable file systems"
+  ],
+  "body": "# Project rules: Kubernetes\n\n## Metadata\n- Put every object in an explicit namespace and give it the `app.kubernetes.io/name`, `instance`, `version` and `part-of` labels. Selectors use only stable labels, never the version.\n- Pin images to a version or digest, never `latest`. Set `imagePullPolicy` on purpose.\n\n## Resources and probes\n- Set CPU and memory `requests` on every container, and a memory `limit` equal to or above the request. Be careful with CPU limits that throttle.\n- Define `readinessProbe` for traffic, `livenessProbe` only for real deadlocks, and `startupProbe` for slow starts. Handle `SIGTERM` and set a `terminationGracePeriodSeconds` that fits.\n\n## Security\n- Set `runAsNonRoot: true`, `allowPrivilegeEscalation: false`, `readOnlyRootFilesystem: true`, drop all capabilities and use the `RuntimeDefault` seccomp profile. Do not use `hostNetwork` or privileged mode.\n- Give each workload its own ServiceAccount with minimal RBAC, and add a NetworkPolicy.\n\n## Config and rollout\n- Use ConfigMaps for settings and Secrets, or an external secrets operator, for credentials. Never put secrets in manifests in git.\n- Run at least two replicas for services, with a PodDisruptionBudget and topology spread. Use `RollingUpdate` with `maxUnavailable: 0` for critical services. Add an HPA when load varies.\n\n## Validate\n- Run `kubectl apply --dry-run=server`, `kubeconform` and `kube-linter lint` (or Polaris) and review the `kubectl diff`.",
+  "example": {
+    "prompt": "Write manifests to run our API with three replicas behind a Service",
+    "result": "The agent writes a Deployment with probes, requests, a restricted security context and spread rules, a Service, a PodDisruptionBudget and an HPA, then validates them with kubeconform and a server dry run."
+  },
+  "faq": [
+    {
+      "question": "Does it prefer Helm or Kustomize?",
+      "answer": "Neither. The rules are about the rendered objects, so they hold for plain YAML, Helm charts and Kustomize overlays."
+    },
+    {
+      "question": "Why avoid CPU limits?",
+      "answer": "They can throttle a process that has spare node capacity. Requests give fair scheduling; add limits only when you need to cap usage."
+    }
+  ],
+  "access": [
+    "Instructions only; it does not read or run anything by itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

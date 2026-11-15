@@ -1,0 +1,47 @@
+{
+  "slug": "react-component-design",
+  "title": "React Component Design",
+  "kind": "skill",
+  "category": "frontend",
+  "summary": "Designs and reviews React components for clean state, correct effects, composition and complete loading, empty and error states, in TypeScript.",
+  "description": [
+    "React code gets hard to maintain in predictable ways: derived values stored in state, effects that fetch and sync, props lists that keep growing. This skill applies a short set of design rules to a component you are writing or reviewing.",
+    "It also insists that every component fed by data has an answer for loading, empty and error, because those are the states users see first and developers forget."
+  ],
+  "stacks": [
+    "react",
+    "typescript"
+  ],
+  "topics": [
+    "typescript",
+    "code-review"
+  ],
+  "useWhen": [
+    "Writing a new component or a page made of several",
+    "A component has more than seven props or several boolean flags",
+    "A useEffect keeps causing loops or stale values",
+    "A list or form shows a blank screen while loading or on failure"
+  ],
+  "body": "# React component design\n\nWrite function components in TypeScript. Keep them small and boring.\n\n## Steps\n\n1. Define the job in one sentence. If it needs \"and\", split it into two components.\n2. Type the props: required props first, no `any`, a discriminated union instead of several booleans (`status: 'idle' | 'loading' | 'error'`). Accept `children` or a slot prop instead of adding a prop per variation.\n3. Place state at the lowest component that needs it. Do not store anything you can compute from props or other state; compute it during render (`useMemo` only after you measured).\n4. Treat `useEffect` as a last resort. Never use it to transform data, reset state from props (use a `key`) or respond to a click (use the handler). Use it for subscriptions and syncing with outside systems, always with a cleanup and a complete dependency list. Fetch with the project's data library, not a bare effect.\n5. Cover every data state: loading (skeleton or spinner), empty (a message and next action), error (readable text and retry), and success. Write them before the happy path.\n6. Lists need stable `key` values from the data, never the index when order can change.\n7. Prefer composition: pass components or render props instead of a config object that grows.\n8. Make it accessible: native elements, labels, focus.\n\n## Rules\n\n- No prop drilling past two levels: use composition or context.\n- Do not mutate props or state.\n\n## Report\n\nThe component code, the states it handles, and anything you left to the caller.",
+  "example": {
+    "prompt": "Build a UserList component that loads users from /api/users",
+    "result": "Created UserList.tsx and UserRow.tsx. Props: onSelect(userId). State: one discriminated union for loading, error, empty and ready, no effect (uses the project query hook). Empty state links to \"Invite a user\", the error state has a Retry button. Rows are keyed by user.id. Search text is filtered during render, not stored."
+  },
+  "faq": [
+    {
+      "question": "Why so strict about useEffect?",
+      "answer": "Most effect bugs come from using it to move data around inside React. Computing during render or handling the event directly removes whole classes of stale-value bugs."
+    },
+    {
+      "question": "Does it work with Next.js or Vite?",
+      "answer": "Yes. The rules apply to any React 18 or newer project, and it follows the data-fetching library your repo already uses."
+    }
+  ],
+  "access": [
+    "Reads files in your project",
+    "Creates and edits component files"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,44 @@
+{
+  "slug": "sql-injection-prevention",
+  "title": "SQL Injection Prevention",
+  "kind": "skill",
+  "category": "security",
+  "summary": "Finds queries built from strings and rewrites them as parameterized statements, with allowlists for column names, sort order and other identifiers.",
+  "description": [
+    "A single concatenated query is enough to expose a whole database. This skill hunts for them across ORMs, query builders and raw drivers, since \"we use an ORM\" does not rule out raw fragments hiding in a search or reporting function.",
+    "Values become bound parameters. Parts that cannot be parameters, such as table names and ORDER BY columns, are mapped through a fixed allowlist. Each change gets a test that tries a hostile string."
+  ],
+  "stacks": [],
+  "topics": [
+    "security",
+    "sql"
+  ],
+  "useWhen": [
+    "A code review found string interpolation in a query",
+    "You maintain a legacy app with hand-written SQL",
+    "Search, filter and sort features build dynamic queries",
+    "You must show an auditor that injection was addressed"
+  ],
+  "body": "# SQL injection prevention\n\nFind every query that mixes text and input, and make the input unable to change the query shape.\n\n## Steps\n\n1. Search for query construction with dynamic parts: template strings or `+` near `SELECT`, `INSERT`, `UPDATE`, `DELETE`, `WHERE`, `ORDER BY`, `LIMIT`; ORM escape hatches (`raw()`, `queryRawUnsafe`, `extra()`, `text()`, `literal()`); stored procedures called with built strings.\n2. For each hit, trace where every interpolated value comes from. Skip values that are constants.\n3. Values: replace with bound parameters and pass them separately (`?`, `$1`, `:name`, tagged-template helpers). Do not hand-escape quotes.\n4. `IN` lists: generate one bound slot per item, or use `= ANY($1)` with an array. Guard against empty lists.\n5. Identifiers and keywords cannot be bound. Map input to a fixed object, such as `{ price: \"price\", newest: \"created_at\" }`, and reject unknown keys. Direction is `asc` or `desc` only. Cast `LIMIT` and `OFFSET` to bounded integers.\n6. `LIKE` patterns: bind the value and escape `%` and `_` when the user should not control wildcards.\n7. Check the database account: does the app user need DDL or access to other schemas? Recommend least privilege.\n8. Add a test per fixed query using inputs like `' OR 1=1 --` and `1; DROP TABLE x` that must return no extra rows or an error, never a changed result.\n\n## Rules\n\n- Do not rely on input filtering or on stripping quotes.\n- Keep behaviour identical for valid input.\n\n## Report\n\nEach query fixed (`path:line`, before, after), identifiers allowlisted, tests, and any query left because it needs a design change.",
+  "example": {
+    "prompt": "Find and fix SQL injection in the reports module.",
+    "result": "Fixed 5 queries. reports/list.ts:31 interpolated the sort column from the query string; now mapped through an allowlist of 4 columns. reports/export.ts:77 built an IN list from ids; now uses = ANY($1). Added tests with quote and comment payloads. Left alone: reports/legacy.sql, a stored procedure that concatenates; needs a database change, noted in the report."
+  },
+  "faq": [
+    {
+      "question": "Is an ORM enough to be safe?",
+      "answer": "Only for the parts you build with its API. Raw fragments, dynamic order clauses and string-built filters inside an ORM are still injectable."
+    },
+    {
+      "question": "Why can table names not be parameterized?",
+      "answer": "Bound parameters carry values, not syntax. A name must be chosen by your code from a known list, which is what the allowlist does."
+    }
+  ],
+  "access": [
+    "Reads and edits source files containing queries",
+    "Runs your tests; never connects to a production database"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

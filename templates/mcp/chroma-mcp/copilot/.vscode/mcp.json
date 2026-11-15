@@ -1,0 +1,29 @@
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "chroma_client_type",
+      "description": "ephemeral, persistent, http or cloud",
+      "password": true
+    },
+    {
+      "type": "promptString",
+      "id": "chroma_data_dir",
+      "description": "Folder for data when the client type is persistent",
+      "password": true
+    }
+  ],
+  "servers": {
+    "chroma": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "chroma-mcp"
+      ],
+      "env": {
+        "CHROMA_CLIENT_TYPE": "${input:chroma_client_type}",
+        "CHROMA_DATA_DIR": "${input:chroma_data_dir}"
+      }
+    }
+  }
+}

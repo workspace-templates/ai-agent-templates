@@ -1,0 +1,45 @@
+{
+  "slug": "responsive-design",
+  "title": "Responsive Design",
+  "kind": "skill",
+  "category": "frontend",
+  "summary": "Makes a page work from 320px up using fluid type, container queries and breakpoints chosen by the content and tested at real widths.",
+  "description": [
+    "Pages built at one desktop width then squeezed down tend to break at 320px, 768px and everything between. This skill has the agent build mobile first and let the content choose the breakpoints.",
+    "Typography and spacing scale fluidly, components adapt to their container instead of the window, and touch targets and zoom behavior are checked, not assumed."
+  ],
+  "stacks": [
+    "css"
+  ],
+  "topics": [
+    "accessibility"
+  ],
+  "useWhen": [
+    "A page overflows horizontally on a phone",
+    "Cards or sidebars look wrong at in-between widths such as 700px",
+    "You want type that scales without a media query per size",
+    "A component is reused in a narrow column and a wide one"
+  ],
+  "body": "# Responsive design\n\nStart from the narrowest screen and add layout only where the content needs it.\n\n## Steps\n\n1. Ensure `<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">` exists and no zoom lock is set.\n2. Reset the base: `box-sizing: border-box`, `img, video { max-width: 100%; height: auto }`, and no fixed widths on containers; use `max-width` with `width: min(100% - 2rem, 70rem)`.\n3. Build the single-column layout first. It must work at 320px with no horizontal scroll.\n4. Use fluid values: `font-size: clamp(1rem, 0.9rem + 0.5vw, 1.25rem)` and spacing from `clamp()` or `rem` tokens. Prefer `gap` over margins.\n5. Add breakpoints only where the layout actually breaks, found by widening the viewport slowly. Write them in `em` or `rem`, mobile first with `min-width`.\n6. For reusable components use `container-type: inline-size` and `@container (min-width: 30rem)` so a card adapts to its slot, not the screen.\n7. Use `grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr))` for card grids before reaching for breakpoints.\n8. Test at 320, 375, 768, 1024 and 1440 pixels, and at 200 percent text zoom. Touch targets stay at least 44px.\n\n## Rules\n\n- No `vw`-only font sizes; they ignore user zoom.\n- Never hide essential content on small screens.\n- Do not use device names as breakpoints.\n\n## Report\n\nThe breakpoints you used and why, widths tested, and anything still cramped.",
+  "example": {
+    "prompt": "Make the pricing page work on phones",
+    "result": "Pricing cards now use auto-fit minmax(16rem, 1fr) and a container query for the feature list. Headline type is clamp(1.75rem, 1.2rem + 2vw, 3rem). One breakpoint remained, at 48em, for the sticky comparison header. Verified at 320, 375, 768, 1024 and 1440 pixels plus 200 percent zoom; no horizontal scroll."
+  },
+  "faq": [
+    {
+      "question": "Why so few media queries?",
+      "answer": "Fluid sizing and container queries remove most of them. The ones left mark real layout changes found by testing."
+    },
+    {
+      "question": "Does it support old browsers?",
+      "answer": "Container queries and clamp() work in all current browsers. Tell it your support floor and it adds fallbacks."
+    }
+  ],
+  "access": [
+    "Reads and edits CSS and markup",
+    "May open your dev server to test widths"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

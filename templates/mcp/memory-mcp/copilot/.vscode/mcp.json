@@ -1,0 +1,23 @@
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "memory_file_path",
+      "description": "Absolute path of the JSONL file that holds the graph; the folder must already exist",
+      "password": true
+    }
+  ],
+  "servers": {
+    "memory": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ],
+      "env": {
+        "MEMORY_FILE_PATH": "${input:memory_file_path}"
+      }
+    }
+  }
+}

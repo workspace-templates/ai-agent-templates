@@ -1,0 +1,26 @@
+---
+description: "Project rules for GitHub Actions workflows: pinned actions, minimal token permissions, caching, reusable workflows and safe secret handling."
+alwaysApply: true
+---
+
+# Project rules: GitHub Actions
+
+## Workflow layout
+- One workflow per concern: `ci.yml`, `release.yml`, `deploy.yml`. Name jobs and steps in plain words so the checks list reads clearly.
+- Pull shared logic into reusable workflows (`workflow_call`) or composite actions in `.github/actions`. Never paste the same ten steps twice.
+
+## Security
+- Declare `permissions:` at the top of every workflow as `contents: read`, then raise it per job only where needed.
+- Pin third-party actions to a full commit SHA with the version in a trailing comment. First-party `actions/*` may use a major tag.
+- Never interpolate `github.event.*` text (titles, branch names) into a `run:` script. Pass it through `env:` and quote the variable.
+- Secrets come from `secrets.*` or OIDC federation to the cloud provider. Do not echo them, and do not use `pull_request_target` to run code from forks.
+
+## Speed and reliability
+- Set `concurrency` with `cancel-in-progress: true` for pull request runs, never for deploys.
+- Cache dependencies with the setup action's built-in cache option, keyed on the lockfile.
+- Set `timeout-minutes` on every job. Use a `matrix` for versions, with `fail-fast: false` when results are independent.
+- Gate deploys with `environments` and required reviewers.
+
+## Before finishing
+- Lint the files with `actionlint`. Run the same build and test commands locally that the workflow runs.
+- Explain any permission you raised in the pull request description.

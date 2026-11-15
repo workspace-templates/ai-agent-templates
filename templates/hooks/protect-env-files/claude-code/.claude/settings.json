@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{let j={};try{j=JSON.parse(d)}catch(e){process.exit(0)}const i=j.tool_input||{};const f=String(i.file_path||'').split(String.fromCharCode(92)).join('/');const b=f.split('/').pop();const ok=/[.](example|sample|template|dist)$/i.test(b);const bad=(/^[.]env([.].*)?$/i.test(b)&&!ok)||/[.](pem|key|p12|pfx)$/i.test(b)||/^id_(rsa|dsa|ecdsa|ed25519)$/.test(b);if(bad){console.error('Blocked: '+b+' holds secrets. Ask the user for the value you need, or use a .env.example file.');process.exit(2)}})\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

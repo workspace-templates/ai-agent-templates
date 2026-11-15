@@ -1,0 +1,45 @@
+{
+  "slug": "rust-axum-rules",
+  "title": "Rust Axum Rules",
+  "kind": "rules",
+  "category": "backend",
+  "summary": "Project rules for Axum web services: shared state, typed extractors, one IntoResponse error type, tower middleware and compile-checked sqlx queries.",
+  "description": [
+    "Axum rewards a clean separation between extractors, handlers and state, but the compiler errors from a mismatched handler can push an agent toward awkward workarounds. These rules describe the shape that compiles cleanly and stays readable.",
+    "They set up one error type for the whole service and a clear rule for where sqlx queries live, so failures turn into correct HTTP responses instead of panics."
+  ],
+  "stacks": [
+    "rust"
+  ],
+  "topics": [
+    "api-design",
+    "performance"
+  ],
+  "useWhen": [
+    "You are adding routes to an Axum service",
+    "Handlers use unwrap and crash on bad input",
+    "Shared state is passed in inconsistent ways",
+    "You need database queries checked at build time"
+  ],
+  "body": "# Project rules: Axum\n\n## Structure\n- `main.rs` builds config, the pool and the `Router`; each feature module exposes `pub fn router() -> Router<AppState>` and the app merges or nests them.\n- `AppState` is a cloneable struct holding the `PgPool`, config and clients, passed with `.with_state`. Extract it with `State<AppState>`. No `static mut` or lazy globals for dependencies.\n\n## Handlers\n- Take typed extractors (`Path`, `Query`, `Json<T>`) with `serde` structs and a validator crate for constraints. Order matters: the body extractor goes last.\n- Return `Result<Json<T>, AppError>`.\n\n## Errors\n- Define one `AppError` enum with `thiserror` and implement `IntoResponse` mapping each variant to a status and JSON body. Log internal details with `tracing`; return a generic message for 500s.\n- Never `unwrap` or `expect` on request-driven paths. Use `?`.\n\n## Middleware\n- Apply tower-http layers (`TraceLayer`, `TimeoutLayer`, `CorsLayer`, compression) with `ServiceBuilder`. Put auth in a layer or an extractor.\n\n## Data\n- Use `sqlx::query_as!` with offline metadata (`cargo sqlx prepare`) and migrations in `migrations/`. Use transactions for multi-statement changes. Never hold a lock across an `.await`.\n\n## Tests\n- Call the router with `tower::ServiceExt::oneshot`. Use `#[sqlx::test]` for database tests.\n\n## Before finishing\nRun `cargo fmt --check`, `cargo clippy -- -D warnings` and `cargo test`.",
+  "example": {
+    "prompt": "Add GET /projects/{id} returning 404 when missing",
+    "result": "The agent adds a handler with a Path extractor, a query_as! lookup, a NotFound variant on AppError, and a oneshot test for both the found and missing cases."
+  },
+  "faq": [
+    {
+      "question": "Which Axum version does it assume?",
+      "answer": "The 0.7 and 0.8 era APIs, using a plain Router with State and the tokio listener, without older hyper server calls."
+    },
+    {
+      "question": "Why compile-checked queries?",
+      "answer": "A wrong column name fails the build instead of a request in production, and the offline files let CI build without a database."
+    }
+  ],
+  "access": [
+    "Instructions only; commands are run by the agent that follows them"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,46 @@
+{
+  "slug": "django-rules",
+  "title": "Django Rules",
+  "kind": "rules",
+  "category": "backend",
+  "summary": "Project rules for Django: small focused apps, logic in models and services, efficient ORM queries, safe migrations and pytest-django tests.",
+  "description": [
+    "Django gives you a lot of structure, and agents still tend to pile logic into views or run queries inside loops. These rules point the work back to the places Django expects it.",
+    "They also keep migrations and settings safe, since those are the two areas where a careless edit hurts a live database or leaks a secret."
+  ],
+  "stacks": [
+    "python",
+    "django"
+  ],
+  "topics": [
+    "python",
+    "api-design"
+  ],
+  "useWhen": [
+    "You are adding features to an existing Django project",
+    "Views are growing past a screen of code",
+    "Pages slow down because of repeated queries",
+    "You want migrations reviewed like normal code"
+  ],
+  "body": "# Project rules: Django\n\n## Layout\n- One app per domain concept, each with `models.py`, `views.py`, `urls.py`, `tests/`. Add `services.py` for multi-step business logic.\n- Settings are split into base, local and production modules. Read secrets from the environment; never commit `SECRET_KEY`.\n\n## Models and views\n- Put rules about one record on the model or its manager and queryset. Keep views thin: parse input, call a service, return a response.\n- Always set `related_name`, `__str__`, `Meta.ordering` where order matters, and database constraints for invariants.\n- Use `get_object_or_404`. Validate input with forms or serializers, never by hand.\n\n## ORM\n- Use `select_related` for foreign keys and `prefetch_related` for reverse and many-to-many. Never query inside a loop or template.\n- Use `F()` expressions and `transaction.atomic()` for updates that race. Use `bulk_create` for large inserts.\n\n## Migrations\n- Generate with `makemigrations`, read the file, and commit it. Never edit a migration that has shipped. Split schema and data changes, and add `RunPython` with a reverse function.\n\n## Tests\n- pytest-django with factories. Use the test client for views and test permissions explicitly.\n\n## Before finishing\nRun `python manage.py check`, `makemigrations --check --dry-run`, `ruff check .` and `pytest`.",
+  "example": {
+    "prompt": "Show each author with their book count on the dashboard",
+    "result": "The agent annotates the queryset with Count, avoids a per-row query, keeps the view short, and adds a test that asserts the number of queries."
+  },
+  "faq": [
+    {
+      "question": "Does it work with Django REST framework?",
+      "answer": "Yes. The layout and ORM rules apply unchanged; add serializer conventions to the file if your team has them."
+    },
+    {
+      "question": "Why forbid editing shipped migrations?",
+      "answer": "Other environments already applied them, so a change makes databases drift apart. A new migration is always the safe path."
+    }
+  ],
+  "access": [
+    "Instructions only; it does not read or run anything by itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

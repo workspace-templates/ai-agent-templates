@@ -1,0 +1,45 @@
+{
+  "slug": "dotnet-webapi-rules",
+  "title": "ASP.NET Core Web API Rules",
+  "kind": "rules",
+  "category": "backend",
+  "summary": "Project rules for ASP.NET Core APIs, minimal APIs or controllers: DTOs, async all the way, ProblemDetails errors and EF Core discipline.",
+  "description": [
+    "These rules keep an ASP.NET Core API consistent whether you use minimal APIs or controllers. They decide where validation, mapping and data access live, so generated endpoints follow one shape.",
+    "They also set the habits that prevent common production problems: blocking async calls, tracked queries that bloat memory and exceptions that leak internals to clients."
+  ],
+  "stacks": [
+    "dotnet",
+    "csharp"
+  ],
+  "topics": [
+    "api-design"
+  ],
+  "useWhen": [
+    "You start a new .NET API",
+    "Generated code returns EF entities from endpoints",
+    "Errors come back in different formats",
+    "You need a clear rule for minimal APIs versus controllers"
+  ],
+  "body": "# Project rules: ASP.NET Core Web API\n\n## Structure\n- Pick one style per project: minimal APIs grouped with `MapGroup` and one static class per feature, or controllers with `[ApiController]`. Do not mix them.\n- Enable nullable reference types and treat warnings as errors. Use `record` types for DTOs.\n- Never return or accept EF entities in endpoints. Map to request and response DTOs explicitly.\n\n## Async and DI\n- Async all the way: `async Task<T>`, pass the `CancellationToken` to every I/O call. Never call `.Result` or `.Wait()`.\n- Register services with the narrowest lifetime. Use `IOptions<T>` with validation on start for settings. Secrets come from user secrets or the environment, never from appsettings in git.\n\n## Data\n- Use `AsNoTracking()` for reads. Project with `Select` instead of loading whole graphs. Avoid N+1 by using `Include` or projection.\n- Schema changes only through EF migrations; review the generated SQL.\n\n## Errors and validation\n- Validate input with FluentValidation or data annotations before the handler runs. Return `ProblemDetails` through `AddProblemDetails()` and an exception handler; never expose exception messages.\n- Return correct status codes: 201 with Location, 204, 404, 409, 422.\n\n## Quality\n- Version public routes. Document with OpenAPI and `Produces` metadata.\n- Test with `WebApplicationFactory`. Run `dotnet build`, `dotnet test` and `dotnet format --verify-no-changes` before finishing.",
+  "example": {
+    "prompt": "Add an endpoint to cancel an order",
+    "result": "The agent adds POST /orders/{id}/cancel in the orders feature group, validates state, uses a cancellation token, returns ProblemDetails with 409 if already shipped, and adds a WebApplicationFactory test."
+  },
+  "faq": [
+    {
+      "question": "Should I choose minimal APIs or controllers?",
+      "answer": "Either is fine. The rule is to choose one and stay with it, so the agent never mixes two patterns."
+    },
+    {
+      "question": "Does it cover authentication?",
+      "answer": "Only the secrets and error rules. Add your identity provider details to the file for auth conventions."
+    }
+  ],
+  "access": [
+    "Instructions only; it does not read or run anything by itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

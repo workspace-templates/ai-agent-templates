@@ -1,0 +1,44 @@
+{
+  "slug": "astro-rules",
+  "title": "Astro Rules",
+  "kind": "rules",
+  "category": "frontend",
+  "summary": "Project rules for Astro sites: zero-JS by default, islands with the right client directive, typed content collections and optimized images.",
+  "description": [
+    "These rules teach an agent to treat Astro as a content-first framework where pages ship no JavaScript unless an island asks for it. They settle where data loads, when a framework component is justified and how images are served.",
+    "Use them to stop generated code from sprinkling client:load on everything or reaching for fetch inside components when a content collection would give typed, validated data."
+  ],
+  "stacks": [
+    "astro"
+  ],
+  "topics": [
+    "performance"
+  ],
+  "useWhen": [
+    "You start a new Astro site",
+    "An agent adds client:load to every component",
+    "Content lives in loose Markdown files with no schema",
+    "Lighthouse scores drop after a generated change"
+  ],
+  "body": "# Project rules: Astro\n\n## Structure\n- Pages live in `src/pages`, shared layout in `src/layouts`, reusable markup in `.astro` components. Use a React, Svelte or Vue component only when it needs client state.\n- Keep TypeScript strict. Extend `astro/tsconfigs/strict` and type component props with an `interface Props`.\n\n## Islands and hydration\n- Default to no client JavaScript. Choose the lightest directive: `client:visible` for below-the-fold widgets, `client:idle` for low priority, `client:only` only when SSR cannot work. Justify any `client:load` in a comment.\n- Pass serializable props only. Share state between islands with a small store, not through the DOM.\n\n## Content and data\n- Put Markdown, MDX and JSON in content collections with a Zod schema in `src/content.config.ts`. Read them with `getCollection`, never by importing paths by hand.\n- Fetch remote data in frontmatter at build time. Mark a route `prerender = false` only when it truly needs request data.\n\n## Images and assets\n- Use `<Image />` or `<Picture />` from `astro:assets` with width, height and alt text. Keep originals in `src`, not `public`.\n- Scope styles inside the component; avoid global CSS except a tokens file.\n\n## Before finishing\n- Run `astro check`, then `astro build`. Fix every type error and broken link; do not suppress with `any`.\n- Add a sitemap and a canonical URL in the shared layout.",
+  "example": {
+    "prompt": "Add a blog with tags and an RSS feed",
+    "result": "The agent defines a posts collection with a schema, builds list and tag pages from getCollection, adds an RSS endpoint and runs astro check and build."
+  },
+  "faq": [
+    {
+      "question": "Does this assume server rendering?",
+      "answer": "No. It prefers static output and only allows on-demand routes when a page needs request data."
+    },
+    {
+      "question": "Can I use it with React islands?",
+      "answer": "Yes. The hydration rules apply to any framework component you mount inside an Astro page."
+    }
+  ],
+  "access": [
+    "Instructions only; it does not read or run anything by itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

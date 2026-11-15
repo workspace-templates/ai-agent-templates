@@ -1,0 +1,25 @@
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "auth0_mcp_analytics",
+      "description": "Set to false to opt out of the server's anonymized analytics",
+      "password": true
+    }
+  ],
+  "servers": {
+    "auth0": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@auth0/auth0-mcp-server",
+        "run",
+        "--read-only"
+      ],
+      "env": {
+        "AUTH0_MCP_ANALYTICS": "${input:auth0_mcp_analytics}"
+      }
+    }
+  }
+}

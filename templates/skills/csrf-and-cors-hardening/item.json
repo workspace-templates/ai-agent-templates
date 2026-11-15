@@ -1,0 +1,44 @@
+{
+  "slug": "csrf-and-cors-hardening",
+  "title": "CSRF and CORS Hardening",
+  "kind": "skill",
+  "category": "security",
+  "summary": "Sets up CORS and CSRF protection that fits how your app authenticates, with cookies or bearer tokens, and removes the wildcard shortcuts.",
+  "description": [
+    "CORS and CSRF are often mixed up, and the usual fix for a blocked request, allowing every origin, quietly removes protection. They solve different problems, and which one you need depends on whether the browser sends credentials automatically.",
+    "This skill first works out how your app authenticates, then applies the matching settings: strict origins and cookie flags for cookie sessions, and a lighter setup for bearer-token APIs. It leaves you with tests that prove the policy."
+  ],
+  "stacks": [],
+  "topics": [
+    "security",
+    "api-design"
+  ],
+  "useWhen": [
+    "The browser blocks a call and someone suggests Access-Control-Allow-Origin: *",
+    "You use cookie sessions and have no CSRF defence",
+    "You are splitting frontend and API across different domains",
+    "A scanner flagged a missing SameSite or reflected origin"
+  ],
+  "body": "# CSRF and CORS hardening\n\nFirst decide how the app authenticates. The answer decides everything else.\n\n## Steps\n\n1. Identify the credential: cookie session, bearer token in a header, or both. List the state-changing routes (POST, PUT, PATCH, DELETE) and any GET that changes state.\n2. CORS policy:\n   - Allowlist exact origins from configuration. Never reflect the request `Origin` without checking it against that list, and never combine `*` with credentials.\n   - Set `Access-Control-Allow-Credentials: true` only if cookies must cross origins.\n   - Limit methods and headers to what the client uses, set `Vary: Origin`, and cache preflights with `Max-Age`.\n3. Cookie sessions need CSRF defence. Layer these:\n   - Cookie flags `HttpOnly`, `Secure`, `SameSite=Lax` (or `Strict` for sensitive apps).\n   - A per-session CSRF token checked on every unsafe method, or the double-submit cookie pattern with a signed value.\n   - Verify `Origin` or `Sec-Fetch-Site` on unsafe requests.\n4. Bearer-token APIs that never read cookies are not exposed to CSRF. Confirm no route accepts a cookie as a fallback.\n5. Make GET handlers safe: no state changes.\n6. Add tests: a request from a foreign origin is refused; a POST without the token returns 403; preflight returns only the allowed list.\n\n## Rules\n\n- Do not \"fix\" a CORS error by widening the policy before you know which origin is calling.\n- Use the framework's maintained middleware.\n\n## Report\n\nAuth model found, policy before and after, files changed, tests added.",
+  "example": {
+    "prompt": "Our SPA at app.acme.io calls api.acme.io with cookies. Lock this down.",
+    "result": "Auth is cookie based, so CSRF applies. api/cors.ts reflected any Origin with credentials; replaced with an allowlist of https://app.acme.io. Session cookie now Secure, HttpOnly, SameSite=Lax. Added a CSRF token header check on 9 unsafe routes and an Origin check as a second layer. 6 tests added, all passing."
+  },
+  "faq": [
+    {
+      "question": "Does SameSite=Lax replace CSRF tokens?",
+      "answer": "It blocks most cross-site form posts, but not same-site attacks from sibling subdomains or older browsers. Keep a token or Origin check for anything sensitive."
+    },
+    {
+      "question": "Why not just set the allow-origin header to a star?",
+      "answer": "A star cannot be combined with credentials, and for public data it is fine, but on an authenticated API it invites mistakes. An explicit list is easier to audit."
+    }
+  ],
+  "access": [
+    "Reads and edits server configuration and middleware",
+    "Runs your test suite"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,65 @@
+{
+  "slug": "terraform-mcp",
+  "title": "Terraform MCP Server",
+  "kind": "mcp",
+  "category": "devops",
+  "summary": "Give your agent HashiCorp's Terraform MCP server to look up current provider and module docs from the registry while it writes infrastructure code.",
+  "description": [
+    "Models often write Terraform from memory of older provider versions. HashiCorp's MCP server lets the agent search the Terraform Registry for the real resource arguments, provider versions and modules before it writes a block.",
+    "The default toolset is registry lookups only, which needs no credentials. The server runs from HashiCorp's Docker image over stdio. Tools that act on HCP Terraform workspaces need a token and are a separate step you add later."
+  ],
+  "stacks": [],
+  "topics": [
+    "docker",
+    "api-design"
+  ],
+  "useWhen": [
+    "Write a resource block with the arguments the current provider version supports",
+    "Find a module for a VPC and read its inputs and outputs",
+    "Check whether an argument was renamed in a new provider release",
+    "Upgrade a provider and update the affected resources"
+  ],
+  "mcp": {
+    "name": "terraform",
+    "transport": "stdio",
+    "command": "docker",
+    "args": [
+      "run",
+      "-i",
+      "--rm",
+      "hashicorp/terraform-mcp-server:1.4.1"
+    ],
+    "env": [],
+    "headers": [],
+    "source": "https://github.com/hashicorp/terraform-mcp-server",
+    "access": [
+      "Fetches public provider and module documentation from the Terraform Registry",
+      "Runs one short-lived Docker container, with no access to your files"
+    ]
+  },
+  "example": {
+    "prompt": "Using the registry docs, write an aws_s3_bucket_versioning resource for my logs bucket and tell me which provider version it needs.",
+    "result": "The docs show aws_s3_bucket_versioning with a versioning_configuration block (status = \"Enabled\"), available in AWS provider 4.0 and later. Added to storage.tf with the bucket id wired in."
+  },
+  "faq": [
+    {
+      "question": "Do I need a Terraform Cloud token?",
+      "answer": "Not for registry lookups. TFE_TOKEN and TFE_ADDRESS matter only for HCP Terraform or Enterprise tools such as listing workspaces."
+    },
+    {
+      "question": "Can it run terraform apply?",
+      "answer": "Not in the default setup. Tools that need explicit approval stay off unless you set ENABLE_TF_OPERATIONS."
+    },
+    {
+      "question": "Why a pinned image tag?",
+      "answer": "A fixed tag keeps behavior the same between runs. Check the repository for a newer release when you want to update."
+    }
+  ],
+  "access": [
+    "Reads public Terraform Registry documentation",
+    "Needs Docker running locally"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,46 @@
+{
+  "slug": "python-type-hints",
+  "title": "Python Type Hints",
+  "kind": "skill",
+  "category": "code-quality",
+  "summary": "Adds and tightens Python type hints, then runs mypy or pyright until clean without blanket ignores. Use it on untyped or loosely typed modules.",
+  "description": [
+    "Annotating a module with Any everywhere produces a green checker and no safety. This skill asks for real types: precise parameters, return types, generics, TypedDicts and Protocols, checked with the type checker your project already configures.",
+    "When the checker complains, the agent fixes the cause. A narrow, commented ignore is the last resort, and every one is listed in the final report so you can review it."
+  ],
+  "stacks": [
+    "python"
+  ],
+  "topics": [
+    "python",
+    "refactoring"
+  ],
+  "useWhen": [
+    "A Python package has no annotations and bugs keep coming from wrong argument shapes",
+    "mypy or pyright is enabled but half the code is typed as Any",
+    "You want to turn on strict mode one module at a time",
+    "Dict-heavy code needs TypedDict or dataclasses to become readable"
+  ],
+  "body": "# Python type hints\n\nTypes are documentation the machine checks. Make them accurate before making them green.\n\n## Steps\n\n1. Detect the checker: look for `mypy.ini`, `[tool.mypy]` or `[tool.pyright]` in `pyproject.toml`, or `pyrightconfig.json`. Run it first and record the baseline error count.\n2. Work one module at a time, starting with the leaves that others import.\n3. Annotate every public function: parameters, return type, and `-> None` where it returns nothing. Prefer `list[str]` and `X | None` over `typing.List` and `Optional` on Python 3.10+.\n4. Replace loose dicts with `TypedDict`, `dataclass` or `NamedTuple` when the keys are fixed. Use `Protocol` for duck-typed arguments and `TypeVar` or `ParamSpec` for decorators.\n5. Prefer `Sequence` and `Mapping` for read-only parameters, concrete types for returns.\n6. Run the checker after each module and fix errors by correcting the code or the type.\n\n## Rules\n\n- Never add `# type: ignore` without an error code and a one-line reason, for example `# type: ignore[arg-type]  # lib stubs wrong`.\n- Do not use `Any` to silence an error. Use `object`, a union or a generic first.\n- Never change runtime behavior to satisfy the checker unless it exposes a real bug, and say so when it does.\n- Use `cast` sparingly and only after an `isinstance` check you can point to.\n\n## Report\n\nBaseline vs final error count, modules annotated, each remaining ignore with its reason, and real bugs the checker revealed.",
+  "example": {
+    "prompt": "Add type hints to the billing package and get mypy clean.",
+    "result": "Annotated 9 modules in billing/. mypy errors went from 74 to 0. Introduced Invoice as a TypedDict and a PaymentGateway Protocol. Two ignores remain, both with codes: a stripe stub gap in gateway.py:31 and a dynamic attribute in plans.py:88. mypy also exposed a real bug: refund() could return None when the invoice was missing."
+  },
+  "faq": [
+    {
+      "question": "Does it work with pyright instead of mypy?",
+      "answer": "Yes. It uses whichever checker your configuration names, and falls back to asking you if it finds neither."
+    },
+    {
+      "question": "Why does it avoid Any so strictly?",
+      "answer": "Any switches checking off for everything it touches. The skill prefers unions, protocols and generics so the checker keeps catching mistakes downstream."
+    }
+  ],
+  "access": [
+    "Reads and edits Python files in your project",
+    "Runs mypy or pyright from your environment"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

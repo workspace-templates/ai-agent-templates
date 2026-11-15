@@ -1,0 +1,44 @@
+{
+  "slug": "python-cli-rules",
+  "title": "Python CLI Rules",
+  "kind": "rules",
+  "category": "productivity",
+  "summary": "Project rules for Python command line tools: argparse or Typer, clear exit codes, pyproject packaging, stderr logging and pytest.",
+  "description": [
+    "These rules turn a Python script into a command line tool people can install and trust. They define how arguments are parsed, where output goes and which exit codes mean what.",
+    "They suit tools that run in shells and CI pipelines, where predictable streams and codes matter more than clever features."
+  ],
+  "stacks": [
+    "python"
+  ],
+  "topics": [
+    "python"
+  ],
+  "useWhen": [
+    "You turn a script into an installable tool",
+    "Output mixes data and log messages on stdout",
+    "Every failure exits with the same code",
+    "You need tests that run the command end to end"
+  ],
+  "body": "# Project rules: Python CLI\n\n## Layout and packaging\n- Use a `src/<package>` layout and `pyproject.toml` with a `[project.scripts]` entry point. Keep `cli.py` thin; put logic in importable modules that take plain arguments.\n- Pin the supported Python range and type-hint public functions. Run `mypy` or `pyright` in strict mode.\n\n## Arguments and I/O\n- Parse with `argparse` or Typer, never `sys.argv` by hand. Every option has help text; offer `--version` and `--help`.\n- Write results to stdout and diagnostics to stderr. Offer `--json` for machine output. Read stdin when a path is `-`.\n- Honor `NO_COLOR`; do not prompt when stdin is not a TTY.\n\n## Errors and exit codes\n- Return `0` on success, `1` for runtime failures, `2` for usage errors. Define a small exception hierarchy, catch it once in `main()` and print one clear line; show tracebacks only with `--debug`.\n- Use `logging` configured from `-v` flags, not `print`, for diagnostics.\n\n## Quality\n- Make `main(argv=None) -> int` and call `sys.exit(main())` only under `__main__`.\n- Test with pytest, `capsys` and `tmp_path`; assert exit codes and stderr text.\n- Run `ruff check`, `ruff format --check` and `pytest` before finishing.",
+  "example": {
+    "prompt": "Add a --format option that can output csv",
+    "result": "The agent adds a validated choice option, a csv writer module with no CLI imports, and a pytest case that checks stdout and exit code 2 on a bad value."
+  },
+  "faq": [
+    {
+      "question": "Argparse or Typer?",
+      "answer": "Either. Use argparse for zero dependencies and Typer when you want type-driven options; do not mix both."
+    },
+    {
+      "question": "Why a main that returns an int?",
+      "answer": "Tests can call it directly and check the code without spawning a subprocess."
+    }
+  ],
+  "access": [
+    "Instructions only; it does not read or run anything by itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

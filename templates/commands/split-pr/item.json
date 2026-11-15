@@ -1,0 +1,45 @@
+{
+  "slug": "split-pr",
+  "title": "Split PR",
+  "kind": "command",
+  "category": "git",
+  "summary": "Plans how to break a large branch into small pull requests, in an order where each one builds, passes tests and can merge alone.",
+  "description": [
+    "Large pull requests get skimmed and approved without real review. Smaller ones get read. This command analyzes what a branch changes and proposes a sequence of focused pull requests with the dependency between them spelled out.",
+    "It plans first and shows file lists per piece. It creates branches only after you approve, and leaves your original branch untouched."
+  ],
+  "stacks": [],
+  "topics": [
+    "git",
+    "code-review"
+  ],
+  "useWhen": [
+    "Your branch changes more than 800 lines or 20 files",
+    "A reviewer asked for the pull request to be smaller",
+    "A feature mixes a refactor, a migration and new behavior",
+    "You want to merge safe parts early and keep risky parts separate"
+  ],
+  "body": "Split the current branch into smaller pull requests. Notes: $ARGUMENTS\n\n1. Find the base with `git merge-base HEAD <default branch>`. Read `git diff --stat <base>..HEAD` and the commit list, then the diff by area.\n2. Classify every changed file into a concern: pure refactor or rename, dependency or config change, database migration, new internal API, feature UI, tests, docs. Note which files must stay together because one does not compile without the other.\n3. Propose an ordered series where each pull request builds and passes tests on its own, lands the risk early (refactors and migrations first, behavior last), and stays under about 400 changed lines. For each give a title, files, size and what depends on it.\n4. Show the plan as a table and mention any file needing a split across two pull requests.\n5. Do nothing yet. After approval, create one branch per piece from the previous one (`git checkout <base> -- <files>`), run tests for each, and keep the original branch intact.\n\nFinish with the branch names, the merge order and a suggested description for each pull request. Never push or open pull requests unasked.",
+  "argumentHint": "[max size per PR or base branch]",
+  "example": {
+    "prompt": "/split-pr 400 lines max",
+    "result": "Branch changes 34 files, 1,900 lines. Proposed order:\n1. refactor: extract pricing helpers (6 files, 210 lines)\n2. migration: add discounts table (3 files, 90)\n3. feat: discount API and service (9 files, 380)\n4. feat: discount UI and tests (16 files, 410)\nOriginal branch stays untouched. Create these branches?"
+  },
+  "faq": [
+    {
+      "question": "Does it open the pull requests?",
+      "answer": "No. It prepares local branches and descriptions, and pushing or opening them is up to you."
+    },
+    {
+      "question": "What if the pieces depend on each other?",
+      "answer": "The plan stacks them in order, with each branch built on the previous one, and tells you which must merge first."
+    }
+  ],
+  "access": [
+    "Reads branch history and diffs",
+    "Creates local branches only after you approve the plan"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

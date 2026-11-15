@@ -1,0 +1,3 @@
+[mcp_servers.docker]
+command = "docker"
+args = ["mcp","gateway","run"]

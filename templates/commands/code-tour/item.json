@@ -1,0 +1,44 @@
+{
+  "slug": "code-tour",
+  "title": "Repository Code Tour",
+  "kind": "command",
+  "category": "docs",
+  "summary": "Gives a new developer a guided tour of the repository: layout, entry points, request flow, how to run it and where the risky parts are.",
+  "description": [
+    "A new teammate loses days finding the front door of a codebase. This command explores the repository like a careful newcomer and writes a tour in the order you would want to learn it.",
+    "It follows one real path through the system, from entry point to data store, instead of listing folders. It also records commands it actually ran, so the setup steps are tested."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation"
+  ],
+  "useWhen": [
+    "A new developer starts on Monday",
+    "You return to a project after a long break",
+    "You are evaluating an open source repository before using it",
+    "Onboarding docs are missing or out of date"
+  ],
+  "body": "Give me a guided tour of this repository. Focus: $ARGUMENTS (the whole project if empty).\n\n1. Read the README, the manifest files, CI config and the top two levels of the tree. Identify languages, frameworks, build tool and deployment target.\n2. Find the entry points: main files, route tables, job runners, CLI commands.\n3. Trace one real request or command from entry to the database or output. Name every file on the path with `file:line`.\n4. Find how to run it: install, configure (list required environment variables, never print their values), start, and test. Run the safe ones and note what actually worked.\n5. Mark the risk zones: files with high churn (`git log --since=6.months --name-only`), large or untested modules, and anything marked as pending or deprecated.\n\nOutput a tour with the headings **What it is**, **Map**, **One request end to end**, **Run it**, **Danger zones**, **First tasks for a newcomer**. Keep it under 600 words. Do not modify files; offer to save it as docs/TOUR.md.",
+  "argumentHint": "[area to focus on, optional]",
+  "example": {
+    "prompt": "/code-tour api",
+    "result": "What it is: a Fastify API for invoicing backed by Postgres.\nOne request end to end: POST /invoices -> src/routes/invoices.ts:24 -> InvoiceService.create (services/invoice.ts:61) -> insert in db/invoices.ts:12.\nRun it: cp .env.example .env, docker compose up db, npm run dev (worked, port 3000).\nDanger zones: services/tax.ts changed 31 times in 6 months and has no tests."
+  },
+  "faq": [
+    {
+      "question": "Does it write documentation into my repository?",
+      "answer": "Only if you ask. By default the tour is printed in the chat."
+    },
+    {
+      "question": "Will it run my project?",
+      "answer": "It runs install and test style commands it judges safe and tells you what it ran."
+    }
+  ],
+  "access": [
+    "Reads files and git history",
+    "Runs safe setup and test commands"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

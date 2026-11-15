@@ -1,0 +1,48 @@
+{
+  "slug": "block-secrets-in-edits",
+  "title": "Block Secrets in Edits",
+  "kind": "hook",
+  "category": "security",
+  "summary": "A Claude Code hook that stops edits and new files containing API keys, tokens or private keys before they reach your repository.",
+  "description": [
+    "Agents sometimes paste a key they were shown into source code. This PreToolUse hook scans the text of every Edit and Write for common key shapes and refuses the change.",
+    "It looks for AWS access keys, GitHub tokens, OpenAI-style sk- keys, Slack tokens, Google API keys and PEM private key headers. The block message tells the agent to use an environment variable."
+  ],
+  "stacks": [],
+  "topics": [
+    "security"
+  ],
+  "useWhen": [
+    "Keep keys out of commits",
+    "Work on a project that has real credentials nearby",
+    "Run an agent with broad write permission",
+    "Add a cheap safety net before a public repository"
+  ],
+  "hook": {
+    "event": "PreToolUse",
+    "matcher": "Edit|Write",
+    "command": "node -e \"let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{let j={};try{j=JSON.parse(d)}catch(e){process.exit(0)}const i=j.tool_input||{};const t=[i.content,i.new_string].filter(Boolean).join(' ');const p=[/AKIA[0-9A-Z]{16}/,/gh[pousr]_[A-Za-z0-9]{36,}/,/sk-[A-Za-z0-9_-]{20,}/,/xox[baprs]-[A-Za-z0-9-]{10,}/,/-----BEGIN [A-Z ]*PRIVATE KEY-----/,/AIza[0-9A-Za-z_-]{35}/];if(p.some(r=>r.test(t))){console.error('Blocked: this edit contains what looks like a secret (API key, token or private key). Read it from an environment variable instead.');process.exit(2)}})\"",
+    "timeout": 10
+  },
+  "example": {
+    "prompt": "Add the Stripe key sk-live to config.ts so the checkout works.",
+    "result": "Edit blocked: the edit contains what looks like a secret. The agent switches to process.env.STRIPE_KEY and asks you to set it."
+  },
+  "faq": [
+    {
+      "question": "Will it catch every secret?",
+      "answer": "No. It matches well-known key formats, not every password. Pair it with a scanner in CI."
+    },
+    {
+      "question": "What does the agent see when it blocks?",
+      "answer": "Exit code 2 sends the message to the agent, which then rewrites the edit to read from the environment."
+    }
+  ],
+  "access": [
+    "Reads the text of each edit the agent proposes",
+    "Blocks the edit; changes no files"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

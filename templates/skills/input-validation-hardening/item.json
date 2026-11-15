@@ -1,0 +1,44 @@
+{
+  "slug": "input-validation-hardening",
+  "title": "Input Validation Hardening",
+  "kind": "skill",
+  "category": "security",
+  "summary": "Adds allowlist validation where data enters your code and context-correct encoding where it leaves, closing injection paths at every trust boundary.",
+  "description": [
+    "Most injection bugs come from one habit: trusting data because it came from a form that looked safe. This skill finds each place where outside data crosses into your code and puts a strict check there, using your existing validation library.",
+    "It also covers the other direction. Data that is stored safely still needs encoding for the context it lands in, whether that is HTML, a URL, a shell argument or a log line."
+  ],
+  "stacks": [],
+  "topics": [
+    "security",
+    "api-design"
+  ],
+  "useWhen": [
+    "You are adding a new endpoint or form handler",
+    "A pentest or scanner reported XSS or command injection",
+    "Handlers read request fields directly with no schema",
+    "You want one consistent validation style across a codebase"
+  ],
+  "body": "# Input validation hardening\n\nValidate on the way in with allowlists. Encode on the way out for the exact context.\n\n## Steps\n\n1. List the trust boundaries: HTTP bodies, query strings, headers, cookies, uploaded files, webhooks, queue messages, environment and third-party API responses.\n2. For each, check whether a schema runs before the data is used. Reuse the project's library (zod, joi, pydantic, class-validator, Bean Validation). Do not add a second one.\n3. Write schemas that state: type, length range, character set or pattern, enum of allowed values, numeric bounds. Reject unknown fields. Prefer \"must match\" over \"must not contain\".\n4. Validate on the server even when the client validates too.\n5. Find sinks and match each to its defence:\n   - SQL: parameters, never concatenation.\n   - HTML: framework auto-escaping; no raw-HTML insertion without a sanitizer.\n   - Shell: argument arrays, no shell string building.\n   - File paths: resolve and confirm the result stays inside the base directory.\n   - URLs for server-side fetches: allowlist hosts.\n6. Return a generic 400 with field names, not internals.\n7. Add tests with hostile inputs: empty, huge, wrong type, `'; --`, `<script>`, `../`, null bytes.\n\n## Rules\n\n- Never fix a vulnerability by blocklisting bad strings.\n- Normalize before validating (trim, Unicode normalization), not after.\n- Change one boundary at a time and keep the tests green.\n\n## Report\n\nBoundaries covered, schemas added, sinks fixed, tests added, and boundaries still open.",
+  "example": {
+    "prompt": "Harden the signup and profile endpoints.",
+    "result": "Added zod schemas to POST /signup and PATCH /profile: email format and 254 max, display name 1-60 chars from a letter/digit/space set, unknown keys rejected. Fixed avatar path join in profile.ts:63 to stay inside uploads/. Added 14 hostile-input tests. Open: the webhook at /hooks/billing has no schema yet."
+  },
+  "faq": [
+    {
+      "question": "Why allowlists instead of filtering bad characters?",
+      "answer": "Attackers find encodings and variants your blocklist forgot. Defining exactly what is valid leaves no gap to guess at."
+    },
+    {
+      "question": "Is validation enough to stop SQL injection?",
+      "answer": "No. Validation reduces risk, but parameterized queries are the real defence. The skill applies both."
+    }
+  ],
+  "access": [
+    "Reads and edits source files and tests",
+    "Runs your test suite"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

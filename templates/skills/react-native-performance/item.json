@@ -1,0 +1,52 @@
+{
+  "slug": "react-native-performance",
+  "title": "React Native Performance",
+  "kind": "skill",
+  "category": "mobile",
+  "summary": "Finds and fixes janky lists, wasted re-renders and chatty bridge calls in a React Native app, measuring before and after each change.",
+  "description": [
+    "React Native apps rarely feel slow for one big reason. A FlatList renders too much, a context update repaints a whole screen, or a loop crosses the native boundary a few hundred times. This skill makes the agent find which of those is real before it rewrites anything.",
+    "Every change is tied to a number: dropped frames, render counts or time to interactive on a release build. If a fix does not move the number, it is reverted instead of left behind as clutter."
+  ],
+  "stacks": [
+    "react-native"
+  ],
+  "topics": [
+    "performance",
+    "refactoring"
+  ],
+  "useWhen": [
+    "A scrolling list stutters on mid-range Android phones",
+    "Typing in one input makes the whole screen re-render",
+    "Startup takes several seconds before the first screen shows",
+    "An animation drops frames while data loads",
+    "You want a performance review before shipping a release"
+  ],
+  "body": "# React Native performance\n\nMeasure first. Never optimize on a debug build or in the simulator alone.\n\n## Steps\n\n1. Name the symptom and the screen. Build in release mode (`npx react-native run-android --mode release` or the Xcode Release scheme) and note the baseline: frame rate from the perf monitor, or a React Profiler recording of the interaction.\n2. Lists first. For FlatList or SectionList check: a stable `keyExtractor` (never the array index for reorderable data), `getItemLayout` for fixed-height rows, `windowSize` and `maxToRenderPerBatch` tuned down, `removeClippedSubviews` on Android, and row components wrapped in `React.memo` with stable props. Consider FlashList when rows vary and the list is long.\n3. Re-renders. Use the Profiler to find components that render without a prop change. Fix the cause: inline objects and arrow functions passed as props, a context whose value changes every render, state kept too high in the tree. Reach for `useMemo` and `useCallback` only where a memoized child receives the value.\n4. Bridge and JS thread. Look for loops that call native modules per item, `JSON.parse` of large payloads on the JS thread, and animations that use `setState`. Batch native calls, move animations to Reanimated worklets or `useNativeDriver: true`, and defer heavy work with `InteractionManager.runAfterInteractions`.\n5. Images. Require explicit width and height, resize on the server, and use a caching image component.\n6. Startup. Check bundle size, Hermes enabled, and imports that run work at module load. Use inline requires for rarely used screens.\n7. Re-measure after each single change and keep it only if the number improves.\n\n## Rules\n\n- One change per measurement.\n- Do not add `useMemo` everywhere. Unmeasured memoization is noise.\n- Never remove accessibility props to save render time.\n\n## Report\n\nBaseline and final numbers, each change kept with file and line, and changes reverted because they did not help.",
+  "example": {
+    "prompt": "The order history screen janks when I scroll fast on a Pixel 6a. Fix it.",
+    "result": "Baseline on a release build: 41 fps while flinging, 118 renders of OrderRow per scroll. Causes: onPress arrow created inline in renderItem, keyExtractor used the index, and each row loaded a 1200px image. Fixed: stable handler via useCallback plus React.memo on OrderRow, keyExtractor uses order.id, thumbnails requested at 160px. Result: 58 fps, 14 renders. Reverted: removeClippedSubviews, no measurable gain."
+  },
+  "faq": [
+    {
+      "question": "Why does it insist on release builds?",
+      "answer": "Debug builds run unminified JS with extra checks, so timings can be several times worse and point at the wrong culprit. Release numbers match what users feel."
+    },
+    {
+      "question": "Does it rewrite my state management?",
+      "answer": "Only when the profiler shows state placement is the cause. It prefers moving state down or splitting a context over adopting a new library."
+    },
+    {
+      "question": "Does it work with the New Architecture?",
+      "answer": "Yes. The measuring steps are the same. The bridge advice applies mainly to older native modules, and the skill checks which setup you use first."
+    }
+  ],
+  "access": [
+    "Reads files in your project",
+    "Runs your build, bundler and test commands",
+    "Edits component and config files when you ask for fixes"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

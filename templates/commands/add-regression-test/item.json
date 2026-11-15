@@ -1,0 +1,45 @@
+{
+  "slug": "add-regression-test",
+  "title": "Add Regression Test",
+  "kind": "command",
+  "category": "testing",
+  "summary": "Writes a test that fails on the bug you describe, proves it fails, then confirms it passes once the fix is in.",
+  "description": [
+    "A bug fix without a test tends to come back. This command turns a bug report into the smallest test that reproduces it, runs it to see it fail for the right reason and only then lets the fix go in.",
+    "The test is placed beside the existing ones in their style, and the report shows the red run and the green run so the evidence is visible."
+  ],
+  "stacks": [],
+  "topics": [
+    "testing",
+    "debugging"
+  ],
+  "useWhen": [
+    "Right after you find the cause of a bug",
+    "When a support ticket describes a failing input",
+    "Before refactoring a function that has bitten you before",
+    "To lock in a hotfix before the release"
+  ],
+  "body": "Add a regression test for this bug: $ARGUMENTS\n\n1. Restate the bug as input, expected result and actual result. If any of the three is unclear, ask one question and wait.\n2. Find the code responsible and the nearest existing test file. Copy its naming, fixtures and assertion style. Do not add a new framework.\n3. Write the smallest test that reproduces the bug at the lowest level possible (unit before integration). Use a name that states the behavior, not the ticket number alone.\n4. Run it before any fix. It must fail, and the failure message must show the bug itself, not a typo or missing import. If it passes, the bug is not reproduced: say so and investigate.\n5. If a fix is not in yet, show the proposed fix and ask before editing source. If it is already in, check out the previous version of the file with `git stash` or `git show` to confirm the test fails there.\n6. Run the test again with the fix, then the surrounding test file.\n\nReport: test file and name, red output, green output, and the one-line cause.",
+  "argumentHint": "[bug description or issue number]",
+  "example": {
+    "prompt": "/add-regression-test totals double count a coupon when the cart has one item",
+    "result": "Added test \"applies a coupon once for single-item carts\" in cart.test.ts.\nBefore fix: expected 90, received 80.\nAfter the proposed fix in applyCoupon(): pass, 24 of 24 tests in the file green.\nApply the fix?"
+  },
+  "faq": [
+    {
+      "question": "Why must the test fail first?",
+      "answer": "A test that never failed proves nothing. The red run shows it really catches the bug."
+    },
+    {
+      "question": "Does it fix the bug too?",
+      "answer": "It proposes the fix and asks first, or checks the test against a fix you already made."
+    }
+  ],
+  "access": [
+    "Reads source and tests, runs the test command",
+    "Adds a test file or case; edits source only after you agree"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

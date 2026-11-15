@@ -1,0 +1,46 @@
+{
+  "slug": "pytorch-rules",
+  "title": "PyTorch Rules",
+  "kind": "rules",
+  "category": "data",
+  "summary": "Project rules for PyTorch projects: config-driven training, deterministic seeding, device-agnostic code, safe checkpoints and strict evaluation.",
+  "description": [
+    "Training scripts tend to become one long file with hard-coded paths and a GPU assumption. These rules separate model, data and loop, and move every tunable value into a config.",
+    "They also cover checkpoints, seeding and evaluation, so a result can be reproduced and a run can be resumed without surprises."
+  ],
+  "stacks": [
+    "python",
+    "pytorch"
+  ],
+  "topics": [
+    "python",
+    "performance"
+  ],
+  "useWhen": [
+    "You are building or extending a PyTorch training pipeline",
+    "Code breaks on a machine without a GPU",
+    "Runs are not reproducible from one day to the next",
+    "Checkpoints cannot be resumed or compared"
+  ],
+  "body": "# Project rules: PyTorch\n\n## Structure\n- Split code into `models/`, `data/`, `train.py` and `eval.py`. Models are plain `nn.Module` classes that know nothing about paths or logging.\n- All hyperparameters, paths and sizes come from a config file (YAML with a dataclass or Hydra). Log the resolved config with every run.\n\n## Devices and tensors\n- Pick the device once: `torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")`. Move models and batches with `.to(device)`; never call `.cuda()` directly.\n- Create new tensors with `device=` and `dtype=` taken from existing ones. Avoid `.item()` and `.cpu()` inside hot loops.\n- Use `torch.amp` autocast for mixed precision, with a gradient scaler when using fp16.\n\n## Reproducibility\n- Seed Python, NumPy and torch from one function; seed `DataLoader` workers with a generator and `worker_init_fn`. State clearly when deterministic algorithms are off.\n\n## Training loop\n- Call `model.train()` and `model.eval()` explicitly. Evaluate under `torch.inference_mode()`. Zero gradients each step, clip when needed and step the scheduler in one known place.\n- Save the model, optimizer, scheduler, epoch and config in each checkpoint, and load with `weights_only=True`.\n\n## Evaluation and checks\n- Hold out validation and test sets, never tune on test. Report metrics with the seed and the commit.\n- Run `ruff check` and `pytest`, including a tiny-batch smoke test that overfits eight samples on CPU.",
+  "example": {
+    "prompt": "Add early stopping and resume support to the training script",
+    "result": "The agent adds a patience value to the config, saves full checkpoints with optimizer and epoch state, loads them through a resume flag, and adds a CPU smoke test that stops early on a toy dataset."
+  },
+  "faq": [
+    {
+      "question": "Does it cover Lightning or Accelerate?",
+      "answer": "The conventions still apply, but those libraries own the loop. Keep the config, seeding and checkpoint rules and drop the manual loop advice."
+    },
+    {
+      "question": "Why load with weights_only?",
+      "answer": "It avoids executing arbitrary pickled code when reading a checkpoint from an unknown source."
+    }
+  ],
+  "access": [
+    "Instructions only; it does not read or run anything by itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

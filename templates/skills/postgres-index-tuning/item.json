@@ -1,0 +1,46 @@
+{
+  "slug": "postgres-index-tuning",
+  "title": "Postgres Index Tuning",
+  "kind": "skill",
+  "category": "database",
+  "summary": "Reads EXPLAIN ANALYZE output for a slow Postgres query, then adds or drops indexes only when the measured timing proves a gain.",
+  "description": [
+    "Guessing at indexes slows writes and rarely fixes the query. This skill has the agent read the real plan, find the node that burns the time, and change one thing at a time with before and after numbers.",
+    "It also hunts for indexes that never get used, since each one costs every insert and update."
+  ],
+  "stacks": [
+    "postgres"
+  ],
+  "topics": [
+    "sql",
+    "performance"
+  ],
+  "useWhen": [
+    "A query is slow in production but fine on your laptop",
+    "EXPLAIN shows a sequential scan on a big table",
+    "You inherited a table with a dozen indexes and no idea which matter",
+    "Writes got slower after someone added indexes"
+  ],
+  "body": "# Postgres index tuning\n\nOne change, one measurement. Never add an index you have not justified from a plan.\n\n## Steps\n\n1. Get the exact query with real parameter values. Run `EXPLAIN (ANALYZE, BUFFERS)` on a copy or inside a rolled-back transaction when it writes. Record total time.\n2. Read the plan from the innermost node out. Find the node with the largest actual time. Compare estimated rows to actual rows: a gap of 10x or more points to stale statistics, so run `ANALYZE` on the table and re-measure first.\n3. Match the problem to a fix:\n   - Seq Scan with a selective filter: b-tree on the filtered columns, equality columns first, then range or sort column.\n   - Sort on a large set: index that matches `ORDER BY` so the sort disappears.\n   - Many rows fetched for few kept: partial index (`WHERE status = 'open'`) or a covering index with `INCLUDE`.\n   - `LIKE '%x%'` or fuzzy text: `pg_trgm` GIN index. JSONB containment: GIN.\n4. Create it with `CREATE INDEX CONCURRENTLY` so writes are not blocked.\n5. Re-run the same `EXPLAIN`, confirm the plan uses it and the time dropped. If not, drop it.\n6. Check unused indexes: `pg_stat_user_indexes` where `idx_scan = 0` for weeks. Report them, do not drop without approval.\n\n## Rules\n\n- Never run `CREATE INDEX` without `CONCURRENTLY` on a live table.\n- Do not index low-cardinality booleans alone.\n- Mention index size from `pg_relation_size`.\n\n## Report\n\nQuery, plan before and after with timings, the index definition, its size and the write cost.",
+  "example": {
+    "prompt": "This orders query takes 4 seconds, fix it",
+    "result": "Seq scan on 12M rows filtering by customer_id and status, then sorting by created_at. Added (customer_id, created_at DESC) WHERE status = 'open' via CONCURRENTLY: 4,100 ms down to 3 ms, 180 MB. Found two unused indexes, 1.1 GB total, listed for removal."
+  },
+  "faq": [
+    {
+      "question": "Why does Postgres ignore my new index?",
+      "answer": "Usually the planner thinks a scan is cheaper because the filter matches many rows, statistics are stale, or the column order does not fit the query."
+    },
+    {
+      "question": "Is it safe to drop unused indexes?",
+      "answer": "Check statistics over a full business cycle, including month-end jobs, and on replicas too, since counters are per server."
+    }
+  ],
+  "access": [
+    "Reads your code and migrations",
+    "Runs EXPLAIN and read-only catalog queries against the database you point it at"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

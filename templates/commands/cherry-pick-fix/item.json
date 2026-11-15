@@ -1,0 +1,45 @@
+{
+  "slug": "cherry-pick-fix",
+  "title": "Cherry Pick Fix",
+  "kind": "command",
+  "category": "git",
+  "summary": "Cherry-picks a fix commit onto a release branch, resolves conflicts with you and runs the tests there before anything is pushed.",
+  "description": [
+    "Backporting a bugfix is easy until the release branch has drifted. This command applies the commit on a fresh branch from the release line, explains every conflict and checks that the fix still works in that older code.",
+    "The original branches stay untouched. You get a ready branch and a test result, and pushing is left to you."
+  ],
+  "stacks": [],
+  "topics": [
+    "git",
+    "debugging"
+  ],
+  "useWhen": [
+    "A bug fixed on main must also ship in a maintenance release",
+    "A hotfix needs to land on several supported branches",
+    "You want conflicts explained instead of resolved blindly",
+    "You need proof the tests pass on the older branch"
+  ],
+  "body": "Backport a fix. Arguments (commit then target branch): $ARGUMENTS\n\n1. Parse the two values. Run `git show --stat <commit>` and confirm it is a single fix, not a merge. For a merge commit ask which parent to use with -m.\n2. Ensure a clean tree with `git status --porcelain`. Fetch, then create `backport/<short-hash>-<branch>` from the target: `git switch -c ... origin/<branch>`.\n3. Run `git cherry-pick -x <commit>` so the origin hash is recorded.\n4. On conflict, list each file with `git diff --name-only --diff-filter=U`, show both sides and explain what changed on the release branch. Propose a resolution and apply it only for trivial cases; ask about anything that changes behavior.\n5. Detect the test command from package.json, Makefile or pyproject and run it. If the fix needs code that does not exist on this branch, say so and stop.\n\nReport the branch name, resolved files and test results. Offer the push command but do not run it. Abort with `git cherry-pick --abort` if the user declines.",
+  "argumentHint": "<commit hash> <release branch>",
+  "example": {
+    "prompt": "/cherry-pick-fix 9be3f10 release/2.3",
+    "result": "Created backport/9be3f10-release-2.3. One conflict in src/auth/session.ts: release/2.3 still uses the old token helper, so I kept its call and applied the expiry check. Tests: 214 passed. Push with: git push -u origin backport/9be3f10-release-2.3"
+  },
+  "faq": [
+    {
+      "question": "Does it touch my main branch?",
+      "answer": "No. All work happens on a new backport branch cut from the release branch."
+    },
+    {
+      "question": "What if the fix depends on a refactor that is not in the release branch?",
+      "answer": "It stops and names the missing prerequisite instead of forcing a fake patch."
+    }
+  ],
+  "access": [
+    "Reads commits, diffs and test configuration",
+    "Creates a branch, applies the cherry-pick and runs your test command"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

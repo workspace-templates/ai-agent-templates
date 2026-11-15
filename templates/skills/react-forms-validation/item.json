@@ -1,0 +1,45 @@
+{
+  "slug": "react-forms-validation",
+  "title": "React Forms Validation",
+  "kind": "skill",
+  "category": "frontend",
+  "summary": "Builds accessible React forms with schema validation, clear error messages and safe submit handling against double sends and server errors.",
+  "description": [
+    "A form is where users give you money or data, and where small flaws cost the most. This skill has the agent build forms that work by keyboard and screen reader, validate with one schema shared by client and server, and survive slow networks.",
+    "Errors appear where users can find them, at the right moment, in words that say how to fix them."
+  ],
+  "stacks": [
+    "react"
+  ],
+  "topics": [
+    "accessibility"
+  ],
+  "useWhen": [
+    "You are adding a signup, checkout or settings form",
+    "A form lets users submit twice or loses input after an error",
+    "Validation rules differ between the browser and the API",
+    "An accessibility audit flagged missing labels or error announcements"
+  ],
+  "body": "# React forms validation\n\nOne schema, real labels, honest errors, and a submit button that cannot be abused.\n\n## Steps\n\n1. Define the schema once with Zod or the project's validator, and export its inferred type. Use it on the client and in the server handler so the rules cannot drift.\n2. Pick the form tool the project already uses (React Hook Form with a resolver, or Actions with `useActionState`). Use uncontrolled inputs by default for speed.\n3. Markup rules for every field: a visible `<label for>`, the correct `type` and `autocomplete` (`email`, `new-password`, `one-time-code`), `inputmode` for numbers, and `required` only where the schema requires it.\n4. Errors: validate on blur, then on change after the first error. Render the message under the field, connect it with `aria-describedby`, set `aria-invalid`, and on failed submit move focus to the first invalid field. Add a summary with a polite live region for long forms. Messages say what to do (\"Use at least 12 characters\"), not what failed (\"Invalid\").\n5. Submit: disable the button while pending but keep it focusable-safe by showing a spinner label, guard against double submit, and send an idempotency key for payments.\n6. Map server errors back to fields by name; show a form-level message for the rest. Never lose the user's input on error.\n7. Test with Testing Library: user-event typing, error text found by role, submit with valid and invalid data.\n\n## Rules\n\n- Never trust client validation; the server validates again.\n- Do not clear passwords or card fields on server errors without telling the user.\n- No labels that exist only as hint text.\n\n## Report\n\nFields, rules, accessibility attributes added and tests written.",
+  "example": {
+    "prompt": "Build the signup form: email, password, and a terms checkbox",
+    "result": "Added SignupForm.tsx with a shared Zod schema in schemas/signup.ts, reused in the /api/signup handler. Fields have labels, autocomplete values and aria-describedby errors; focus moves to the first invalid field. Submit is guarded against double clicks and a 409 maps to \"That email is already registered\" under the email field. 6 Testing Library tests pass."
+  },
+  "faq": [
+    {
+      "question": "Which form library does it use?",
+      "answer": "The one already in your project. If none exists, it uses plain React with a schema and says so, and suggests one only for large forms."
+    },
+    {
+      "question": "Does it handle file uploads?",
+      "answer": "Basic file inputs, yes, with type and size checks in the schema. Chunked or resumable uploads need a dedicated plan."
+    }
+  ],
+  "access": [
+    "Reads and edits React components, schemas and tests",
+    "Runs your test commands"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

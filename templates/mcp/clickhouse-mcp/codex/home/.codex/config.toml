@@ -1,0 +1,9 @@
+[mcp_servers.clickhouse]
+command = "uv"
+args = ["run","--with","mcp-clickhouse","--python","3.12","mcp-clickhouse"]
+
+[mcp_servers.clickhouse.env]
+CLICKHOUSE_HOST = "${CLICKHOUSE_HOST}"
+CLICKHOUSE_USER = "${CLICKHOUSE_USER}"
+CLICKHOUSE_PASSWORD = "${CLICKHOUSE_PASSWORD}"
+CLICKHOUSE_SECURE = "${CLICKHOUSE_SECURE}"

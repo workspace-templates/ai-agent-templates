@@ -1,0 +1,48 @@
+{
+  "slug": "format-after-edit",
+  "title": "Format After Edit",
+  "kind": "hook",
+  "category": "code-quality",
+  "summary": "A Claude Code hook that runs Prettier on each file the agent edits, and quietly does nothing when the project has no Prettier installed.",
+  "description": [
+    "Agent edits often drift from your formatting. This PostToolUse hook runs Prettier on the single file that was just written, so diffs stay clean without a separate formatting step.",
+    "It only acts when node_modules/prettier exists and the file type is one Prettier handles. In any other project it exits silently."
+  ],
+  "stacks": [],
+  "topics": [
+    "typescript"
+  ],
+  "useWhen": [
+    "Keep agent diffs formatted like your own code",
+    "Avoid a noisy format-only commit later",
+    "Work in a repo that already uses Prettier",
+    "Skip manual format runs after every edit"
+  ],
+  "hook": {
+    "event": "PostToolUse",
+    "matcher": "Edit|Write",
+    "command": "node -e \"let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{let j={};try{j=JSON.parse(d)}catch(e){process.exit(0)}const i=j.tool_input||{};const f=i.file_path;const fs=require('fs');if(!f||!/[.](js|jsx|ts|tsx|json|css|scss|html|md|mdx|vue|svelte|yml|yaml)$/i.test(f)||!fs.existsSync(f)||!fs.existsSync('node_modules/prettier'))process.exit(0);require('child_process').spawnSync('npx',['--no-install','prettier','--write',f],{stdio:'ignore',shell:process.platform==='win32'});process.exit(0)})\"",
+    "timeout": 30
+  },
+  "example": {
+    "prompt": "Add a retry helper to src/http.ts.",
+    "result": "The helper is written, then Prettier rewrites src/http.ts with your quote and width settings. The diff shows no formatting noise."
+  },
+  "faq": [
+    {
+      "question": "What if I have no Prettier?",
+      "answer": "Nothing happens. The hook checks for node_modules/prettier and exits quietly without it."
+    },
+    {
+      "question": "Which files does it format?",
+      "answer": "JavaScript, TypeScript, JSON, CSS, HTML, Markdown, Vue, Svelte and YAML files."
+    }
+  ],
+  "access": [
+    "Runs Prettier through npx on the edited file",
+    "Rewrites that file in place"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

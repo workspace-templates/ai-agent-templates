@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{let j={};try{j=JSON.parse(d)}catch(e){}const B=String.fromCharCode(7);const w=process.platform==='win32';try{require('fs').writeFileSync(w?'CON':'/dev/tty',B)}catch(e){try{process.stderr.write(B)}catch(x){}}process.exit(0)})\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

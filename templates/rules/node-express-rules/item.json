@@ -1,0 +1,46 @@
+{
+  "slug": "node-express-rules",
+  "title": "Node Express Rules",
+  "kind": "rules",
+  "category": "backend",
+  "summary": "Project rules for Express services: routes, services and data layers, schema validation, central error middleware, structured logs and supertest.",
+  "description": [
+    "Express does not impose structure, so a service often grows into route files that validate, query and format in one place. These rules separate those jobs and give errors a single exit.",
+    "They also cover the production basics an agent forgets: request validation, structured logging, graceful shutdown and tests that never open a real port."
+  ],
+  "stacks": [
+    "node",
+    "express"
+  ],
+  "topics": [
+    "api-design",
+    "logging"
+  ],
+  "useWhen": [
+    "You are building or extending an Express API",
+    "Handlers throw unhandled promise rejections",
+    "Error responses come in several shapes",
+    "Server code and app setup are tangled together"
+  ],
+  "body": "# Project rules: Express\n\n## Structure\n- Split `app.ts` (builds and exports the Express app) from `server.ts` (listens and handles shutdown). Tests import the app only.\n- Layers per feature: `routes` map URLs, `controllers` handle req and res, `services` hold logic, `repositories` talk to the database. Lower layers never import `req` or `res`.\n\n## Requests\n- Validate `body`, `params` and `query` with Zod or similar in a middleware before the handler runs. Trust nothing past that point unvalidated.\n- Add `helmet`, a body size limit and rate limiting on public routes. Configure CORS with an explicit origin list.\n\n## Errors\n- Throw typed errors (`NotFoundError`, `ValidationError`) carrying a status. Wrap async handlers, or use Express 5 which forwards rejections, so none escape.\n- One error middleware, registered last, returns `{ error: { code, message } }`. It logs the stack and hides it from clients.\n\n## Logging and config\n- Use pino with a request id; never `console.log` in code that ships. Never log tokens or passwords.\n- Parse environment variables once at startup into a typed config object and fail fast if one is missing.\n\n## Runtime\n- Handle SIGTERM: stop accepting connections, finish in-flight requests, close the database pool.\n\n## Tests\n- Vitest or Jest with supertest against the exported app. Mock only at the repository boundary.\n\n## Before finishing\nRun `npm run lint`, `npm run typecheck` and `npm test`.",
+  "example": {
+    "prompt": "Add PATCH /users/:id to update a display name",
+    "result": "The agent adds a Zod schema middleware, a service method that throws NotFoundError for missing users, and supertest cases for 200, 400 and 404."
+  },
+  "faq": [
+    {
+      "question": "Does it assume TypeScript?",
+      "answer": "It is written with TypeScript in mind, but the layering and error rules apply to a JavaScript project as well."
+    },
+    {
+      "question": "Why split app and server files?",
+      "answer": "Importing an app that has already started listening makes tests flaky. A separate server file keeps the port out of the test run."
+    }
+  ],
+  "access": [
+    "Instructions only; nothing runs unless the agent acts on them"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

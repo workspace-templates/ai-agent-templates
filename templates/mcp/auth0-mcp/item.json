@@ -1,0 +1,71 @@
+{
+  "slug": "auth0-mcp",
+  "title": "Auth0 MCP Server",
+  "kind": "mcp",
+  "category": "security",
+  "summary": "Inspect Auth0 applications, APIs, actions and logs from your coding agent with Auth0's official MCP server, in read-only mode by default.",
+  "description": [
+    "Auth0 ships this server to manage a tenant from chat. Its tools list and read applications, resource servers, actions, forms and logs, and can also create and update them when you allow it.",
+    "Setup has two parts. Run npx @auth0/auth0-mcp-server init once to sign in with the browser device flow and choose a tenant; the credentials go into your system keychain. Then the agent starts the server with the run command.",
+    "This config adds --read-only, so the agent can inspect the tenant but not change it. Remove the flag only when you want writes."
+  ],
+  "stacks": [],
+  "topics": [
+    "security",
+    "debugging"
+  ],
+  "useWhen": [
+    "Find out why a login failed by reading the tenant logs",
+    "List every application and its callback settings",
+    "Review which actions are deployed in a tenant",
+    "Pull the quickstart guide for a new app"
+  ],
+  "mcp": {
+    "name": "auth0",
+    "transport": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "@auth0/auth0-mcp-server",
+      "run",
+      "--read-only"
+    ],
+    "env": [
+      {
+        "name": "AUTH0_MCP_ANALYTICS",
+        "description": "Set to false to opt out of the server's anonymized analytics"
+      }
+    ],
+    "headers": [],
+    "source": "https://github.com/auth0/auth0-mcp-server",
+    "access": [
+      "Reads applications, APIs, actions, forms and logs of the tenant you signed in to",
+      "Read-only because of the --read-only flag; without it the tools can create and update tenant objects"
+    ]
+  },
+  "example": {
+    "prompt": "List the last 20 failed login events and group them by error type.",
+    "result": "Pulled 20 log entries. 12 are wrong password, 5 are blocked by an action, 3 are an expired link. The 5 blocked ones all came from the same application."
+  },
+  "faq": [
+    {
+      "question": "How do I sign in?",
+      "answer": "Run npx @auth0/auth0-mcp-server init in a terminal. It opens a browser for the device authorization flow, and you pick the tenant and scopes there."
+    },
+    {
+      "question": "Can I limit which tools are available?",
+      "answer": "Yes. The flag --tools takes patterns such as auth0_list_*,auth0_get_*. If you pass both that and --read-only, read-only wins."
+    },
+    {
+      "question": "Does it work with a private cloud tenant?",
+      "answer": "Device flow does not. Initialize with an M2M app using the --auth0-domain, --auth0-client-id and --auth0-client-secret options instead."
+    }
+  ],
+  "access": [
+    "Reads Auth0 tenant configuration and logs",
+    "Stores tokens in your system keychain after init"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,51 @@
+{
+  "slug": "design-system-auditor",
+  "title": "Design System Auditor",
+  "kind": "agent",
+  "category": "frontend",
+  "summary": "Read-only subagent that finds colors, spacing and one-off components that bypass your design system, and counts each deviation.",
+  "description": [
+    "A design system only works when people use it. Over time hardcoded hex values, magic pixel numbers and look-alike components creep in, and the system stops describing the product. This subagent measures that gap.",
+    "It compares the code against your tokens and shared components, then reports every deviation with the closest token or component to use instead. It never edits files, so the report can drive a cleanup you plan deliberately."
+  ],
+  "stacks": [],
+  "topics": [
+    "code-review"
+  ],
+  "useWhen": [
+    "You are about to roll out a rebrand or dark mode and need to know the blast radius",
+    "A team asks how well the product follows the design system",
+    "You want a prioritized cleanup list of off-token styles",
+    "New components keep reinventing buttons and cards"
+  ],
+  "body": "# Design system auditor\n\nAudit the codebase against its design system. You are read-only: do not edit or write files.\n\n## Steps\n\n1. Find the source of truth. Look for token files (CSS custom properties, theme.ts, tailwind.config, a tokens JSON) and the shared component folder. Summarize the tokens and components in a short list before auditing. If you find none, stop and say so.\n2. Scan for off-token values in application code:\n   - Color literals (hex, rgb, hsl, named colors) outside the token files.\n   - Spacing, font sizes, radii and shadows written as raw numbers where a token exists.\n   - Inline styles and arbitrary Tailwind values such as `w-[13px]` or `text-[#444]`.\n3. For each off-token value, find the nearest token. Mark it as exact match (should use the token), near match (design decision needed) or no match (candidate for a new token).\n4. Scan for one-off components: new buttons, inputs, modals, cards and badges built from scratch when a shared one exists. Compare markup and props to decide whether the shared component could replace them.\n5. Count occurrences by file and by value, so the biggest offenders are visible.\n6. Ignore generated code, vendor folders, tests and storybook fixtures.\n\n## Rules\n\n- Every finding has file and line. No guessed counts: say how you counted.\n- Do not call a deliberate exception wrong. Mark it \"needs confirmation\" if a comment explains it.\n\n## Report\n\nSummary with totals and an adoption estimate, top 10 offending files, a table of off-token values with the nearest token, and a list of duplicate components with the shared one that should replace each.",
+  "agent": {
+    "tools": [
+      "Read",
+      "Grep",
+      "Glob"
+    ],
+    "model": "sonnet"
+  },
+  "example": {
+    "prompt": "How far has the app drifted from our design tokens?",
+    "result": "412 raw color literals in 63 files; 301 map exactly to an existing token, 74 are near matches, 37 have no token. #1a73e8 appears 58 times and equals --color-primary. 9 hand-built buttons duplicate components/Button. Top offender: pages/pricing.css with 41 literals. Full tables follow with file and line."
+  },
+  "faq": [
+    {
+      "question": "Does it need a formal design system?",
+      "answer": "It needs some source of truth, even a single CSS variables file or Tailwind theme. Without one it stops and tells you instead of guessing."
+    },
+    {
+      "question": "Can I use the output to plan a migration?",
+      "answer": "Yes. Exact matches can be replaced mechanically first, near matches go to design for a decision, and the no-match list shows which tokens are missing."
+    }
+  ],
+  "access": [
+    "Reads source, style and config files",
+    "No file changes and no commands run"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

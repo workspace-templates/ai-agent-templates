@@ -1,0 +1,53 @@
+{
+  "slug": "doc-drift-checker",
+  "title": "Doc Drift Checker",
+  "kind": "agent",
+  "category": "docs",
+  "summary": "Read-only subagent that compares your docs with the code and lists every statement that is no longer true, with proof from the source.",
+  "description": [
+    "Docs rot quietly. A flag gets renamed, a default changes, an endpoint moves, and the README keeps promising the old behavior. This subagent reads a doc and checks each factual claim against the code that implements it.",
+    "It reports only drift it can prove, quoting the doc line next to the source line that contradicts it. It never rewrites the docs, so you decide what the fix should say."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation",
+    "code-review"
+  ],
+  "useWhen": [
+    "A release changed behavior and the README or guides may be stale",
+    "You inherited a project whose setup instructions fail on a clean machine",
+    "Config options or CLI flags were renamed and docs were not updated",
+    "You want a drift report in CI review before a doc update PR"
+  ],
+  "body": "# Doc drift checker\n\nCompare documentation with the code and report claims that are false today. You are read-only: do not edit or write files.\n\n## Steps\n\n1. Pick the scope: the doc files the user named, otherwise README, docs/ and any file mentioned in the README. List them first.\n2. Extract checkable claims from each doc: CLI commands and flags, environment variables, config keys and defaults, file paths, function and endpoint names, version numbers, install steps and code samples.\n3. Verify every claim at its source. Grep for the flag definition, the env var read, the route registration, the default value in the schema. Read the surrounding code, not just the matching line.\n4. Check that sample code still compiles in your head: do the imports, argument order and return shape match current signatures?\n5. Check relative links and referenced paths with Glob. A missing target is drift.\n6. Use `git log -n 5 -- <source file>` to see whether the code moved after the doc was last touched, and say so when it helps.\n\n## Rules\n\n- Report only claims you disproved with a source line. If you could not find the implementation, list it under \"Unverified\", never under \"Wrong\".\n- Do not judge writing style, tone or structure.\n- Do not propose rewrites longer than one corrected sentence.\n\n## Report\n\nA table per doc with: doc file and line, the claim, what the code actually does (file:line), and severity (breaks a user, misleads, cosmetic). End with a count of verified, wrong and unverified claims.",
+  "agent": {
+    "tools": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Bash"
+    ],
+    "model": "sonnet"
+  },
+  "example": {
+    "prompt": "Check README.md and docs/configuration.md against the current code.",
+    "result": "14 claims checked: 9 correct, 4 wrong, 1 unverified. README.md:31 says --port defaults to 3000, src/cli.ts:18 sets 8080. docs/configuration.md:52 documents CACHE_TTL, which nothing reads since commit 91b2e07. Each wrong claim lists the doc line, the source line and a one-sentence correction."
+  },
+  "faq": [
+    {
+      "question": "Will it fix the docs for me?",
+      "answer": "No. It lists what is wrong and where the truth lives, so you or another agent can write the correction in your own voice."
+    },
+    {
+      "question": "How does it avoid false alarms?",
+      "answer": "A claim only counts as wrong when it finds the contradicting source line. Anything it cannot trace goes into a separate unverified list."
+    }
+  ],
+  "access": [
+    "Reads documentation and source files",
+    "Runs read-only git commands to see when code changed"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

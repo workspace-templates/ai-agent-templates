@@ -1,0 +1,45 @@
+{
+  "slug": "payment-integration-safety",
+  "title": "Payment Integration Safety",
+  "kind": "skill",
+  "category": "backend",
+  "summary": "Builds or reviews payment code so amounts are set on the server, webhooks are verified and idempotent, and every charge can be reconciled with the provider.",
+  "description": [
+    "Payment bugs cost money, and most of them come from the same few shortcuts: trusting a price sent by the browser, treating the redirect after checkout as proof of payment, and handling a webhook twice. This skill looks for those first.",
+    "It works with any provider, such as Stripe, Adyen or PayPal, and uses the provider test mode for checks. It never touches live keys and never prints secrets."
+  ],
+  "stacks": [],
+  "topics": [
+    "security",
+    "api-design"
+  ],
+  "useWhen": [
+    "You are adding checkout or subscriptions to an app",
+    "You are reviewing a payment pull request before it ships",
+    "Customers report double charges or orders stuck as unpaid",
+    "A webhook endpoint exists but nobody has tested replay or bad signatures"
+  ],
+  "body": "# Payment integration safety\n\nMoney code is reviewed line by line. Use test mode and test keys only.\n\n## Steps\n\n1. Map the flow: where the price is set, where the charge is created, what confirms it, what fulfills the order. Draw it as five lines of text before changing anything.\n2. Amounts: compute the total on the server from stored prices and quantities. Reject any amount, currency or price id taken from the client. Store money as integer minor units, never floats.\n3. Confirmation: fulfill an order only from a verified webhook (or a server-side fetch of the payment status), never from the browser redirect.\n4. Webhooks: verify the signature on the raw request body before parsing JSON. Reject old timestamps. Return 2xx quickly and do the heavy work in a job.\n5. Idempotency: send an idempotency key on every create-charge call, derived from the order id. In the webhook handler, store the provider event id with a unique constraint and skip events already seen.\n6. State: model the order as explicit states (pending, paid, failed, refunded) and allow only valid transitions. Handle out-of-order events.\n7. Reconciliation: write or check a job that compares provider payments with local orders daily and lists mismatches.\n8. Test the unhappy paths: declined card, duplicate webhook, webhook before redirect, partial refund.\n\n## Rules\n\n- Never log card data, full tokens or webhook secrets. Read keys from environment variables.\n- Do not store card numbers. Use the provider's hosted fields or checkout.\n- Do not run anything against live mode.\n\n## Report\n\nFindings ranked by money at risk, each with file, line and fix, then the tests added.",
+  "example": {
+    "prompt": "Review our checkout code before launch.",
+    "result": "High: src/checkout.ts:44 reads `amount` from the request body, so a user can pay 1 cent. Fix: compute from cart rows. High: /webhooks/pay fulfills orders without verifying the signature. Medium: no unique index on event id, so a retried event ships the order twice. Added tests for duplicate and unsigned webhooks."
+  },
+  "faq": [
+    {
+      "question": "Which payment providers does it cover?",
+      "answer": "The checks are provider-neutral: server-side totals, signed events and idempotency apply to every major provider. Examples follow whichever SDK your code uses."
+    },
+    {
+      "question": "Can it run real payments?",
+      "answer": "No. It is told to stay in test mode and to leave live keys alone."
+    }
+  ],
+  "access": [
+    "Reads checkout, order and webhook code",
+    "Edits source files and adds tests",
+    "Runs your test command, never against live payment APIs"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

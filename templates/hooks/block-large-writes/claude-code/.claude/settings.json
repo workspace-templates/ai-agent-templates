@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"process.on('uncaughtException',()=>process.exit(0));let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{let j={};try{j=JSON.parse(d)||{}}catch(e){process.exit(0)}const i=j.tool_input||{};const f=String(i.file_path||'');const fs=require('fs');const c=i.content;if(typeof c!=='string')process.exit(0);const kb=Number(process.env.MAX_WRITE_KB)||200;const n=Buffer.byteLength(c)/1024;if(n>kb){console.error('Blocked: this write is '+Math.round(n)+' KB, over the '+kb+' KB limit. Write a smaller file, split it, or generate it with a script instead of pasting its text.');process.exit(2)}process.exit(0)})\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

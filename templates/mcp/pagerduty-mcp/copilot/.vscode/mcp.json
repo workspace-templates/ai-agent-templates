@@ -1,0 +1,22 @@
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "pagerduty_user_api_key",
+      "description": "A PagerDuty user API token",
+      "password": true
+    }
+  ],
+  "servers": {
+    "pagerduty": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "pagerduty-mcp"
+      ],
+      "env": {
+        "PAGERDUTY_USER_API_KEY": "${input:pagerduty_user_api_key}"
+      }
+    }
+  }
+}

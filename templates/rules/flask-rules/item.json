@@ -1,0 +1,46 @@
+{
+  "slug": "flask-rules",
+  "title": "Flask Rules",
+  "kind": "rules",
+  "category": "backend",
+  "summary": "Project rules for Flask apps: application factory, blueprints, environment-based config, explicit extensions, JSON error handlers and pytest fixtures.",
+  "description": [
+    "Flask is small enough that every project invents its own structure. These rules fix one structure so new routes, extensions and tests land where a teammate would look first.",
+    "They lean on the application factory pattern, which removes most of the import cycles and test setup headaches that Flask projects collect over time."
+  ],
+  "stacks": [
+    "python",
+    "flask"
+  ],
+  "topics": [
+    "python",
+    "api-design"
+  ],
+  "useWhen": [
+    "You start a Flask service from scratch",
+    "Imports between modules have become circular",
+    "Tests share state or need a running server",
+    "Error responses differ from route to route"
+  ],
+  "body": "# Project rules: Flask\n\n## Structure\n- Use an application factory: `create_app(config_name)` in `app/__init__.py`. No module-level `app` object.\n- One blueprint per feature under `app/<feature>/` with `routes.py`, `schemas.py` and `services.py`. Register blueprints inside the factory.\n- Create extensions (`db`, `migrate`) unbound in `app/extensions.py` and call `init_app` in the factory. Import them from there, never from `app`.\n\n## Config\n- Config classes in `config.py`; select by environment variable. Secrets come from the environment only.\n- Read settings through `current_app.config`, not through globals.\n\n## Routes\n- Handlers stay short: validate with marshmallow or pydantic, call a service, return `jsonify` with an explicit status code.\n- Do not touch the database from a route function directly; go through a service.\n- Register `errorhandler` functions that return one JSON shape: `{\"error\": {\"code\": ..., \"message\": ...}}`. Log the traceback; do not send it to the client.\n\n## Data\n- SQLAlchemy sessions come from the extension. Manage schema with Flask-Migrate and commit the generated revision after reviewing it.\n\n## Tests\n- pytest with an `app` fixture built from the factory using a testing config, plus a `client` fixture. Use a throwaway database per test run.\n\n## Before finishing\nRun `ruff check .`, `flask db check` and `pytest -q`.",
+  "example": {
+    "prompt": "Add a route to archive a project",
+    "result": "The agent adds the route to the projects blueprint, calls an archive service, returns 404 through the shared error handler for unknown ids, and adds a client fixture test."
+  },
+  "faq": [
+    {
+      "question": "Why ban a module-level app?",
+      "answer": "A global app forces imports in a fixed order and makes it hard to build a clean instance per test. The factory removes both problems."
+    },
+    {
+      "question": "Is it written for Flask-RESTful?",
+      "answer": "No, it assumes plain blueprints. The structure still fits if you add a resource library, but the route rules would need adjusting."
+    }
+  ],
+  "access": [
+    "Instructions only; nothing is read or executed by the file itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

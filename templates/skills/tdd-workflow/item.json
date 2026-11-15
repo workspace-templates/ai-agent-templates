@@ -1,0 +1,44 @@
+{
+  "slug": "tdd-workflow",
+  "title": "TDD Workflow",
+  "kind": "skill",
+  "category": "testing",
+  "summary": "Builds a feature in small red, green, refactor cycles, with one failing test first and one commit per cycle, so every step stays verified.",
+  "description": [
+    "Writing the tests after the code lets the tests describe whatever the code happens to do. This skill flips the order: state the next behavior as a failing test, make it pass with the least code, then tidy up with the tests as a safety net.",
+    "The agent works in tiny steps and commits after each cycle, so the history reads like a log of behaviors. If a step grows large, it stops and splits it rather than writing a pile of code first."
+  ],
+  "stacks": [],
+  "topics": [
+    "testing",
+    "refactoring"
+  ],
+  "useWhen": [
+    "You are building a function or module with clear rules",
+    "Fixing a bug and you want a test that proves it stays fixed",
+    "You want the agent to take small, reviewable steps",
+    "Code you are about to change has no tests yet"
+  ],
+  "body": "# TDD workflow\n\nWrite a failing test, make it pass, clean up, commit. Repeat in small steps.\n\n## Steps\n\n1. Restate the feature as a list of behaviors, smallest first, in plain sentences. Show the list and start at the top. Find the project's test command and run it once to confirm the suite is green before you begin.\n2. Red: write one test for the next behavior only. Name it as a sentence (\"rejects an order with no items\"). Run it. It must fail, and for the right reason: an assertion, not a typo or import error. If it passes, the behavior already exists; skip to the next.\n3. Green: write the simplest code that passes, even if it looks naive (a hard-coded return is allowed for the first test). Run the whole suite.\n4. Refactor: with all tests green, remove duplication, improve names and extract functions. Run the suite after each change. Do not add behavior here.\n5. Commit with a message that states the behavior: `Reject orders with no items`.\n6. Pick the next behavior. Prefer cases that force the code to generalize: another example, an edge, an error.\n7. Stop when the list is done, then run lint and types, and review the tests for gaps: boundaries, invalid input, failure paths.\n\n## Rules\n\n- Never write production code without a failing test that requires it.\n- Never edit a test to make it pass unless the requirement changed, and say so.\n- If one cycle takes more than about ten minutes, the step is too big. Split it.\n- Test behavior through the public interface, not private functions.\n\n## Report\n\nThe behavior list with a checkmark each, the commits made, and any case you chose not to test.",
+  "example": {
+    "prompt": "Use TDD to build a function that applies a promo code to a cart total.",
+    "result": "Behaviors: 1) unknown code leaves total unchanged, 2) percent code reduces total, 3) fixed code never goes below zero, 4) expired code rejected, 5) one code per cart. Completed 5 cycles and 5 commits, 11 tests, all green. Refactored the discount lookup into a table after cycle 3. Not tested: stacking with gift cards, since the spec does not say."
+  },
+  "faq": [
+    {
+      "question": "Does this work on an existing codebase?",
+      "answer": "Yes, for new behavior and bug fixes. For untested legacy code it first adds a test that pins the current behavior, then proceeds in cycles."
+    },
+    {
+      "question": "Why commit after every cycle?",
+      "answer": "Each commit is a verified state. If a later step goes wrong you can return to the last green one, and reviewers can read the design as it formed."
+    }
+  ],
+  "access": [
+    "Reads and edits source and test files",
+    "Runs your test command and makes local git commits"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

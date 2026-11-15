@@ -1,0 +1,43 @@
+{
+  "slug": "slo-and-alerting",
+  "title": "SLO and Alerting",
+  "kind": "skill",
+  "category": "devops",
+  "summary": "Defines SLIs, SLOs and multi-window burn-rate alerts so on-call is paged only when users are affected and the error budget is at risk.",
+  "description": [
+    "Alerts on CPU or a single failed request wake people for things users never notice, and still miss slow, steady damage. This skill replaces them with a service-level objective: a target for something users feel, a budget of allowed failure, and alerts based on how fast that budget is burning.",
+    "The agent proposes the indicator from your real request data, picks a target you can afford, and writes the alert rules so a fast burn pages and a slow burn opens a ticket."
+  ],
+  "stacks": [],
+  "topics": [
+    "logging"
+  ],
+  "useWhen": [
+    "On-call gets paged at night for alerts that need no action",
+    "You cannot say how reliable the service is, only that it feels fine",
+    "Teams argue about when to freeze features for reliability",
+    "You are moving to Prometheus, Datadog or Cloud Monitoring SLO alerts"
+  ],
+  "body": "# SLO and alerting\n\nPage on user pain and budget burn, not on causes.\n\n## Steps\n\n1. Identify the critical user journeys (for example load a page, submit an order) and the service that serves each.\n2. Define an SLI as a ratio of good events to valid events: availability (non-5xx responses / all valid requests) and latency (requests faster than a threshold / all requests). Measure at the load balancer or server edge, and exclude health checks and known client errors.\n3. Pull 28 to 90 days of real data. Set the SLO a little below what you reliably achieve, such as 99.9 percent, never 100. Compute the error budget: 0.1 percent over 30 days is about 43 minutes of full outage.\n4. Write burn-rate alerts with two windows each, so short spikes do not page:\n   - page: burn rate 14.4 over 1 hour and 5 minutes (2 percent of budget in an hour)\n   - page: burn rate 6 over 6 hours and 30 minutes\n   - ticket: burn rate 1 over 3 days and 6 hours\n5. Give every page a runbook link, a dashboard link and a named owner. Delete any existing alert that pages without a human action.\n6. Define the policy: what happens when the budget is spent (freeze risky releases, fix reliability first).\n7. Test the rules by replaying a past incident and confirming the fast alert would have fired.\n\n## Rules\n\n- Never pick an SLO without looking at the history.\n- Do not alert on resource metrics alone.\n\n## Report\n\nSLIs, SLO targets, budget in minutes, alert rules in the monitoring system's format, and alerts removed.",
+  "example": {
+    "prompt": "Define an SLO and alerts for the orders API",
+    "result": "SLI: orders with status below 500 and under 600 ms, measured at the load balancer. Target 99.5 percent over 30 days, budget 3.6 hours. Added fast burn (14.4x, 1h and 5m) and slow burn (6x, 6h and 30m) alerts. Replayed the October 9 incident: the fast alert fires 4 minutes in. Removed 3 CPU alerts."
+  },
+  "faq": [
+    {
+      "question": "Why not 100 percent?",
+      "answer": "A perfect target leaves no budget for change, and users cannot tell 99.99 from 100 anyway. The budget is what lets you ship."
+    },
+    {
+      "question": "Which monitoring tools does it write for?",
+      "answer": "Prometheus rules by default. It can produce Datadog or cloud-native equivalents if you name the tool."
+    }
+  ],
+  "access": [
+    "Reads monitoring config and exported metrics you provide",
+    "Edits alert rule files; changes nothing in a live monitoring system"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

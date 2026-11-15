@@ -1,0 +1,45 @@
+{
+  "slug": "coverage-gaps",
+  "title": "Coverage Gaps",
+  "kind": "command",
+  "category": "testing",
+  "summary": "Runs coverage, ranks the riskiest untested code by what breaks if it fails, and writes tests for the top items.",
+  "description": [
+    "A coverage percentage says little; what matters is which uncovered lines carry risk. This command runs the coverage tool, then ranks the gaps by how important and how complicated the code is.",
+    "It writes tests for the top few gaps and reports the numbers before and after, so you see the change instead of a vanity figure."
+  ],
+  "stacks": [],
+  "topics": [
+    "testing",
+    "code-review"
+  ],
+  "useWhen": [
+    "When the coverage figure looks poor and the first target is unclear",
+    "Before touching a module with weak tests",
+    "After a production bug in an untested area",
+    "When setting a sensible coverage target for a team"
+  ],
+  "body": "Find and close coverage gaps. Scope: $ARGUMENTS (whole project if empty).\n\n1. Run the project's coverage command (jest --coverage, vitest --coverage, pytest --cov, go test -cover, dotnet test with coverlet, cargo llvm-cov). If none is configured, suggest the smallest setup and ask before adding it.\n2. Record the overall and per-file figures, including branch coverage if available.\n3. Rank uncovered code by risk: money, auth, data writes and parsing first, then branching complexity, then recent change frequency (check `git log --since=3.months --name-only`). Ignore generated code, types and trivial getters.\n4. Show the top 10 gaps with file, uncovered lines or branches, and why each is risky.\n5. Write tests for the top 3, following the existing style. Assert behavior, not implementation details. Do not add tests whose only purpose is to touch lines.\n6. Rerun coverage and compare.\n\nReport before and after per file and list the remaining gaps. Ask before committing.",
+  "argumentHint": "[folder or module, default all]",
+  "example": {
+    "prompt": "/coverage-gaps src/billing",
+    "result": "Billing: 54% lines, 41% branches.\nTop gaps: prorate() (no tests, money), refund.ts error branch, tax.ts rounding.\nAdded 14 tests for the top 3. Billing now 83% lines, 76% branches.\nCommit the new tests?"
+  },
+  "faq": [
+    {
+      "question": "Does it aim for 100%?",
+      "answer": "No. It targets risky code and says which lines are not worth testing."
+    },
+    {
+      "question": "Will it install a coverage tool?",
+      "answer": "Only after asking, and it suggests the smallest setup."
+    }
+  ],
+  "access": [
+    "Runs the coverage command and reads git history",
+    "Adds test files; commits only after you confirm"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

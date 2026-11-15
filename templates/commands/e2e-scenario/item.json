@@ -1,0 +1,45 @@
+{
+  "slug": "e2e-scenario",
+  "title": "E2E Scenario",
+  "kind": "command",
+  "category": "testing",
+  "summary": "Turns a plain-language user journey into an end-to-end test written in the framework your project already uses.",
+  "description": [
+    "End-to-end tests are slow to write and easy to make flaky. This command takes a journey described in everyday words, finds your existing setup, and writes the scenario with stable selectors, explicit waits for state and clean test data.",
+    "It runs the new test several times to check it is steady, and reports the result along with anything that needs a data-test attribute in the app."
+  ],
+  "stacks": [],
+  "topics": [
+    "testing",
+    "accessibility"
+  ],
+  "useWhen": [
+    "When QA hands you a manual test script to automate",
+    "After shipping a critical flow such as checkout or signup",
+    "To cover a bug that only shows in the browser",
+    "When a team starts its first browser test"
+  ],
+  "body": "Write an end-to-end test for this journey: $ARGUMENTS\n\n1. Detect the framework in use (Playwright, Cypress, Selenium, WebdriverIO, Detox, Maestro) from config and dependencies. Use it; do not introduce another. If none exists, recommend Playwright and ask first.\n2. Read two existing e2e tests for structure, page objects, base URL handling and login helpers. Reuse them.\n3. Break the journey into steps with a visible result at each one. Write assertions on what the user sees, not on internal state.\n4. Choose selectors in this order: role and accessible name, label, test id. Avoid CSS chains and text that changes. If a needed element has no stable handle, list the data-testid to add and ask before editing the app.\n5. Never use fixed sleeps; wait for a condition. Create test data through an API or seed script and clean it up afterward.\n6. Run the test 3 times locally. Report any flake and fix its cause.\n\nShow the file path, the steps covered, the run results and anything left manual.",
+  "argumentHint": "[the journey in plain words]",
+  "example": {
+    "prompt": "/e2e-scenario a new user signs up, verifies email and creates a first project",
+    "result": "Created e2e/signup-first-project.spec.ts (Playwright). 6 steps, email read through the mail sandbox API.\n3 of 3 runs passed in 14 s each. Needs data-testid=\"create-project\" on the empty-state button. Add it?"
+  },
+  "faq": [
+    {
+      "question": "What if I have no e2e framework?",
+      "answer": "It recommends one, explains why, and waits for your approval before installing anything."
+    },
+    {
+      "question": "How does it avoid flaky tests?",
+      "answer": "It waits on conditions rather than time, uses stable selectors, isolates data and runs the test repeatedly before finishing."
+    }
+  ],
+  "access": [
+    "Reads the app, config and existing e2e tests",
+    "Adds a test file and runs a browser locally"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

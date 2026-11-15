@@ -1,0 +1,46 @@
+{
+  "slug": "graphql-schema-design",
+  "title": "GraphQL Schema Design",
+  "kind": "skill",
+  "category": "backend",
+  "summary": "Designs a GraphQL schema around the product domain, with honest nullability, input types and mutation payloads that report errors as data.",
+  "description": [
+    "A GraphQL schema is a contract that is hard to change once clients depend on it. This skill makes the agent design the types from what screens need, not from database tables, and decide nullability on purpose, since every wrongly non-null field can null out its whole parent.",
+    "Mutations get dedicated input and payload types that carry user errors, connections replace bare lists, and breaking changes are replaced with deprecations."
+  ],
+  "stacks": [
+    "graphql"
+  ],
+  "topics": [
+    "api-design"
+  ],
+  "useWhen": [
+    "You are starting a new GraphQL API",
+    "The schema mirrors database tables and clients need many round trips",
+    "A failing field keeps nulling out entire responses",
+    "You need to add a mutation and want it shaped consistently"
+  ],
+  "body": "# GraphQL schema design\n\nDesign for the client's question, not the table's columns.\n\n## Steps\n\n1. List the screens or use cases the schema serves. Write each as the query a client would send. Model types so those queries are one request.\n2. Name by domain meaning (`Order`, `LineItem`), never by table. Use `ID!` for identity. Keep scalars honest: custom `DateTime`, `Money` (amount plus currency, never a float).\n3. Decide nullability per field. Non-null only when the server can always produce it. A field that depends on a flaky downstream service must be nullable, because an error on a non-null field nulls the parent.\n4. Lists: use connections (`edges`, `node`, `pageInfo`, `first`/`after`) for anything that can grow. Never return an unbounded list.\n5. Mutations: one input type and one payload type each, for example `createOrder(input: CreateOrderInput!): CreateOrderPayload!`. The payload holds the changed object and `userErrors: [UserError!]!` with `field` and `message`. Reserve top-level errors for bugs and auth failures.\n6. Use enums for closed sets, and unions or interfaces for real polymorphism. Add descriptions to every type and field that is not obvious.\n7. Evolve additively. Mark old fields `@deprecated(reason: \"...\")` and remove them only after usage drops to zero.\n8. Lint with graphql-eslint or the schema checker your team uses, and run a client query against the result.\n\n## Rules\n\n- Never expose internal ids, join tables or foreign keys as fields.\n- Never add a boolean flag argument where two fields would be clearer.\n\n## Report\n\nThe schema in SDL, nullability decisions that were close calls, and the queries you tested.",
+  "example": {
+    "prompt": "Design the GraphQL schema for orders and refunds in our shop.",
+    "result": "Wrote schema/orders.graphql: Order, LineItem, Refund, Money, OrderConnection. Order.customer is nullable because the CRM can be down. refundOrder takes RefundOrderInput and returns RefundOrderPayload with userErrors. Verified three client queries; each runs in one request. Added deprecation notes to the old orderStatus string."
+  },
+  "faq": [
+    {
+      "question": "Why not make most fields non-null?",
+      "answer": "One resolver error on a non-null field makes the parent null, and so on up the tree. Non-null is a promise; make it only when you can keep it."
+    },
+    {
+      "question": "Why return errors in a payload?",
+      "answer": "Validation failures are expected outcomes and clients want to show them next to fields. Top-level errors stay for unexpected faults."
+    }
+  ],
+  "access": [
+    "Reads schema files and resolvers in your project",
+    "Edits SDL and resolvers when approved",
+    "Runs your schema lint and test commands"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

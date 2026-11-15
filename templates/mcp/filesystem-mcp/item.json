@@ -1,0 +1,59 @@
+{
+  "slug": "filesystem-mcp",
+  "title": "Filesystem MCP Server",
+  "kind": "mcp",
+  "category": "productivity",
+  "summary": "Give an agent scoped file access through the reference Filesystem MCP server, limited to the folders you list and optionally read-only.",
+  "description": [
+    "The Filesystem server is part of the official Model Context Protocol servers repository. It reads, searches and edits files, but only inside the directories you pass on the command line.",
+    "Use it with agents that have no file tools of their own, or to expose a notes or docs folder outside the project. This config passes the current folder and starts in read-only mode."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation"
+  ],
+  "useWhen": [
+    "Let a chat client read a notes or docs folder",
+    "Expose one folder to an agent and nothing else",
+    "Search many text files by name or content",
+    "Keep access read-only while the agent explores"
+  ],
+  "mcp": {
+    "name": "filesystem",
+    "transport": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "@modelcontextprotocol/server-filesystem",
+      "--read-only",
+      "."
+    ],
+    "env": [],
+    "headers": [],
+    "source": "https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem",
+    "access": [
+      "Reads files inside the listed folders only",
+      "Read-only because of the --read-only flag"
+    ]
+  },
+  "example": {
+    "prompt": "Find every markdown file under docs that mentions \"rate limit\" and list the headings that contain it.",
+    "result": "3 files: docs/api.md (\"Rate limits\"), docs/errors.md (\"429 and rate limit headers\"), docs/faq.md (\"Why was my request limited?\")."
+  },
+  "faq": [
+    {
+      "question": "How do I allow more folders?",
+      "answer": "Add each path as another argument after the package name. The server refuses anything outside them."
+    },
+    {
+      "question": "How do I let it write?",
+      "answer": "Remove the --read-only flag. Check the folder list first, since writes are real."
+    }
+  ],
+  "access": [
+    "Reads files in the listed folders only"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

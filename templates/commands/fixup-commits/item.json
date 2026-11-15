@@ -1,0 +1,45 @@
+{
+  "slug": "fixup-commits",
+  "title": "Fixup Commits",
+  "kind": "command",
+  "category": "git",
+  "summary": "Matches staged review fixes to the commits they belong to, creates fixup commits and autosquashes once you approve.",
+  "description": [
+    "Review feedback usually lands as a pile of \"address comments\" commits that nobody wants in main. This command looks at your staged hunks, finds the earlier commit on your branch that last touched the same lines and prepares a fixup for each.",
+    "Nothing is rewritten until you read the plan. The final autosquash happens only after a yes, and it refuses to touch commits that were already pushed to a shared branch."
+  ],
+  "stacks": [],
+  "topics": [
+    "git",
+    "refactoring"
+  ],
+  "useWhen": [
+    "After a reviewer asks for small changes spread over several commits",
+    "Before marking a pull request ready for merge",
+    "When your branch history should stay one logical commit per step",
+    "When you fixed a typo or bug that belongs to a commit three steps back"
+  ],
+  "body": "Turn the staged changes into fixup commits for the branch. Base branch: $ARGUMENTS (use main if empty).\n\n1. Run `git status --short` and `git diff --staged`. If nothing is staged, stop. Never stage files yourself.\n2. List the branch commits with `git log --oneline <base>..HEAD`. Stop if HEAD is on the base branch itself.\n3. For each staged hunk, run `git blame -L <range> <base>..HEAD -- <file>` on the original lines and note which branch commit last touched them. A hunk touching only new lines of one commit maps to that commit.\n4. Show a table: hunk, file, target commit hash and subject, confidence. Mark hunks with no clear owner as \"unmatched\" and leave them staged.\n5. Ask: \"Create these fixups?\" After a yes, split the index per target and run `git commit --fixup <hash>` for each.\n6. Check whether the branch was pushed with `git status -sb`. If it was, warn that autosquash rewrites history and ask again.\n\nThen show `git log --oneline` and ask before running `git rebase -i --autosquash <base>` with GIT_SEQUENCE_EDITOR=true. Never force push.",
+  "argumentHint": "[base branch, default main]",
+  "example": {
+    "prompt": "/fixup-commits main",
+    "result": "3 hunks staged. src/cart.ts hunk -> a41c9e2 \"Add cart totals\" (high). README.md hunk -> 7d02b11 \"Document env vars\" (high). tests/cart.test.ts hunk -> unmatched. Create these fixups?"
+  },
+  "faq": [
+    {
+      "question": "Does it rewrite history right away?",
+      "answer": "No. It first creates plain fixup commits you can inspect, and the rebase waits for a second confirmation."
+    },
+    {
+      "question": "What happens to a hunk it cannot place?",
+      "answer": "It stays staged and is listed as unmatched, so you decide whether it deserves its own commit."
+    }
+  ],
+  "access": [
+    "Reads the staged diff, blame data and branch log",
+    "Creates fixup commits and runs a rebase only after you confirm"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

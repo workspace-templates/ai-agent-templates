@@ -1,0 +1,58 @@
+{
+  "slug": "playwright-mcp",
+  "title": "Playwright MCP Server",
+  "kind": "mcp",
+  "category": "testing",
+  "summary": "Let your coding agent drive a real browser through Microsoft's Playwright MCP server to click through pages, fill forms and check what renders.",
+  "description": [
+    "Playwright MCP is Microsoft's official server for browser automation. The agent reads pages through the accessibility tree rather than screenshots, so it can open your app, click, type and report what it finds.",
+    "It runs locally through npx, needs no account and no key. Use it to reproduce a bug in a real browser or to check a flow you just built."
+  ],
+  "stacks": [],
+  "topics": [
+    "testing",
+    "debugging"
+  ],
+  "useWhen": [
+    "Reproduce a UI bug in a real browser",
+    "Check that a sign-up form works end to end",
+    "Walk through a page and list broken links or console errors",
+    "Explore a flow before writing a Playwright test for it"
+  ],
+  "mcp": {
+    "name": "playwright",
+    "transport": "stdio",
+    "command": "npx",
+    "args": [
+      "@playwright/mcp@latest"
+    ],
+    "env": [],
+    "headers": [],
+    "source": "https://github.com/microsoft/playwright-mcp",
+    "access": [
+      "Opens and controls a browser on your machine",
+      "Can visit any URL you or the agent give it"
+    ]
+  },
+  "example": {
+    "prompt": "Open http://localhost:3000/signup, submit the form with an empty email and tell me what the page shows.",
+    "result": "The form stays on /signup and shows \"Email is required\" under the email field. No network request was sent and the console is clean."
+  },
+  "faq": [
+    {
+      "question": "Does it need an API key?",
+      "answer": "No. It starts a local browser through npx. The first run may download browser binaries."
+    },
+    {
+      "question": "Can it visit sites that need a login?",
+      "answer": "Yes, if you log in during the session or point it at a profile that is already signed in. Treat that profile as shared with the agent."
+    }
+  ],
+  "access": [
+    "Controls a browser on your machine",
+    "Reads page content and can submit forms"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

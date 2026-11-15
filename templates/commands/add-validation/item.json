@@ -1,0 +1,45 @@
+{
+  "slug": "add-validation",
+  "title": "Add Validation",
+  "kind": "command",
+  "category": "backend",
+  "summary": "Adds request validation to a handler using the validation library your project already uses, with tests for bad input.",
+  "description": [
+    "Handlers that trust the request body fail in odd places, far from the real cause. This command puts a schema at the edge of the handler so bad input is rejected early with a clear message.",
+    "It does not bring in a new library. It finds whether you use Zod, Joi, Pydantic, class-validator or something else, and follows the way existing handlers use it."
+  ],
+  "stacks": [],
+  "topics": [
+    "api-design",
+    "security"
+  ],
+  "useWhen": [
+    "A handler reads req.body fields without checking them",
+    "A bug report traces back to a null or wrongly typed value",
+    "You are hardening a public route before launch",
+    "Different routes return different error shapes for bad input"
+  ],
+  "body": "Add request validation to: $ARGUMENTS\n\n1. Read the handler and list every value it takes from the body, query, params and headers, with the type and limits the code assumes.\n2. Find the validation library already in the dependencies and copy how an already validated handler uses it (where the schema lives, how errors are mapped). Never add a second library.\n3. Write the schema: required versus optional, string length caps, numeric ranges, enums, email or UUID formats, and reject unknown keys when the project does so elsewhere.\n4. Run it before any logic, and return the project's standard 400 shape with the field name in each message.\n5. Use the parsed value afterwards, not the raw request.\n6. Add tests: valid input, each missing required field, wrong types, boundary values, and an extra unknown field.\n7. Run tests and lint.\n\nReport each rule you added and why, and mark any limit you had to guess so I can confirm it. Do not change what valid requests return.",
+  "argumentHint": "[handler file or route]",
+  "example": {
+    "prompt": "/add-validation src/api/signup.ts",
+    "result": "Schema added: email (format, max 254), password (12-128), name (1-80, trimmed), plan enum free|pro.\nInvalid input now returns 400 {errors:[{field,message}]}. 9 new tests pass.\nGuessed: name max 80, please confirm."
+  },
+  "faq": [
+    {
+      "question": "What if there is no validation library yet?",
+      "answer": "It tells you so and proposes one that suits your stack, then waits for your decision before installing anything."
+    },
+    {
+      "question": "Does it change responses for valid calls?",
+      "answer": "No. Only invalid requests behave differently, and the tests prove valid ones still pass."
+    }
+  ],
+  "access": [
+    "Reads the handler and dependency manifest",
+    "Edits the handler and test files, then runs the tests"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

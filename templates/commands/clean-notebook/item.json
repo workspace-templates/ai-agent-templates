@@ -1,0 +1,47 @@
+{
+  "slug": "clean-notebook",
+  "title": "Clean Notebook",
+  "kind": "command",
+  "category": "data",
+  "summary": "Cleans a Jupyter notebook: removes dead cells, fixes run order, moves reusable code into modules and checks it runs top to bottom.",
+  "description": [
+    "Notebooks grow messy: cells run out of order, abandoned experiments, hidden state that only works on your machine. This command proves what the notebook really depends on and tidies it into something others can rerun.",
+    "Reusable functions move into a Python module with imports in the notebook, and outputs are cleared. The original is backed up first, so you can always return to it."
+  ],
+  "stacks": [
+    "python"
+  ],
+  "topics": [
+    "refactoring",
+    "python"
+  ],
+  "useWhen": [
+    "When a notebook is about to go to a colleague for review",
+    "The notebook only works if cells are run in a certain secret order",
+    "A notebook has grown past 100 cells of experiments",
+    "You want to commit it without huge output diffs"
+  ],
+  "body": "Clean up the notebook: $ARGUMENTS\n\n1. Copy it to `<name>.backup.ipynb` before touching anything.\n2. Read all cells with `jupyter nbconvert --to script` or by parsing the JSON. List cells that are empty, commented-out experiments, duplicated, or never referenced by later cells.\n3. Find hidden state: variables used before they are defined in file order, cells that depend on a manual run order, and hard-coded absolute paths or credentials. Move paths to variables at the top.\n4. Propose the cleanup list and ask for approval before deleting any cell.\n5. Move functions used by more than one cell into `<name>_lib.py` beside the notebook with docstrings, and import them. Keep exploratory plotting in the notebook.\n6. Order cells: imports, config, load, transform, analyze, plot. Add a short markdown heading before each section.\n7. Clear outputs, then verify with `jupyter nbconvert --to notebook --execute --inplace` on a copy.\n\nReport cells removed, code moved, and whether the notebook runs top to bottom.",
+  "argumentHint": "[path to the .ipynb file]",
+  "example": {
+    "prompt": "/clean-notebook analysis/churn.ipynb",
+    "result": "Backup saved. 112 cells: 19 empty or dead, 7 duplicates, 3 cells rely on state from a later cell.\nMoved 6 functions to churn_lib.py, replaced /Users/me/data with DATA_DIR.\nFresh top-to-bottom run passes in 41s. Apply the deletions?"
+  },
+  "faq": [
+    {
+      "question": "Is my original notebook kept?",
+      "answer": "Yes. A backup copy is made before any edit and the run check uses a copy."
+    },
+    {
+      "question": "Does it delete cells without asking?",
+      "answer": "No. It lists them and waits for your approval first."
+    }
+  ],
+  "access": [
+    "Reads the notebook and creates a backup copy",
+    "Edits the notebook and creates a Python module; executes cells in a test run"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

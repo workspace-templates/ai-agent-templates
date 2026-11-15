@@ -1,0 +1,45 @@
+{
+  "slug": "rename-symbol",
+  "title": "Rename Symbol",
+  "kind": "command",
+  "category": "code-quality",
+  "summary": "Renames a function, class or variable everywhere, including strings, docs and tests, then verifies the build still passes.",
+  "description": [
+    "A rename that misses one reference becomes a runtime error on a rarely used path. This command finds every use, including those a compiler cannot see: string keys, config files, docs, SQL and templates.",
+    "It separates the matches that are really the symbol from lookalikes, applies the change, and finishes by building and testing the project."
+  ],
+  "stacks": [],
+  "topics": [
+    "refactoring",
+    "documentation"
+  ],
+  "useWhen": [
+    "A name no longer says what the thing does",
+    "You are aligning code with new product terms",
+    "A symbol is referenced from config, JSON or templates",
+    "You want a rename that is safe to review in one diff"
+  ],
+  "body": "Rename a symbol: $ARGUMENTS (format: old to new).\n\n1. Confirm the old name's definition and kind (function, class, field, column, env var, route). If the new name already exists in scope, stop and report the clash.\n2. Find all uses with the language server or `grep -rnw` across code, tests, config, docs, scripts, templates, CI files and SQL. Search also for case variants (camelCase, snake_case, kebab-case, UPPER_CASE) and for the name inside strings.\n3. Sort hits into: real references to rename; same word with another meaning (leave); public or persisted names such as an API field, database column, event name or env var, where renaming breaks clients or stored data.\n4. If a public or persisted name is involved, stop and ask first, since it needs a migration or a deprecation alias.\n5. Apply the rename to the real references only. Do not reformat other lines.\n6. Run the type check, build and tests. Grep once more for the old name and explain each remaining hit.\n\nReport the count of changed files and the leftover hits. Ask before committing.",
+  "argumentHint": "[old name] to [new name]",
+  "example": {
+    "prompt": "/rename-symbol getUsr to getUser",
+    "result": "31 references in 14 files renamed (code 22, tests 7, docs 2). Left alone: \"getUsr\" inside a vendored file and a changelog entry.\ntsc and 212 tests pass. No public API names involved.\nCommit?"
+  },
+  "faq": [
+    {
+      "question": "What about names stored in a database?",
+      "answer": "It stops before changing anything persisted or public and asks, because those renames need a migration or an alias."
+    },
+    {
+      "question": "Does it catch uses in strings and docs?",
+      "answer": "Yes. It searches text, config, templates and docs along with code, then separates real references from lookalike words."
+    }
+  ],
+  "access": [
+    "Searches the whole repository",
+    "Edits files containing the symbol, then runs build and tests"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

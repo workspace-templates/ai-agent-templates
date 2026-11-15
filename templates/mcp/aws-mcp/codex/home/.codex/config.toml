@@ -1,0 +1,7 @@
+[mcp_servers.aws-docs]
+command = "uvx"
+args = ["awslabs.aws-documentation-mcp-server@latest"]
+
+[mcp_servers.aws-docs.env]
+FASTMCP_LOG_LEVEL = "${FASTMCP_LOG_LEVEL}"
+AWS_DOCUMENTATION_PARTITION = "${AWS_DOCUMENTATION_PARTITION}"

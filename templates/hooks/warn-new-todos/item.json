@@ -1,0 +1,49 @@
+{
+  "slug": "warn-new-todos",
+  "title": "Warn New Todos",
+  "kind": "hook",
+  "category": "code-quality",
+  "summary": "A Claude Code hook that reports to-do and fix-me marker comments the agent just added, so unfinished work gets finished or called out.",
+  "description": [
+    "An agent in a hurry may leave a marker comment instead of doing the hard part. Once a change is saved, this PostToolUse hook compares the text that went in with the text that came out and lists any to-do or fix-me lines that are new.",
+    "Markers already present are not counted when an edit only moves them. Whole-file writes list every marker in the content, since the old text is not available."
+  ],
+  "stacks": [],
+  "topics": [
+    "code-review",
+    "refactoring"
+  ],
+  "useWhen": [
+    "Catch placeholders left in finished code",
+    "Audit agent output without reading every diff",
+    "Keep a project free of new fix-me notes",
+    "Make unfinished work visible in the session"
+  ],
+  "hook": {
+    "event": "PostToolUse",
+    "matcher": "Edit|Write",
+    "command": "node -e \"process.on('uncaughtException',()=>process.exit(0));let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{let j={};try{j=JSON.parse(d)||{}}catch(e){process.exit(0)}const i=j.tool_input||{};const f=String(i.file_path||'');const fs=require('fs');const rx=new RegExp('(^|[^A-Za-z])(TO'+'DO|FIX'+'ME)([^A-Za-z]|)');const pick=s=>String(s||'').split('\\n').filter(l=>rx.test(' '+l+' '));const edits=Array.isArray(i.edits)?i.edits:[i];const found=[];edits.forEach(x=>{const old=pick(x.old_string).map(l=>l.trim());pick(x.new_string||x.content).forEach(l=>{if(!old.includes(l.trim()))found.push(l.trim().slice(0,100))})});if(found.length){console.error('You added '+found.length+' to-do or fix-me marker(s) in '+(f||'a file')+':\\n'+found.slice(0,5).join('\\n')+'\\nFinish the work now, or tell the user what is left undone and why.');process.exit(2)}process.exit(0)})\"",
+    "timeout": 10
+  },
+  "example": {
+    "prompt": "Implement the password reset email.",
+    "result": "The agent leaves a marker for the token expiry. The hook lists it, and the agent adds the expiry check or asks you."
+  },
+  "faq": [
+    {
+      "question": "Does it detect lowercase markers?",
+      "answer": "No. Only the uppercase words as whole words are matched, which avoids hits in ordinary prose."
+    },
+    {
+      "question": "Can it block the edit?",
+      "answer": "It runs after the edit, so the file is already saved. The message just sends the agent back to the lines."
+    }
+  ],
+  "access": [
+    "Reads the text of each edit from the event",
+    "Reports findings; changes no files"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

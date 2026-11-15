@@ -1,0 +1,79 @@
+{
+  "slug": "clickhouse-mcp",
+  "title": "ClickHouse MCP Server",
+  "kind": "mcp",
+  "category": "data",
+  "summary": "Let your agent run read-only SQL against ClickHouse and browse its databases and tables using ClickHouse's official MCP server.",
+  "description": [
+    "mcp-clickhouse is ClickHouse's own MCP server. It gives the agent three tools: run a query, list databases and list tables, with paging and name filters for large schemas. That is enough to explore an analytics warehouse and draft queries against real column names.",
+    "Queries run with the readonly setting on by default, because CLICKHOUSE_ALLOW_WRITE_ACCESS is false unless you change it. The ClickHouse user's grants remain the real boundary, so connect with an account that can only read."
+  ],
+  "stacks": [],
+  "topics": [
+    "sql"
+  ],
+  "useWhen": [
+    "Explore an unfamiliar events table before writing a report query",
+    "Check a materialized view's output against the raw table",
+    "Find the slowest query patterns from system tables",
+    "Draft an aggregation and test it on a small time window"
+  ],
+  "mcp": {
+    "name": "clickhouse",
+    "transport": "stdio",
+    "command": "uv",
+    "args": [
+      "run",
+      "--with",
+      "mcp-clickhouse",
+      "--python",
+      "3.12",
+      "mcp-clickhouse"
+    ],
+    "env": [
+      {
+        "name": "CLICKHOUSE_HOST",
+        "description": "Hostname of the ClickHouse server."
+      },
+      {
+        "name": "CLICKHOUSE_USER",
+        "description": "A database user. Use one granted SELECT only."
+      },
+      {
+        "name": "CLICKHOUSE_PASSWORD",
+        "description": "Password for that user."
+      },
+      {
+        "name": "CLICKHOUSE_SECURE",
+        "description": "Set to true to connect over HTTPS, which is the default."
+      }
+    ],
+    "headers": [],
+    "source": "https://github.com/ClickHouse/mcp-clickhouse",
+    "access": [
+      "Reads any table the ClickHouse user can select from",
+      "Read-only by default; writes need CLICKHOUSE_ALLOW_WRITE_ACCESS set to true, which this setup leaves off"
+    ]
+  },
+  "example": {
+    "prompt": "In the analytics database, count page_views per day for the last 7 days and note any day that dips below half the average.",
+    "result": "Seven rows returned, averaging 41k views per day. Saturday shows 17k, under half the average, which matches the weekend traffic pattern."
+  },
+  "faq": [
+    {
+      "question": "Can it drop or change tables?",
+      "answer": "Not with the defaults. Writes stay blocked until you set CLICKHOUSE_ALLOW_WRITE_ACCESS, and destructive statements also need CLICKHOUSE_ALLOW_DROP."
+    },
+    {
+      "question": "Do I need uv installed?",
+      "answer": "Yes for this command. The project also documents a pip install with the mcp-clickhouse executable if you prefer that."
+    }
+  ],
+  "access": [
+    "Runs read-only SQL as the ClickHouse user you configure",
+    "Lists databases and tables visible to that user"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

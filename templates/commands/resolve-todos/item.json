@@ -1,0 +1,45 @@
+{
+  "slug": "resolve-todos",
+  "title": "Resolve Todos",
+  "kind": "command",
+  "category": "code-quality",
+  "summary": "Gathers to-do and fix-me comments, ranks them by risk and age, and fixes only the small, safe ones once you approve.",
+  "description": [
+    "Leftover note comments multiply until no one is sure which ones still count. This command gathers every marker in a folder, dates each with its last edit, and sorts them into fix now, ticket it, and delete because stale.",
+    "Only the small, low-risk items get fixed, and only after you pick them. Anything that needs a design decision stays in the report with a suggested owner."
+  ],
+  "stacks": [],
+  "topics": [
+    "refactoring",
+    "code-review"
+  ],
+  "useWhen": [
+    "Ahead of a release, to clear out the pile of note comments",
+    "After inheriting a codebase full of old markers",
+    "During a cleanup day with an hour to spare",
+    "When a FIXME might hide a real bug"
+  ],
+  "body": "Resolve the to-do and fix-me comments in: $ARGUMENTS (whole repository if empty).\n\n1. Run `git grep -n -E \"T[O]DO|FIXME|HACK|XXX\"`, skipping vendored and generated folders.\n2. For each hit, run `git blame -L <line>,<line> <file>` to get its age and author, and read ten lines around it.\n3. Classify every item: **quick** (under 15 minutes, one file, no behavior change to callers), **ticket** (needs design, a decision or several files), **stale** (the code it mentions no longer exists or the issue is already fixed).\n4. Rank by risk: FIXME in error paths, security or data handling first, then age.\n\nPrint a table: file:line, age, class, one-line plan. Do not edit anything yet.\n\nAsk which quick items to fix and which stale comments to delete. Fix only those, one small commit-ready change at a time, and run the tests after each. Remove the comment when its work is done. Never invent a ticket number.",
+  "argumentHint": "[folder, default whole repo]",
+  "example": {
+    "prompt": "/resolve-todos src/billing",
+    "result": "14 markers found. 5 quick, 6 ticket, 3 stale.\nFIXME src/billing/tax.ts:88 (2 years, handles zero-rated items) ranks first.\nQuick: tax.ts:88 add a null check, invoice.ts:41 rename a variable.\nWhich quick items should I fix, and delete the 3 stale ones?"
+  },
+  "faq": [
+    {
+      "question": "Does it fix every note it finds?",
+      "answer": "No. Only items it rates quick and that you approve. Design questions stay listed with a plan."
+    },
+    {
+      "question": "How does it know a comment is stale?",
+      "answer": "It searches for the symbol or issue the note names. If the code is gone or already behaves as the note wanted, it proposes deleting the comment."
+    }
+  ],
+  "access": [
+    "Reads the repository and blame data",
+    "Edits files only for the items you approve"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

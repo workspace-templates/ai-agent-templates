@@ -1,0 +1,44 @@
+{
+  "slug": "performance-profiling",
+  "title": "Performance Profiling",
+  "kind": "skill",
+  "category": "code-quality",
+  "summary": "Finds why code is slow by measuring first: sets a baseline, profiles the hot path, changes one thing and verifies the gain with repeatable numbers.",
+  "description": [
+    "Guessing at performance wastes time on code that was never the problem. This skill refuses to optimize until there is a number, a profile that points at the real cost, and a benchmark you can run again.",
+    "Each change is measured against the baseline, and changes that do not pay off are reverted. You get a short record of what was slow, what was done and how much faster it is."
+  ],
+  "stacks": [],
+  "topics": [
+    "performance",
+    "debugging"
+  ],
+  "useWhen": [
+    "A request, build, test run or script is slower than it should be",
+    "Memory use grows over time",
+    "Someone suggests a clever optimization with no measurements",
+    "You need a before and after for a pull request"
+  ],
+  "body": "# Performance profiling\n\nNo change without a measurement before it and after it.\n\n## Steps\n\n1. Define the metric and target: wall time of one command, p95 latency, memory, queries per request. Write the exact command that produces it.\n2. Build a repeatable benchmark: fixed input, warm-up run, at least 5 runs, report median and spread. Run it on an idle machine and with a production-like build (no debug mode).\n3. Record the baseline and commit it to your notes.\n4. Profile, do not guess. Use the language's tool: `node --cpu-prof` or `clinic`, `py-spy record` or `cProfile`, `go tool pprof`, `perf`, browser Performance panel, database `EXPLAIN ANALYZE`, request tracing. Find the top frames by self time and total time.\n5. Name the hot path in one sentence with its share (\"62% of time is JSON parsing inside loadConfig, called 4,000 times\"). Ignore anything under 5%.\n6. Pick the cheapest fix for the biggest share, in this order: do less work (cache, batch, skip), use a better algorithm or data structure, avoid repeated I/O, then micro-optimize. Change one thing.\n7. Re-run the benchmark. Keep the change only if the gain exceeds the run-to-run spread. Check correctness with the test suite.\n8. Repeat from step 4 until the target is met or the remaining gains are small.\n\n## Rules\n\n- Never trade correctness, readability or safety for a gain under 10% unless asked.\n- Do not profile in a debug build.\n\n## Report\n\nBaseline, target, a table of changes with the measured gain of each, final numbers, and what remains.",
+  "example": {
+    "prompt": "npm run build takes 3 minutes, find out why",
+    "result": "Baseline 182 s median (5 runs, spread 4 s). Profile: 58% in image resizing, run serially for 1,900 files; 14% in a duplicate TypeScript check. Resizing in 8 workers and caching by file hash: 182 s to 71 s. Dropping the duplicate check: 71 s to 62 s. Kept both, tests green. Left alone: font subsetting at 6%."
+  },
+  "faq": [
+    {
+      "question": "Why does it insist on a baseline?",
+      "answer": "Without one you cannot tell a real improvement from noise or from a warm cache. The baseline is also what you show in the pull request."
+    },
+    {
+      "question": "Does it optimize everything it finds?",
+      "answer": "No. It works on the largest share first and stops when the target is met. Small wins that cost clarity are listed and left alone."
+    }
+  ],
+  "access": [
+    "Reads files in your project",
+    "Runs benchmarks and profilers locally, and edits code to apply each fix"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,46 @@
+{
+  "slug": "python-fastapi-rules",
+  "title": "Python FastAPI Rules",
+  "kind": "rules",
+  "category": "backend",
+  "summary": "Project rules for FastAPI services: typed Pydantic models, dependency injection, async-safe database access and consistent error responses.",
+  "description": [
+    "FastAPI makes it easy to write an endpoint and just as easy to write one that blocks the event loop or leaks database rows. These rules fix the structure so every new route looks like the last one.",
+    "They name the layers, say where validation lives and spell out the testing and tooling the agent must run before it calls a change finished."
+  ],
+  "stacks": [
+    "python",
+    "fastapi"
+  ],
+  "topics": [
+    "api-design",
+    "python"
+  ],
+  "useWhen": [
+    "You start a new FastAPI service",
+    "Generated endpoints mix database code and request handling",
+    "You see blocking calls inside async routes",
+    "A team needs one error format for every route"
+  ],
+  "body": "# Project rules: Python FastAPI\n\n## Structure\n- Layers: `routers/` (HTTP only), `services/` (business rules), `repositories/` (database), `schemas/` (Pydantic), `models/` (ORM). A router never talks to the database directly.\n- One router per resource, with `APIRouter(prefix=..., tags=[...])`. Set `response_model`, `status_code` and error responses on every route.\n\n## Typing and validation\n- Python 3.11+, full type hints, `mypy --strict` or pyright clean.\n- Separate input and output schemas (`UserCreate`, `UserRead`). Never return an ORM object or a password hash directly. Use `model_config = ConfigDict(from_attributes=True)`.\n\n## Dependencies and async\n- Use `Depends` for the database session, current user and settings. Settings come from `pydantic-settings`, never from `os.environ` inside routes.\n- Use `async def` only with async drivers. Blocking code (requests, sync ORM, file I/O) goes in `def` routes or `run_in_threadpool`.\n- Commit in the service layer once per request; roll back on error.\n\n## Errors\n- Raise `HTTPException` or a domain error mapped by an exception handler to `{\"error\": {\"code\", \"message\"}}`. Never expose stack traces.\n\n## Tests and tooling\n- pytest with `httpx.AsyncClient`, override dependencies instead of patching. Migrations through Alembic only.\n- Before finishing run `ruff check`, `ruff format`, mypy and `pytest`.",
+  "example": {
+    "prompt": "Add a DELETE endpoint for projects owned by the current user",
+    "result": "The agent adds the route to routers/projects.py, a delete method in the service that checks ownership, a repository call, a 404 for foreign projects and an async test with an overridden current-user dependency."
+  },
+  "faq": [
+    {
+      "question": "Does it assume SQLAlchemy?",
+      "answer": "It assumes a repository layer and works with SQLAlchemy or SQLModel. The async advice applies to either one."
+    },
+    {
+      "question": "Why separate read and create schemas?",
+      "answer": "It stops fields such as ids and password hashes from leaking or being set by the client."
+    }
+  ],
+  "access": [
+    "Instructions only; it does not read or run anything by itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

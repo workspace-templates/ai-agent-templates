@@ -1,0 +1,45 @@
+{
+  "slug": "terraform-module-design",
+  "title": "Terraform Module Design",
+  "kind": "skill",
+  "category": "devops",
+  "summary": "Designs reusable Terraform modules with clear inputs and outputs, a safe state layout, and a plan review before anything is applied.",
+  "description": [
+    "A module that exposes every provider argument is just a worse version of the provider. This skill pushes the agent to decide what the module is for, expose only the choices callers should make, and return the outputs other modules will need.",
+    "It also treats state as part of the design, not an afterthought: where each module is applied, what shares a state file and what must not. The plan is read and summarized before any apply."
+  ],
+  "stacks": [
+    "terraform"
+  ],
+  "topics": [
+    "migrations"
+  ],
+  "useWhen": [
+    "You repeat the same set of resources across environments",
+    "A single state file has become slow and risky to change",
+    "You want a module teammates can use without reading its source",
+    "A plan shows a destroy and you need to understand why"
+  ],
+  "body": "# Terraform module design\n\nA module is an interface. Design the interface before the resources.\n\n## Steps\n\n1. State the module's purpose in one sentence and list who calls it. If you cannot, it is two modules.\n2. Define inputs: typed variables with `description`, `validation` blocks for formats and ranges, and defaults only where one is safe. Prefer a few objects over many loose strings. Leave out arguments no caller needs.\n3. Define outputs for every ID, ARN or endpoint another module could need, each with a `description`. Mark credentials `sensitive = true`.\n4. Structure files as `main.tf`, `variables.tf`, `outputs.tf`, `versions.tf` (with `required_version` and pinned provider ranges), and an `examples/` directory that is applied in CI.\n5. Use `for_each` over a map, not `count` over a list, so removing one item does not recreate the rest. Use `moved` blocks when renaming.\n6. Keep state small: one state per environment and per blast radius, in a remote backend with locking. Modules never configure a backend or a provider.\n7. Run `terraform fmt -check`, `terraform validate`, and `terraform plan`. Read the plan line by line.\n\n## Rules\n\n- Never run `terraform apply` or `destroy` unless the user asks for it in this conversation.\n- Flag every `destroy` or `replace` in the plan, with the attribute that forces it.\n\n## Report\n\nModule interface (inputs and outputs), state layout, and the plan summary: added, changed and destroyed counts.",
+  "example": {
+    "prompt": "Turn the three copies of our VPC code into a module",
+    "result": "Created modules/vpc with 6 inputs (cidr, azs, subnet tiers, nat mode) and 7 outputs, plus an example. Replaced the copies with module calls and added moved blocks. Plan for staging: 0 to add, 0 to destroy, 14 moved. Not applied."
+  },
+  "faq": [
+    {
+      "question": "Will it apply changes?",
+      "answer": "Only if you ask in the conversation. By default it stops at a reviewed plan."
+    },
+    {
+      "question": "Why for_each instead of count?",
+      "answer": "With count, deleting the first list item shifts every index, and Terraform plans to recreate the rest. A map keeps each resource tied to its own key."
+    }
+  ],
+  "access": [
+    "Reads and edits .tf files",
+    "Runs terraform fmt, validate and plan; plan may read remote state with your credentials"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

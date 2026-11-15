@@ -1,0 +1,44 @@
+{
+  "slug": "review-pr",
+  "title": "Review PR",
+  "kind": "command",
+  "category": "git",
+  "summary": "Reviews a pull request by number or link and returns a verdict with blocking issues, optional suggestions and what was checked.",
+  "description": [
+    "A useful review reads the whole change, checks it against the stated goal, and separates must-fix problems from taste. This command fetches the pull request, reads the description, diff and discussion, and writes comments with file and line references.",
+    "It ends with a clear verdict. Nothing is posted to the pull request unless you ask for it."
+  ],
+  "stacks": [],
+  "topics": [
+    "code-review"
+  ],
+  "useWhen": [
+    "A teammate asked you for a review and the diff is large",
+    "You want a first pass before a human reads it",
+    "You review pull requests in a codebase you do not know well",
+    "You want blocking and non-blocking comments kept apart"
+  ],
+  "body": "Review the pull request: $ARGUMENTS (number or URL).\n\n1. Fetch it with `gh pr view <pr> --json title,body,author,baseRefName,files,reviews,comments` and `gh pr diff <pr>`. If `gh` is unavailable, ask for the diff.\n2. Read the description first and state in one sentence what the change should do. Check the diff does that and nothing else.\n3. Read changed files in full where the diff lacks context. Check callers of changed functions with search.\n4. Look for, in order: correctness bugs and unhandled edge cases; security (input handling, secrets, authorization); data loss or migration risk; missing or weak tests; performance traps such as queries in loops; unclear names; leftover debug code.\n5. Check CI status with `gh pr checks <pr>`.\n6. Write each comment as `path:line`, the problem, why it matters and a suggested fix. Mark it **Blocking** or **Optional**.\n\nEnd with a verdict: approve, approve with optional comments, or request changes, plus a short list of what you did not check. Do not post anything; ask first whether to submit with `gh pr review`.",
+  "argumentHint": "[PR number or URL]",
+  "example": {
+    "prompt": "/review-pr 482",
+    "result": "PR 482 \"Add rate limiting to login\": the goal matches the diff.\nBlocking: auth/limiter.ts:41 counts attempts per IP only, so one shared office IP locks everyone out; key on IP plus username.\nOptional: rename `lim` to `limiter`.\nCI passing. Verdict: request changes. Not checked: Redis config in deploy files. Post this review?"
+  },
+  "faq": [
+    {
+      "question": "Does it comment on GitHub by itself?",
+      "answer": "No. It writes the review in the terminal and asks before submitting anything with the gh tool."
+    },
+    {
+      "question": "What if the PR is huge?",
+      "answer": "It says so and suggests reviewing by area. It also lists which files it only skimmed, so you know where to look."
+    }
+  ],
+  "access": [
+    "Reads the pull request, diff and CI status through the gh CLI",
+    "Reads repository files for context; posts only if you ask"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

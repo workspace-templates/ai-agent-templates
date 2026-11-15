@@ -1,0 +1,45 @@
+{
+  "slug": "bug-report-triage",
+  "title": "Bug Report Triage",
+  "kind": "skill",
+  "category": "productivity",
+  "summary": "Triages an incoming bug report, tries to reproduce it, and writes a minimal repro with a severity and the next step for the owner.",
+  "description": [
+    "Bug reports arrive as screenshots, half sentences and 'it just broke'. This skill has the agent turn each one into a verdict: reproduced or not, how bad, and where the problem probably sits, backed by a repro someone else can run in a minute.",
+    "It does not fix the bug. The goal is a report an engineer can pick up without a single follow-up question, or a clear reason why the report cannot move yet."
+  ],
+  "stacks": [],
+  "topics": [
+    "debugging",
+    "documentation"
+  ],
+  "useWhen": [
+    "The issue tracker has reports you cannot act on as written",
+    "Support forwards a customer complaint with no steps",
+    "You need to decide what is urgent and what can wait",
+    "A report might be a duplicate of something already fixed"
+  ],
+  "body": "# Bug report triage\n\nVerdict and repro first. Do not fix the bug in this skill.\n\n## Steps\n\n1. Extract the claims: expected behavior, actual behavior, environment (version, platform, browser, account type), and the steps if any. List what is missing.\n2. Check for duplicates and known fixes: search issues and the changelog for the error text and the feature name, and look at recent commits touching the area. If it is fixed in a newer version, say which.\n3. Try to reproduce on the current main branch. Start from the reporter's steps. Capture exact commands, inputs and output. Try once more with a clean state to rule out leftover data.\n4. If it reproduces, shrink it. Remove steps and data until each remaining one is needed. Aim for a failing test, a script of under ten lines, or at most five manual steps.\n5. If it does not reproduce, say what you tried and in which environment, then list the specific facts that would help: version, logs, request ID, account type, time. Do not close the report yourself.\n6. Locate, lightly. Name the module and the likely cause only if the evidence supports it. Mark the confidence as high, medium or low.\n7. Rate severity. Critical: data loss, security or payment impact, or a total outage. High: a main flow is broken with no workaround. Medium: broken with a workaround. Low: cosmetic or rare. State the number of affected users when the logs show it.\n\n## Rules\n\n- Never edit source code. A repro test goes in a new file or the comment, not in the suite.\n- Never include customer personal data in the report. Replace it with placeholders.\n\n## Report\n\nVerdict (reproduced, not reproduced, duplicate, needs info), severity, minimal repro, suspected area with confidence, and the suggested owner or label.",
+  "example": {
+    "prompt": "Triage this: 'Invoices show the wrong total sometimes. Please fix ASAP.'",
+    "result": "Verdict: reproduced. Severity: high, since totals are wrong on paid invoices. Repro: create an invoice with two lines at 19.99 and quantity 3, apply a 10% discount; the total shows 53.97 and should show 53.97 minus 5.40. Fails when the discount applies after rounding per line. Suspected: src/billing/totals.ts rounds each line before the discount. Confidence medium. Not a duplicate. Label: billing."
+  },
+  "faq": [
+    {
+      "question": "Will it close reports it cannot reproduce?",
+      "answer": "No. It lists exactly what was tried and what information is missing, so the reporter or an engineer decides whether to close."
+    },
+    {
+      "question": "What counts as a minimal repro?",
+      "answer": "The shortest sequence that still fails: a test, a short script or a few steps where removing any step makes the problem disappear."
+    }
+  ],
+  "access": [
+    "Reads files, git history and issue text you provide",
+    "Runs your app, scripts and tests locally to reproduce",
+    "Creates a repro file only when you ask"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

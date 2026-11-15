@@ -1,0 +1,44 @@
+{
+  "slug": "document-function",
+  "title": "Document Function",
+  "kind": "command",
+  "category": "docs",
+  "summary": "Writes a docstring for the selected function in your language and style: inputs, return value, errors raised and a working example.",
+  "description": [
+    "A good docstring answers what a caller needs without reading the body: what goes in, what comes out, what can fail. This command reads the function and the code that calls it, then writes comments that say exactly that.",
+    "It matches the comment format already used in the file, whether JSDoc, Google-style Python or Rust doc comments, and it does not change any code."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation"
+  ],
+  "useWhen": [
+    "A public function has no comment at all",
+    "A parameter is easy to misuse and callers keep guessing",
+    "You are preparing a library for release",
+    "Generated API docs show empty descriptions"
+  ],
+  "body": "Write a docstring for the function: $ARGUMENTS (a name, or the code selected in the editor).\n\n1. Find the function and read its full body. Then search for two or three callers to see how it is really used and what values are passed.\n2. Detect the comment style from the surrounding files: JSDoc or TSDoc, Python Google or NumPy style, Javadoc, Rust `///`, Go doc comments. Copy that format exactly.\n3. Write a first line that says what the function does in one imperative sentence, not its name repeated.\n4. Document every parameter with its type, units and allowed range, and mention defaults and whether null or empty values are accepted.\n5. Document the return value, including shape when it is an object, and side effects such as writes, network calls or mutation of arguments.\n6. List each error or exception it can raise or return, and the condition that causes it. Read the body to find them; do not guess.\n7. Add a short example that really works with the current signature.\n\nChange comments only, never code. Show the new docstring and ask before inserting it.",
+  "argumentHint": "[function name or file:line]",
+  "example": {
+    "prompt": "/document-function parseDuration",
+    "result": "Parses strings like \"1h30m\" into milliseconds. Params: input (string, required, units d h m s, case-insensitive). Returns number. Throws RangeError when the value exceeds 365 days. Example: parseDuration(\"2m\") // 120000. Insert it above the function?"
+  },
+  "faq": [
+    {
+      "question": "Does it change the function itself?",
+      "answer": "Never. Only the comment above the function is added or replaced."
+    },
+    {
+      "question": "How does it pick the format?",
+      "answer": "It copies the doc comment style found in the same file or its neighbors, so the result looks like your other docs."
+    }
+  ],
+  "access": [
+    "Reads the function and its callers",
+    "Edits one comment block after you approve"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

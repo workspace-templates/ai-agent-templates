@@ -1,0 +1,48 @@
+{
+  "slug": "review-terraform-plan",
+  "title": "Review Terraform Plan",
+  "kind": "command",
+  "category": "devops",
+  "summary": "Summarizes a terraform plan in plain words and flags destroys, forced replacements and changes that could cause an outage.",
+  "description": [
+    "Plan output is long, and the line that deletes a database looks the same as the line that adds a tag. This command reads the whole plan and puts the dangerous parts at the top.",
+    "It groups changes by action, explains why a resource is being replaced and checks IAM and network edits for widened access. It only reads the plan and never applies it."
+  ],
+  "stacks": [
+    "terraform"
+  ],
+  "topics": [
+    "devops",
+    "security"
+  ],
+  "useWhen": [
+    "Before approving a pull request that changes infrastructure",
+    "A plan shows many replacements and you do not know why",
+    "You need a short summary for a change review meeting",
+    "After a provider upgrade changed a lot of resources"
+  ],
+  "body": "Review a Terraform plan: $ARGUMENTS (path to a saved plan file or plan text; if empty, create one).\n\n1. If no file is given, run `terraform plan -out=review.tfplan -input=false` in the current folder, then `terraform show -json review.tfplan`. Never run `terraform apply` or `destroy`.\n2. Count resources by action: create, update in place, destroy, replace.\n3. List every destroy and replace first. For each replace, name the attribute marked as forcing replacement. State what the resource holds (data, traffic, state) and whether a lifecycle block such as prevent_destroy exists.\n4. Flag risky edits: security group or firewall rules opening 0.0.0.0/0, IAM policies with wildcards, encryption turned off, public access on buckets, changes to databases or DNS, and tag-only noise that hides real changes.\n5. Note anything computed as \"known after apply\" that other resources depend on.\n\nReport: a one-paragraph verdict (safe, needs care, or stop), then the destroy and replace table, then the risky edits with the file and line from the configuration. Ask whether to open the findings as review comments.",
+  "argumentHint": "[plan file, or leave empty to run a plan]",
+  "example": {
+    "prompt": "/review-terraform-plan tfplan.bin",
+    "result": "Verdict: needs care. 14 changes: 9 create, 3 update, 1 destroy, 1 replace. Replace: aws_db_instance.main, engine_version forces replacement, no prevent_destroy. Also: security group sg-web now allows 0.0.0.0/0 on 22. Post these as review comments?"
+  },
+  "faq": [
+    {
+      "question": "Does it change my infrastructure?",
+      "answer": "No. It reads a plan and may create a plan file, but apply and destroy are never run."
+    },
+    {
+      "question": "Does it need cloud credentials?",
+      "answer": "Only when it has to create the plan itself. Reviewing a saved plan file needs none."
+    }
+  ],
+  "access": [
+    "Reads Terraform files and plan output",
+    "Runs terraform plan and show, never apply",
+    "Writes a local plan file when none is given"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

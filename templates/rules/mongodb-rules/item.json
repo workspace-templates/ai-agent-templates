@@ -1,0 +1,45 @@
+{
+  "slug": "mongodb-rules",
+  "title": "MongoDB Rules",
+  "kind": "rules",
+  "category": "database",
+  "summary": "Project rules for MongoDB: schema design around queries, deliberate indexes, schema validation, projections and no unbounded arrays.",
+  "description": [
+    "MongoDB does not force a schema, so the discipline has to come from the team. These rules ask an agent to design documents around how they are read and to say how each collection can grow.",
+    "They cover indexes, validation and query habits that keep a cluster fast as data accumulates."
+  ],
+  "stacks": [
+    "mongodb"
+  ],
+  "topics": [
+    "performance",
+    "api-design"
+  ],
+  "useWhen": [
+    "You are modeling collections for a new feature",
+    "A document keeps growing because of an array of events",
+    "Queries scan whole collections",
+    "Different writers store the same field in different types"
+  ],
+  "body": "# Project rules: MongoDB\n\n## Schema design\n- Model for the access pattern. Embed data that is read together and changes together; reference data that is shared or large. Write down each collection's read and write queries in a comment or doc.\n- Never let an array grow without bound. Cap it, bucket it by time, or move the items to their own collection with a reference. Keep documents far below the 16 MB limit.\n- Use consistent field names in camelCase, store dates as `Date`, money as integer minor units or `Decimal128`, and ids as `ObjectId`.\n\n## Validation\n- Define a `$jsonSchema` validator for each collection, with required fields and types. Version documents with a `schemaVersion` field and migrate lazily or with scripts.\n\n## Indexes\n- Create an index for every query that matters, following equality, sort, range order. Prefer compound indexes over many single ones, and drop unused ones. Confirm with `explain(\"executionStats\")` that the plan uses an index and examines few documents.\n- Add a TTL index for expiring data.\n\n## Queries\n- Always project only the fields you need and limit results. Use cursor pagination on an indexed field instead of large `skip` values.\n- Do not build filters from raw request objects; allow-list fields to prevent operator injection.\n- Use transactions only when several documents must change together.\n\n## Checks\n- Run tests against a real MongoDB instance, not a mock, and run the migration scripts twice to prove they are idempotent.",
+  "example": {
+    "prompt": "Store comments on a blog post",
+    "result": "The agent puts comments in their own collection with a postId reference and a compound index on postId and createdAt, adds a validator, and uses cursor pagination instead of embedding an array."
+  },
+  "faq": [
+    {
+      "question": "Is embedding always better in MongoDB?",
+      "answer": "No. Embed when data is read together and stays small. Reference it when it is large, shared or grows over time."
+    },
+    {
+      "question": "Why validate if the driver already types things?",
+      "answer": "Several services or scripts may write to the same collection. The validator protects the data from all of them."
+    }
+  ],
+  "access": [
+    "Instructions only; it does not read or run anything by itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

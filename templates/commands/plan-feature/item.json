@@ -1,0 +1,45 @@
+{
+  "slug": "plan-feature",
+  "title": "Plan Feature",
+  "kind": "command",
+  "category": "productivity",
+  "summary": "Plans a feature before any code is written: files to touch, ordered steps, risks and the exact checks that prove it works.",
+  "description": [
+    "Starting to code before the shape is clear leads to rewrites. This command reads the relevant parts of the repository first and then lays out a plan grounded in the code that actually exists.",
+    "The plan is a short document you can edit or approve. No files change until you say go."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation",
+    "refactoring"
+  ],
+  "useWhen": [
+    "You are about to start a feature that touches several modules",
+    "You want a second opinion on the approach before spending hours",
+    "A task needs to be split into small reviewable commits",
+    "You need to hand a clear plan to a teammate or another agent"
+  ],
+  "body": "Plan this feature without writing code: $ARGUMENTS\n\n1. Restate the goal in two sentences and list what is out of scope. If the request is ambiguous, ask up to three questions first and wait.\n2. Explore: find the closest existing feature, read its entry points, data model, tests and routes. Note naming and layering conventions.\n3. Produce the plan:\n   - **Files**: each file to create or change, with one line on why.\n   - **Steps**: ordered, each small enough for one commit, each leaving the build green.\n   - **Data and API changes**: schema, migrations, contracts, feature flags.\n   - **Risks**: what could break, who depends on it, what is irreversible.\n   - **Verification**: tests to add, commands to run, and a manual check.\n4. Name one simpler alternative and why you did not pick it.\n\nKeep the plan under one page. End with \"Approve this plan, or what should change?\" Do not edit any file or run migrations before approval.",
+  "argumentHint": "<feature description>",
+  "example": {
+    "prompt": "/plan-feature let users export their invoices as CSV",
+    "result": "Goal: authenticated export of one account's invoices. Files: routes/invoices.ts, services/exportCsv.ts (new), tests/exportCsv.test.ts. Steps: 1 service with streaming, 2 route and auth, 3 tests. Risk: large accounts, so stream rows. Approve this plan?"
+  },
+  "faq": [
+    {
+      "question": "Does it write any code?",
+      "answer": "Not before you approve. The output is a plan only."
+    },
+    {
+      "question": "How long is the plan?",
+      "answer": "About a page, with steps small enough to become individual commits."
+    }
+  ],
+  "access": [
+    "Reads source files, tests and configuration",
+    "Makes no changes until you approve"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

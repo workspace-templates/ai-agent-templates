@@ -1,0 +1,54 @@
+{
+  "slug": "clickup-mcp",
+  "title": "ClickUp MCP Server",
+  "kind": "mcp",
+  "category": "productivity",
+  "summary": "Connect your agent to ClickUp's hosted MCP server to search, create and update tasks, docs and time entries after an OAuth sign-in.",
+  "description": [
+    "ClickUp offers an official hosted MCP server at mcp.clickup.com. An agent can search tasks, docs and comments, change assignees, priorities and due dates, log time, and write status updates from what it finds.",
+    "Authentication is OAuth only. ClickUp does not accept personal API keys here, so there is no header to configure and no secret to store. Deletion tools are not offered yet."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation"
+  ],
+  "useWhen": [
+    "Search ClickUp for the task that matches a branch name",
+    "Log time against a task when you finish a change",
+    "Summarize the comment thread on a long-running task",
+    "Create follow-up tasks from review comments"
+  ],
+  "mcp": {
+    "name": "clickup",
+    "transport": "http",
+    "url": "https://mcp.clickup.com/mcp",
+    "env": [],
+    "headers": [],
+    "source": "https://developer.clickup.com/docs/connect-an-ai-assistant-to-clickups-mcp-server",
+    "access": [
+      "Reads tasks, docs, lists and comments in your ClickUp Workspace",
+      "Can create and update tasks and log time; no delete tools"
+    ]
+  },
+  "example": {
+    "prompt": "Find the task for the dark mode toggle and set it to In Review.",
+    "result": "Found \"Add dark mode toggle\" in the Web App list, assigned to you. Status changed from In Progress to In Review."
+  },
+  "faq": [
+    {
+      "question": "Can I use my personal API token?",
+      "answer": "No. ClickUp states that the MCP server supports OAuth only, so sign in through your client's browser flow."
+    },
+    {
+      "question": "Are there usage limits?",
+      "answer": "Yes. Calls are counted per Workspace and client over a rolling 24 hours, and the cap depends on your plan, from 100 calls on the free plan upward."
+    }
+  ],
+  "access": [
+    "ClickUp tasks and docs your account can open",
+    "Writes task changes and time entries when asked"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

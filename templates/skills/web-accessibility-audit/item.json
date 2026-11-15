@@ -1,0 +1,43 @@
+{
+  "slug": "web-accessibility-audit",
+  "title": "Web Accessibility Audit",
+  "kind": "skill",
+  "category": "frontend",
+  "summary": "Audits UI code against WCAG 2.2 for keyboard access, labels, contrast and focus handling, and fixes what it finds. Use it on any page or component.",
+  "description": [
+    "Most accessibility failures can be found by reading the markup: a div acting as a button, an input without a label, a modal that never returns focus. This skill checks for those directly in the code before anyone opens a screen reader.",
+    "The output is a list of failures tied to a WCAG criterion and a line of code, each with the corrected snippet, so the fix is a copy and paste rather than a research task."
+  ],
+  "stacks": [],
+  "topics": [
+    "accessibility"
+  ],
+  "useWhen": [
+    "Before shipping a new page, form or dialog",
+    "When a component library gets a new interactive widget",
+    "After a design change to colors or layout",
+    "When a customer or audit reports accessibility issues"
+  ],
+  "body": "# Web accessibility audit\n\nCheck the code against WCAG 2.2 level AA. Prefer native HTML over ARIA.\n\n## Steps\n\n1. Read the component and its styles. Note every interactive element and every image, icon, form field, heading and landmark.\n2. Keyboard (2.1.1, 2.4.7): everything clickable must be a real `button` or `a href`, reachable with Tab, activated with Enter or Space, and show a visible focus ring. Flag `div onClick`, `tabindex>0` and `outline: none` without a replacement.\n3. Names (4.1.2, 1.1.1): each control needs an accessible name: a `label for`, text content or `aria-label`. Icon-only buttons need one. Images need meaningful `alt`, or `alt=\"\"` when decorative.\n4. Forms (3.3.1, 3.3.2): labels visible, errors in text linked with `aria-describedby`, required fields marked in text, no hint text standing in for a label.\n5. Structure (1.3.1): one `h1`, no skipped heading levels, landmarks (`main`, `nav`), lists as lists, tables with `th scope`.\n6. Contrast (1.4.3, 1.4.11): compute ratios from the actual hex values: 4.5:1 for text, 3:1 for large text and UI borders. Do not judge by eye.\n7. Dynamic content: dialogs trap focus and return it on close, `Escape` closes, status messages use `role=\"status\"`, no motion without `prefers-reduced-motion`.\n8. If a dev server is available, tab through the page and run axe or Lighthouse as a second check.\n\n## Report\n\nA table: file:line, criterion, problem, fixed snippet. Apply fixes only when asked; otherwise list them. Say what needs a human with a screen reader.",
+  "example": {
+    "prompt": "Audit the signup form in src/components/Signup.tsx",
+    "result": "6 failures. 3.3.2: the email field relies on hint text as its only label (line 22), fix: add <label for=\"email\">. 1.4.3: the grey helper text #9aa0a6 on white is 2.6:1, use #5f6368 (6.1:1). 4.1.2: the show-password icon button has no name, add aria-label=\"Show password\". Needs manual testing: error announcement in a screen reader."
+  },
+  "faq": [
+    {
+      "question": "Does it replace a screen reader test?",
+      "answer": "No. It catches what the code shows. Announcement order and real-world usability still need a person with assistive technology."
+    },
+    {
+      "question": "Why does it recommend native elements over ARIA?",
+      "answer": "A real button already has focus, keyboard and role behavior. ARIA on a div means you have to rebuild all of it, and it is easy to get wrong."
+    }
+  ],
+  "access": [
+    "Reads files in your project",
+    "Edits markup and styles only when you ask it to fix"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

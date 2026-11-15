@@ -1,0 +1,54 @@
+{
+  "slug": "sentry-mcp",
+  "title": "Sentry MCP Server",
+  "kind": "mcp",
+  "category": "devops",
+  "summary": "Connect your agent to Sentry's hosted MCP server to read issues, stack traces and events for a project and fix the bug behind an alert.",
+  "description": [
+    "Sentry hosts an official MCP server that exposes your organization's issues and events to the agent. Instead of pasting a stack trace, you ask about an issue and the agent reads the trace, the release and the affected users itself.",
+    "Sign-in uses OAuth, so there is no token to store. Scope the URL to one organization and project to keep the agent focused."
+  ],
+  "stacks": [],
+  "topics": [
+    "debugging",
+    "logging"
+  ],
+  "useWhen": [
+    "Fix the bug behind a fresh Sentry alert",
+    "Find the newest unresolved issues in one project",
+    "See which release introduced an error",
+    "Summarize an issue with its stack trace and tags"
+  ],
+  "mcp": {
+    "name": "sentry",
+    "transport": "http",
+    "url": "https://mcp.sentry.dev/mcp",
+    "env": [],
+    "headers": [],
+    "source": "https://mcp.sentry.dev/",
+    "access": [
+      "Reads issues, events and projects in your Sentry account after you sign in",
+      "Authenticates with OAuth; no token is stored in the config"
+    ]
+  },
+  "example": {
+    "prompt": "Show the three most frequent unresolved issues in the web project and find the cause of the top one.",
+    "result": "Top issue: TypeError reading \"id\" of undefined in CartSummary, 412 events since release 2.8.1. The trace points to src/cart/summary.tsx:57 where the cart can be null after logout."
+  },
+  "faq": [
+    {
+      "question": "How do I limit it to one project?",
+      "answer": "Append the organization and project slugs to the URL, for example /mcp/my-org/my-project."
+    },
+    {
+      "question": "Where do I sign in?",
+      "answer": "The first connection opens an OAuth flow in your browser. In Claude Code, run /mcp to start it."
+    }
+  ],
+  "access": [
+    "Reads Sentry issues and events you can access"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

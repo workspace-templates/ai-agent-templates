@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{let j={};try{j=JSON.parse(d)}catch(e){process.exit(0)}const i=j.tool_input||{};const t=[i.content,i.new_string].filter(Boolean).join(' ');const p=[/AKIA[0-9A-Z]{16}/,/gh[pousr]_[A-Za-z0-9]{36,}/,/sk-[A-Za-z0-9_-]{20,}/,/xox[baprs]-[A-Za-z0-9-]{10,}/,/-----BEGIN [A-Z ]*PRIVATE KEY-----/,/AIza[0-9A-Za-z_-]{35}/];if(p.some(r=>r.test(t))){console.error('Blocked: this edit contains what looks like a secret (API key, token or private key). Read it from an environment variable instead.');process.exit(2)}})\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

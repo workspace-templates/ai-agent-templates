@@ -1,0 +1,45 @@
+{
+  "slug": "fix-lint",
+  "title": "Fix Lint Errors",
+  "kind": "command",
+  "category": "code-quality",
+  "summary": "Runs your linter, applies only safe fixes, then lists every remaining finding with a reason so nothing is silenced by accident.",
+  "description": [
+    "Lint cleanups go wrong when a tool is told to fix everything and starts changing behavior or adding disable comments. This command separates mechanical fixes from findings that need a human decision.",
+    "It runs the linter your project already configures, checks that fixes did not break the tests, and leaves the judgment calls in a short list."
+  ],
+  "stacks": [],
+  "topics": [
+    "code-review",
+    "refactoring"
+  ],
+  "useWhen": [
+    "CI fails on lint and you want it green quickly",
+    "You turned on a new rule and have hundreds of hits",
+    "Before a release, to clean up warnings",
+    "After merging a branch with old formatting"
+  ],
+  "body": "Fix lint problems in: $ARGUMENTS (whole project if empty).\n\n1. Find the project's linter from package.json scripts, pyproject.toml, .golangci.yml or CI config. Use its own command, not a different tool. Run it first and record the count of errors and warnings.\n2. Apply the tool's safe autofix only (for example `eslint --fix`, `ruff check --fix`). Do not use unsafe-fix flags.\n3. Fix remaining findings by hand only when the change cannot alter behavior: unused imports and variables, missing await, wrong types in an annotation. Read the surrounding code before each edit.\n4. Never add disable comments, loosen rules or edit the lint config to make errors vanish.\n5. Re-run the linter and the test command. If tests fail, revert the last change and list it instead.\n\nReport: before and after counts, the files changed, and a table of leftover findings with rule, location and why it needs a decision. Do not commit.",
+  "argumentHint": "[path or leave empty for whole project]",
+  "example": {
+    "prompt": "/fix-lint src/",
+    "result": "Before: 43 errors, 12 warnings. After: 5 errors, 0 warnings. Tests pass (212).\nLeft for you:\n- src/api/user.ts:57 no-floating-promises: the call may be fire-and-forget on purpose.\n- src/ui/Table.tsx:19 react-hooks/exhaustive-deps: adding the dependency re-fetches on every render."
+  },
+  "faq": [
+    {
+      "question": "Will it add eslint-disable comments?",
+      "answer": "Never. A finding it cannot fix safely goes on the leftover list."
+    },
+    {
+      "question": "Does it commit the result?",
+      "answer": "No. Review the diff and commit yourself."
+    }
+  ],
+  "access": [
+    "Runs your linter and test command",
+    "Edits source files in the given path"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

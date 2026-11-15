@@ -1,0 +1,44 @@
+{
+  "slug": "git-sync",
+  "title": "Git Sync",
+  "kind": "command",
+  "category": "git",
+  "summary": "Brings your current branch up to date with its upstream by rebase or merge, resolves small conflicts and reports what changed.",
+  "description": [
+    "Falling behind the main branch is routine, and so is picking the wrong way to catch up. This command checks the state of your branch, chooses rebase or merge based on whether the branch is already shared, and does the update.",
+    "Simple conflicts are resolved with an explanation. Anything involving real logic is shown to you instead of guessed."
+  ],
+  "stacks": [],
+  "topics": [
+    "git"
+  ],
+  "useWhen": [
+    "Your feature branch is behind main and the pull request shows conflicts",
+    "You come back to a branch after a few days",
+    "You are unsure whether to rebase or merge",
+    "You want a summary of what others changed while you worked"
+  ],
+  "body": "Sync the current branch with: $ARGUMENTS (its upstream, or origin/main if none).\n\n1. Run `git status` and stop if the tree is dirty; offer `git stash` and wait for approval. Run `git fetch --all --prune`.\n2. Show `git rev-list --left-right --count HEAD...<target>` and the incoming commit subjects.\n3. Choose the method. Rebase if the branch is local or has only your commits. Merge if the branch is pushed and others may have based work on it. State the choice and why.\n4. Run it. On conflict, list the files; resolve only trivial ones (imports, whitespace, adjacent edits) and explain each. Stop and ask on anything touching logic. Never use `--strategy-option theirs` or `ours` blindly.\n5. After a rebase, run the tests. Do not push. If the branch was already pushed and you rebased, say that a `--force-with-lease` push is needed and wait for the user to ask for it.\n\nReport commits applied, files changed upstream, conflicts resolved, and the test result.",
+  "argumentHint": "[branch to sync with, default upstream]",
+  "example": {
+    "prompt": "/git-sync origin/main",
+    "result": "Fetched. 7 commits behind, 2 ahead. Branch is unpushed, so I rebased onto origin/main.\nConflict in src/api/client.ts (import order only): resolved. Tests pass.\nUpstream touched: billing/*, 3 test files, package.json (new dependency date-fns). Push needs --force-with-lease only if you pushed before."
+  },
+  "faq": [
+    {
+      "question": "Will it push for me?",
+      "answer": "No. It updates your local branch and tells you if a force push would be needed, which stays your decision."
+    },
+    {
+      "question": "How does it choose between rebase and merge?",
+      "answer": "By whether the branch has been shared. Private branches get a clean rebase, shared ones get a merge so nobody rewrites history others rely on."
+    }
+  ],
+  "access": [
+    "Runs git fetch, rebase or merge on the current branch",
+    "Edits conflicted files and may stash with your approval"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,46 @@
+{
+  "slug": "symfony-rules",
+  "title": "Symfony Rules",
+  "kind": "rules",
+  "category": "backend",
+  "summary": "Project rules for Symfony apps: autowired services, thin controllers, Doctrine repositories, Form types, Messenger handlers and PHPUnit tests.",
+  "description": [
+    "Symfony gives you many ways to reach the same result, and an agent will pick a different one each time unless told. These rules choose one: attribute routing, constructor autowiring, thin controllers and logic in services.",
+    "They also cover Doctrine, forms and async work with Messenger, and finish with the checks the agent must run before reporting a change as done."
+  ],
+  "stacks": [
+    "php",
+    "symfony"
+  ],
+  "topics": [
+    "api-design",
+    "refactoring"
+  ],
+  "useWhen": [
+    "You are adding features to a Symfony 6 or 7 application",
+    "Generated controllers contain queries and business logic",
+    "Entities are being passed straight into JSON responses",
+    "Slow work should move to a Messenger queue"
+  ],
+  "body": "# Project rules: Symfony\n\n## Structure\n- Keep controllers thin: map the request, call one service, return a response. Use attribute routing and `#[MapRequestPayload]` or `#[MapQueryString]` for input DTOs.\n- Business logic lives in services under `src/Service` or per feature. Inject dependencies through the constructor; never fetch from the container or use static helpers.\n- Use `declare(strict_types=1)`, typed properties and readonly value objects.\n\n## Doctrine\n- Queries belong in repository classes, never in controllers. Select only what you need and fetch-join relations that will be read, to avoid N+1.\n- Change the schema only with migrations from `doctrine:migrations:diff`; read the SQL before committing. Do not call `flush()` inside loops.\n- Do not serialize entities directly. Return DTOs or use serialization groups.\n\n## Forms and validation\n- Put rules on DTOs or entities with Validator constraints. Use Form types for HTML forms, and never trust data that skipped validation.\n\n## Messenger and config\n- Send slow work (mail, exports, webhooks) through Messenger messages with idempotent handlers. Configure retry and a failure transport.\n- Configuration goes in `.env` defaults plus secrets in the vault. Autowire parameters with `#[Autowire]`.\n\n## Tests and checks\n- Use PHPUnit with `WebTestCase` for endpoints and `KernelTestCase` for services. Use fixtures, not production data.\n- Before finishing run `composer validate`, `vendor/bin/phpstan analyse`, `vendor/bin/php-cs-fixer fix --dry-run` and `bin/phpunit`.",
+  "example": {
+    "prompt": "Add an endpoint that lets a customer export their invoices as CSV",
+    "result": "The agent adds a controller action that dispatches an ExportInvoices message, a handler that streams rows from a repository query, a DTO for the filters, and a WebTestCase plus a handler test."
+  },
+  "faq": [
+    {
+      "question": "Does this fit Symfony without Doctrine?",
+      "answer": "Yes. Ignore the Doctrine section; the structure, Messenger and test rules do not depend on an ORM."
+    },
+    {
+      "question": "Why ban the container inside services?",
+      "answer": "Hidden dependencies make a class hard to test and hide what it needs. Constructor injection shows them at a glance."
+    }
+  ],
+  "access": [
+    "Instructions only; it does not read or run anything by itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

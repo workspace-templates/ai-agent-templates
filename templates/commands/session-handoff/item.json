@@ -1,0 +1,46 @@
+{
+  "slug": "session-handoff",
+  "title": "Session Handoff",
+  "kind": "command",
+  "category": "productivity",
+  "summary": "Writes a handoff note covering what was done, what remains, decisions made and the exact commands to resume work.",
+  "description": [
+    "Work stops mid-task all the time: end of day, a teammate takes over, or a fresh agent session starts with no memory. This command captures the state of the work from the repository itself, not from recollection.",
+    "The note names the branch, the changes in progress and the next commands to run, so the next person can continue within minutes."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation",
+    "git"
+  ],
+  "useWhen": [
+    "You are ending the day in the middle of a task",
+    "Another developer will pick up your branch",
+    "You want to restart an agent session without losing context",
+    "A task must pause for a review or an outside dependency"
+  ],
+  "body": "Write a handoff note for the work in this repository. Extra notes: $ARGUMENTS\n\n1. Gather facts: `git branch --show-current`, `git status -sb`, `git log --oneline -n 10`, `git diff --stat`, and `git stash list`. Note unpushed commits and uncommitted files.\n2. Run the test or build command briefly to learn its current state. Record the exact command and result.\n3. Read the changed files enough to describe the work in progress. Find FIXME or HACK markers you added today.\n4. Write the note with these headings:\n   - **Goal** (one sentence)\n   - **Done** (bullets, with commit hashes)\n   - **In progress** (files and what is unfinished)\n   - **Next steps** (ordered; each with the exact command or file to open)\n   - **Decisions and why**\n   - **Gotchas** (flaky tests, env variables, things that look wrong but are not)\n   - **Open questions**\n5. Save it as HANDOFF.md in the repository root only if the user agrees; otherwise print it.\n\nNever commit, push or stash on your own. Ask before writing the file.",
+  "argumentHint": "[extra notes, e.g. waiting on API keys]",
+  "example": {
+    "prompt": "/session-handoff waiting on staging DB access",
+    "result": "Goal: move invoice export to a background job. Done: queue wired (a3f21c9). In progress: worker.ts retries. Next: npm run test:worker, then finish backoff in worker.ts:58. Gotcha: needs REDIS_URL. Save as HANDOFF.md?"
+  },
+  "faq": [
+    {
+      "question": "Does it commit my unfinished work?",
+      "answer": "No. It only describes the state and leaves commits, stashes and pushes to you."
+    },
+    {
+      "question": "Where is the note stored?",
+      "answer": "Printed in chat by default, or in HANDOFF.md if you approve writing it."
+    }
+  ],
+  "access": [
+    "Reads git status, history and changed files",
+    "Runs the project test command once",
+    "Writes HANDOFF.md only after you agree"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

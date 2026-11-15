@@ -1,0 +1,45 @@
+{
+  "slug": "eval-prompt",
+  "title": "Eval Prompt",
+  "kind": "command",
+  "category": "data",
+  "summary": "Runs a prompt against several test inputs and reports which outputs fail your stated criteria, with the evidence for each failure.",
+  "description": [
+    "Changing a prompt without testing it is guesswork. This command takes the prompt and your pass criteria, builds a small set of test inputs including awkward ones, and checks each output against the criteria one by one.",
+    "The report shows what passed, what failed and the exact text that broke the rule, so you can fix the prompt instead of just rewording it again."
+  ],
+  "stacks": [],
+  "topics": [
+    "testing",
+    "documentation"
+  ],
+  "useWhen": [
+    "You changed a system prompt and want to know what got worse",
+    "A prompt works on your example and fails on real data",
+    "You need pass or fail criteria before shipping an AI feature",
+    "Comparing two prompt versions"
+  ],
+  "body": "Evaluate this prompt. Input: $ARGUMENTS (a prompt file path or text, plus the pass criteria).\n\n1. If criteria are missing, write 3 to 6 testable ones (format, length, required facts, tone, refusals) and show them for confirmation. Vague criteria like \"good\" are not allowed.\n2. Build 8 to 12 test inputs: typical cases, empty or very long input, a different language, an injection attempt such as \"ignore previous instructions\", and two cases that should be refused or answered \"unknown\". Use any example data in the repo first.\n3. Run the prompt on each input using the project's own script or the available model tool. Do not call outside services unless the project already does.\n4. Grade each output against each criterion as pass or fail, quoting the failing text.\n5. Report a table: input, criterion, result, quote. Give the pass rate per criterion.\n\nFinish with the two likeliest causes in the prompt and one suggested edit for each. Do not change the prompt file until asked.",
+  "argumentHint": "[prompt file or text] [criteria]",
+  "example": {
+    "prompt": "/eval-prompt prompts/summarize.md must be under 80 words, must name the author, no opinions",
+    "result": "10 inputs. Length 9/10, author named 6/10, no opinions 10/10.\nFails: input 4 (no byline in text, model invented a name: \"by J. Smith\"), input 7 (empty input, wrote a summary of nothing).\nSuggest: add \"if no author, write unknown\". Apply?"
+  },
+  "faq": [
+    {
+      "question": "Does it edit my prompt?",
+      "answer": "Not until you ask. First it only reports failures and suggests fixes."
+    },
+    {
+      "question": "Where do the test inputs come from?",
+      "answer": "It reuses examples in your repository first, then writes edge cases such as empty input and injection attempts."
+    }
+  ],
+  "access": [
+    "Reads the prompt and any example data",
+    "Runs the prompt through the project's own model setup for each test input"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

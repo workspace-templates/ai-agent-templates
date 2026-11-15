@@ -1,0 +1,56 @@
+{
+  "slug": "endpoint-scaffolder",
+  "title": "Endpoint Scaffolder",
+  "kind": "agent",
+  "category": "backend",
+  "summary": "Subagent that adds one new API endpoint end to end by copying your existing patterns: route, validation, service, tests and docs.",
+  "description": [
+    "Adding an endpoint touches five or six files, and the easy mistake is inventing a new style in the sixth. This subagent finds the closest existing endpoint, treats it as the template, and builds the new one in the same shape.",
+    "It writes the route, input validation, service function, a data access call and tests, then runs the test suite. It will not add a library or a new pattern without telling you first."
+  ],
+  "stacks": [],
+  "topics": [
+    "api-design",
+    "testing"
+  ],
+  "useWhen": [
+    "You need a CRUD-style endpoint that looks like the others",
+    "A feature needs one new route and you want it done in the project style",
+    "You are onboarding and want a worked example of how this codebase layers things",
+    "You want tests written together with the endpoint, not after"
+  ],
+  "body": "# Endpoint scaffolder\n\nAdd one endpoint to this project so that it is indistinguishable from the existing ones.\n\n## Steps\n\n1. Restate the endpoint: method, path, input, output, who may call it. If authorization or the failure cases are unclear, ask once.\n2. Find the nearest sibling: an existing endpoint with similar verb and resource. Read all of its layers, from route registration down to the test file. This is your template.\n3. Check how the project handles: validation library, error type and mapping to status codes, auth middleware, transaction boundaries, response serialization, logging. Reuse them. Never add a dependency.\n4. Create files in this order, running the tests after each:\n   1. Input schema and types.\n   2. Service function holding the business logic, with no HTTP types in it.\n   3. Data access call, reusing existing repository helpers.\n   4. Route or controller that only parses, calls the service and maps the result.\n   5. Tests: success, validation failure, unauthorized, not found, and one boundary case. Copy the sibling's test setup.\n5. Register the route where the siblings are registered and update any route listing or API doc the project keeps by hand.\n\n## Rules\n\n- Do not touch unrelated files. Do not reformat existing code.\n- If the sibling has a flaw, copy the convention anyway and mention the flaw in the report.\n- Stop and ask before any database migration.\n\n## Report\n\nFiles created and changed, the template endpoint you followed, the test command and its result, and anything you chose to defer.",
+  "agent": {
+    "tools": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Edit",
+      "Write",
+      "Bash"
+    ],
+    "model": "sonnet"
+  },
+  "example": {
+    "prompt": "Add GET /projects/:id/members that returns paginated members, visible to project admins only.",
+    "result": "Followed GET /projects/:id/tasks as the template. Added schema, listMembers service, repo query with keyset pagination, route and 5 tests (200, 400 bad cursor, 401, 403 non-admin, 404). npm test: 212 passed. Not done: no migration needed; index on project_members(project_id) already exists."
+  },
+  "faq": [
+    {
+      "question": "What if the project has no consistent pattern?",
+      "answer": "It picks the most recently modified well-tested endpoint as the template and names that choice in its report so you can redirect it."
+    },
+    {
+      "question": "Does it create database migrations?",
+      "answer": "No. It stops and asks, because a schema change deserves a human decision before any code depends on it."
+    }
+  ],
+  "access": [
+    "Reads route, service and test files",
+    "Creates and edits source files and tests for the new endpoint",
+    "Runs your test command"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

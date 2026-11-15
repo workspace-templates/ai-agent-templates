@@ -1,0 +1,45 @@
+{
+  "slug": "remove-console-logs",
+  "title": "Remove Console Logs",
+  "kind": "command",
+  "category": "code-quality",
+  "summary": "Finds and removes leftover debug logging and prints while keeping the intentional logger calls and CLI output.",
+  "description": [
+    "Debug prints sneak into commits and end up in production logs, sometimes with data that should never be logged. This command finds them and removes the ones that were clearly for debugging.",
+    "It leaves alone anything that goes through your logger, command-line tools whose job is to print, and test output. Doubtful cases are listed for you instead of deleted."
+  ],
+  "stacks": [],
+  "topics": [
+    "logging",
+    "code-review"
+  ],
+  "useWhen": [
+    "Before opening a pull request after a debugging session",
+    "Production logs are noisy or leak values",
+    "You are cleaning up a service that mixes print and a logger",
+    "A lint rule against console is about to be switched on"
+  ],
+  "body": "Remove leftover debug output in: $ARGUMENTS (whole project if empty).\n\n1. Search for debug output by language: console.log, console.debug, debugger, print(, pprint, var_dump, dd(, puts, fmt.Println, System.out.println, println!, dbg!, and commented-out copies. Skip node_modules, vendor and build folders.\n2. Classify each hit. **Remove:** bare prints of variables, \"here\" or \"test\" markers, dumps of objects, commented-out logging. **Keep:** calls to the project's logger, output in files whose purpose is to print (CLI scripts, build tools), deliberate console.error in a catch, and test helpers.\n3. Flag any hit that logs a token, password, email or full request body as a leak, even if you keep it.\n4. Do not delete a line that has side effects inside the call, such as `console.log(i++)`; mention it instead.\n5. Remove the confirmed ones, tidy now-unused imports and variables, then run the linter and tests.\n\nFirst show a table of hits with file, line, the decision and the reason. Apply only after I say go. Finish with counts removed, kept and flagged.",
+  "argumentHint": "[folder, default whole project]",
+  "example": {
+    "prompt": "/remove-console-logs src/",
+    "result": "38 hits: 29 remove, 7 keep (logger calls, scripts/seed.ts output), 2 questionable.\nLeak risk: src/auth/session.ts:64 logs the full token.\nRemove the 29 and fix the leak?"
+  },
+  "faq": [
+    {
+      "question": "Will it delete my real logging?",
+      "answer": "Calls through your logger and files that exist to print output are kept. Anything doubtful goes in a list for you to decide."
+    },
+    {
+      "question": "Does it deal with secrets in logs?",
+      "answer": "It flags lines that print tokens, passwords or full request bodies, even in places it keeps."
+    }
+  ],
+  "access": [
+    "Searches source files for debug output",
+    "Removes lines only after you confirm the table, then runs lint and tests"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

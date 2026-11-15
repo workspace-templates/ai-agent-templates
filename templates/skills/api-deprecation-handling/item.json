@@ -1,0 +1,45 @@
+{
+  "slug": "api-deprecation-handling",
+  "title": "API Deprecation Handling",
+  "kind": "skill",
+  "category": "code-quality",
+  "summary": "Deprecates a public function or endpoint the careful way: replacement first, runtime warnings, docs, a migration note and a dated removal plan.",
+  "description": [
+    "Removing something people depend on is easy; doing it without surprising them takes a sequence. This skill follows it: ship the replacement, mark the old one, tell users where to go, measure who still uses it and only then delete.",
+    "It applies to library functions, REST endpoints and config options alike, and leaves a short paper trail so the removal date is in writing before anyone hits it."
+  ],
+  "stacks": [],
+  "topics": [
+    "api-design",
+    "documentation"
+  ],
+  "useWhen": [
+    "You are replacing a function that other teams or customers call",
+    "An endpoint will change shape and v1 must live for a while",
+    "You want a clear removal date announced in code, docs and changelog",
+    "You are cleaning up an old option no one is supposed to use anymore"
+  ],
+  "body": "# API deprecation handling\n\nNever remove in the same release that introduces the replacement.\n\n## Steps\n\n1. Define the change: what is old, what replaces it, and who calls it. Search the repo (`grep` or symbol search) for internal callers and list them. For public APIs, check logs or metrics for external use if available.\n2. Confirm the replacement exists, has tests and covers every use case of the old API. If it does not, stop and report the gap.\n3. Mark the old API in the language's own way: `@deprecated` JSDoc, `warnings.warn(..., DeprecationWarning)`, `#[deprecated]`, `[Obsolete]`. For HTTP, add `Deprecation` and `Sunset` headers and a `Link` header pointing at the migration doc.\n4. Keep behavior identical. The old path may delegate to the new one, which also removes duplicate logic.\n5. Emit the warning once per process or per caller, with the replacement name and the removal version or date in the message. Do not flood the logs.\n6. Migrate all internal callers to the replacement in the same change. Check that no internal code triggers the warning.\n7. Write a migration note: before and after code, differences in behavior, and the removal date. Add it to the changelog and the docs page for the old API.\n8. Add a test that the warning fires, and a calendar note or issue for the removal, listing the files to delete.\n\n## Rules\n\n- Choose the removal date at least one release cycle out, longer for public APIs.\n- Do not rename or change arguments of the old API during the deprecation period.\n\n## Report\n\nFiles changed, internal callers migrated, the exact warning text, removal date and the issue link or text for the removal task.",
+  "example": {
+    "prompt": "Deprecate getUser(id) in favor of users.find({ id }), remove in 3 months.",
+    "result": "Marked getUser as deprecated with a warning naming users.find and the removal date 2027-02-15. getUser now delegates to the new method. Migrated 12 internal callers; none trigger the warning. Added MIGRATION.md section and changelog entry, plus a test for the warning. Removal task drafted listing 3 files."
+  },
+  "faq": [
+    {
+      "question": "How long should a deprecation last?",
+      "answer": "At least one full release cycle for internal APIs and several months for public ones. The skill asks you for the date rather than inventing it."
+    },
+    {
+      "question": "Does it remove the old code at the end?",
+      "answer": "No. It prepares the removal task. Deleting waits for the date and for usage to reach zero."
+    }
+  ],
+  "access": [
+    "Reads source, docs and changelog",
+    "Edits code, docs and tests",
+    "Runs your test command"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

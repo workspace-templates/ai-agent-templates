@@ -1,0 +1,47 @@
+{
+  "slug": "setup-github-actions",
+  "title": "Setup GitHub Actions",
+  "kind": "command",
+  "category": "devops",
+  "summary": "Creates a GitHub Actions workflow that installs with a cache, runs lint, tests and build, and uses least-privilege permissions.",
+  "description": [
+    "A good CI file is short, fast and strict about what it can touch. This command reads your project to find the real install, lint, test and build commands, then writes a workflow that runs them in a sensible order.",
+    "It pins action versions, turns on dependency caching and limits the token to read access. Nothing is committed or pushed."
+  ],
+  "stacks": [
+    "github-actions"
+  ],
+  "topics": [
+    "ci",
+    "devops"
+  ],
+  "useWhen": [
+    "A repository has no CI yet",
+    "Your current workflow takes ten minutes because nothing is cached",
+    "You want pull requests blocked on lint and tests",
+    "You are moving from another CI service"
+  ],
+  "body": "Set up GitHub Actions CI for this project. Extra requirements: $ARGUMENTS\n\n1. Check `.github/workflows/` for existing files. If a CI workflow exists, propose edits instead of a new file.\n2. Read the manifest and scripts to find the exact commands for install, lint, typecheck, test and build. Find the language version from .nvmrc, .python-version, go.mod or the engines field, and use it.\n3. Write `.github/workflows/ci.yml` triggered on pull_request and on push to the default branch. Set `permissions: contents: read` at the top, add a `concurrency` group that cancels older runs of the same branch, and set `timeout-minutes`.\n4. Use the official setup action for the language with its built-in cache option, and install with the lockfile command (`npm ci`, `pip install -r`, `go mod download`).\n5. Run lint and tests as separate steps so a failure shows which one broke. Upload test reports only when the project already produces them.\n6. Pin third-party actions to a major version tag, or a commit SHA for non-GitHub publishers.\n\nShow the file and list the secrets it would need (none, ideally). Ask before saving, and do not commit.",
+  "argumentHint": "[extras, e.g. matrix of Node versions]",
+  "example": {
+    "prompt": "/setup-github-actions test on Node 20 and 22",
+    "result": "Proposed ci.yml: jobs lint and test (matrix 20, 22), npm cache enabled, permissions read-only, concurrency cancels stale runs. No secrets needed. Estimated run time with warm cache: about 2 minutes. Save the file?"
+  },
+  "faq": [
+    {
+      "question": "Does it push the workflow for me?",
+      "answer": "No. It writes the file after you agree and leaves committing and pushing to you."
+    },
+    {
+      "question": "Can it add deployment steps?",
+      "answer": "It sets up checks only. Deploy jobs need secrets and environments that you should design on purpose."
+    }
+  ],
+  "access": [
+    "Reads manifests, scripts and existing workflows",
+    "Writes one workflow file after you approve"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,46 @@
+{
+  "slug": "mysql-query-tuning",
+  "title": "MySQL Query Tuning",
+  "kind": "skill",
+  "category": "database",
+  "summary": "Finds slow MySQL queries in the slow log, reads EXPLAIN, and fixes them with correctly ordered composite indexes and query rewrites.",
+  "description": [
+    "MySQL tuning pays off when you start from the slow log, not from the query someone suspects. This skill ranks queries by total time, then fixes the worst ones with indexes and rewrites you can verify.",
+    "Special attention goes to column order in composite indexes, which decides whether an index helps at all."
+  ],
+  "stacks": [
+    "mysql"
+  ],
+  "topics": [
+    "sql",
+    "performance"
+  ],
+  "useWhen": [
+    "The database CPU is high and nobody knows which query causes it",
+    "A page that lists records got slow as the table grew",
+    "EXPLAIN shows type ALL or Using filesort",
+    "You need to decide the column order for a composite index"
+  ],
+  "body": "# MySQL query tuning\n\nRank first, then fix the top offenders only.\n\n## Steps\n\n1. Enable the slow log (`slow_query_log=1`, `long_query_time=0.2`) or read `performance_schema.events_statements_summary_by_digest`. Sort by total time, not by single worst run.\n2. For each top query, run `EXPLAIN FORMAT=TREE` (or `EXPLAIN ANALYZE` on 8.0). Note the access type, rows examined versus rows returned, and any `Using filesort` or `Using temporary`.\n3. Design the composite index with this order: equality columns first, then the one range column, then sort columns. A column after a range condition cannot be used for seeking.\n4. Prefer covering indexes for hot read paths so InnoDB never touches the clustered row. Remember secondary indexes carry the primary key.\n5. Rewrite where the index cannot help:\n   - Remove functions on indexed columns (`WHERE DATE(created_at) = ...` becomes a range).\n   - Fix implicit casts: compare strings to strings, and match collations.\n   - Replace deep `OFFSET` pagination with keyset pagination (`WHERE id < ?` ORDER BY id DESC LIMIT n).\n   - Turn `SELECT *` into named columns.\n6. Add the index online (`ALGORITHM=INPLACE, LOCK=NONE`) and re-run EXPLAIN plus the real query timing.\n7. Drop redundant prefixes: an index on (a) is covered by (a, b).\n\n## Rules\n\n- Change one thing at a time and keep the timings.\n- Do not raise buffer sizes as a first move.\n- Never alter a large table on production without a tested plan.\n\n## Report\n\nEach query with rows examined before and after, the index added and the timing.",
+  "example": {
+    "prompt": "The notifications list endpoint is timing out",
+    "result": "Slow log showed WHERE user_id = ? AND read_at IS NULL ORDER BY created_at DESC LIMIT 50 scanning 1.8M rows. Added (user_id, read_at, created_at); rows examined fell from 1.8M to 50, p95 from 3.2 s to 9 ms. Replaced OFFSET paging with a created_at cursor."
+  },
+  "faq": [
+    {
+      "question": "Why does column order in an index matter?",
+      "answer": "MySQL walks the index left to right. After a range condition, later columns can no longer narrow the search, so order decides how much is skipped."
+    },
+    {
+      "question": "Is the query cache an option?",
+      "answer": "It was removed in MySQL 8.0. Cache in the application or a store like Redis instead."
+    }
+  ],
+  "access": [
+    "Reads code and query logs you provide",
+    "Runs EXPLAIN and read-only statements on the database you connect it to"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

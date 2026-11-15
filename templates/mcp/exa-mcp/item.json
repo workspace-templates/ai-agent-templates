@@ -1,0 +1,64 @@
+{
+  "slug": "exa-mcp",
+  "title": "Exa MCP Server",
+  "kind": "mcp",
+  "category": "productivity",
+  "summary": "Add Exa's hosted MCP server so your agent can run neural web search and fetch full page contents with web_search_exa and web_fetch_exa.",
+  "description": [
+    "Exa is a search engine built for AI use, and its hosted MCP server exposes two tools by default: web_search_exa for finding pages and web_fetch_exa for pulling a page's text. Optional tools such as web_search_advanced_exa can be switched on with a tools parameter on the URL.",
+    "This setup sends your Exa API key in the x-api-key header. Exa also supports OAuth, which you can use instead by leaving the header out and signing in through the client."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation"
+  ],
+  "useWhen": [
+    "Look up current library docs and release notes while coding",
+    "Find real-world examples of an API call you are unsure about",
+    "Read the full text of a page the agent found by search",
+    "Research a vendor or a standard before choosing it"
+  ],
+  "mcp": {
+    "name": "exa",
+    "transport": "http",
+    "url": "https://mcp.exa.ai/mcp",
+    "env": [],
+    "headers": [
+      {
+        "name": "x-api-key",
+        "value": "${EXA_API_KEY}",
+        "description": "Your Exa API key"
+      }
+    ],
+    "source": "https://github.com/exa-labs/exa-mcp-server",
+    "access": [
+      "Sends search queries and URLs to Exa's servers",
+      "Returns web page text to the agent; changes nothing on your machine"
+    ]
+  },
+  "example": {
+    "prompt": "Search for the migration guide from Express 4 to 5 and list the breaking changes.",
+    "result": "Found the official migration page. Main changes: removed app.del, path-to-regexp stricter syntax, req.query is a getter, promise rejections reach the error handler."
+  },
+  "faq": [
+    {
+      "question": "Where do I get a key?",
+      "answer": "Create one in your Exa dashboard and export it as EXA_API_KEY before starting the agent."
+    },
+    {
+      "question": "Can I skip the key?",
+      "answer": "Exa lists OAuth as its preferred route. Remove the header and use your client's sign-in flow for the same URL."
+    },
+    {
+      "question": "How do I enable more tools?",
+      "answer": "Add a tools parameter to the URL listing every tool you want, for example web_search_exa and web_search_advanced_exa. The list replaces the defaults."
+    }
+  ],
+  "access": [
+    "Search queries and fetched URLs go to Exa",
+    "Read-only for your files and accounts"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

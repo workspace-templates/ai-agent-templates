@@ -1,0 +1,21 @@
+# Project rules: Flutter
+
+## Layout
+- Organize by feature: `lib/features/<name>/{data,domain,presentation}`, with shared code in `lib/core`. Keep `main.dart` to bootstrapping.
+- Enable `flutter_lints` or stricter in `analysis_options.yaml` and fix every warning.
+
+## State
+- Choose one solution per app (Riverpod or Bloc) and use it everywhere. Keep `setState` for purely local, ephemeral UI state.
+- State classes are immutable. Widgets read state and call methods; they do not call repositories or HTTP directly.
+
+## Widgets
+- Prefer small widget classes over helper methods returning widgets. Mark constructors and literals `const`.
+- Use `ListView.builder` for long lists, give items keys when order changes, and dispose controllers, focus nodes and subscriptions.
+- Never use `BuildContext` after an `await` without checking `mounted`.
+
+## Theming and text
+- Define colors, typography and spacing in `ThemeData` and extensions; read them via `Theme.of(context)`. Put user-facing strings in localization files.
+
+## Quality
+- Write unit tests for logic and widget tests with `pumpWidget` for screens. Use golden tests sparingly.
+- Run `dart format --set-exit-if-changed .`, `flutter analyze` and `flutter test` before finishing.

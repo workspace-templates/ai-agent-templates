@@ -1,0 +1,21 @@
+# Project rules: React Native with Expo
+
+## Structure
+- Expo Router with the `app/` directory for screens. Shared UI in `components/`, hooks in `hooks/`, API code in `lib/`. TypeScript strict, no `any`; use typed routes.
+- Prefer Expo SDK packages (`expo-image`, `expo-secure-store`, `expo-file-system`) over community modules. Install with `npx expo install` so versions match the SDK. Do not add a library that needs native code without asking.
+
+## UI
+- Use `StyleSheet.create` or the project's styling library, never inline style objects in hot paths. Wrap screens in `SafeAreaView`, handle the keyboard, and respect dark mode through `useColorScheme`.
+- Every touch target is at least 44 by 44 points, with `accessibilityLabel` and `accessibilityRole`.
+- Check both iOS and Android; use `Platform.select` only when behavior truly differs.
+
+## Performance
+- Long lists use `FlatList` or FlashList with stable `keyExtractor`, memoized row components and no anonymous functions in `renderItem`. Never map a long array inside a `ScrollView`.
+- Use `expo-image` with sizes; avoid re-renders by keeping state local.
+
+## Data and secrets
+- Tokens go in `expo-secure-store`, never AsyncStorage. Anything in `EXPO_PUBLIC_` variables ships in the app, so never put secrets there.
+- Fetch with TanStack Query; show loading, error and offline states.
+
+## Done means
+`npx tsc --noEmit`, `npx expo lint` and `npx expo-doctor` pass. Builds use EAS profiles from eas.json.

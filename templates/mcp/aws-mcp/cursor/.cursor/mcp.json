@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "aws-docs": {
+      "command": "uvx",
+      "args": [
+        "awslabs.aws-documentation-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "${env:FASTMCP_LOG_LEVEL}",
+        "AWS_DOCUMENTATION_PARTITION": "${env:AWS_DOCUMENTATION_PARTITION}"
+      }
+    }
+  }
+}

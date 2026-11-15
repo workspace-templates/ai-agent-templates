@@ -1,0 +1,46 @@
+{
+  "slug": "typescript-strict-migration",
+  "title": "TypeScript Strict Migration",
+  "kind": "skill",
+  "category": "code-quality",
+  "summary": "Moves a TypeScript project to strict mode one compiler flag at a time, fixing each wave of errors with real types instead of any casts or ts-ignore.",
+  "description": [
+    "Switching on \"strict\" in one step gives you thousands of errors and a pull request nobody can review. This skill enables the flags one by one, in an order that keeps each batch small, and commits a clean build after every flag.",
+    "The fixes are honest ones: narrowing, proper types and handled null cases. Casting to any or silencing with a comment is treated as a failure, not a shortcut."
+  ],
+  "stacks": [
+    "typescript"
+  ],
+  "topics": [
+    "typescript",
+    "refactoring"
+  ],
+  "useWhen": [
+    "tsconfig has strict set to false and you want it on",
+    "A new package must start strict while the old code stays as is",
+    "Runtime errors keep coming from undefined values the compiler could catch",
+    "You want the migration split into reviewable steps"
+  ],
+  "body": "# TypeScript strict migration\n\nThe aim is a green `tsc --noEmit` after every flag, with no new escape hatches.\n\n## Steps\n\n1. Read `tsconfig.json` (and any extended config). Run `npx tsc --noEmit` and record the baseline error count. Count existing `any`, `@ts-ignore` and `as unknown as` so you can show they did not grow.\n2. Enable flags in this order, running `tsc` after each: `noImplicitAny`, `strictNullChecks`, `strictFunctionTypes`, `strictBindCallApply`, `strictPropertyInitialization`, `noImplicitThis`, `useUnknownInCatchVariables`, `alwaysStrict`. When all are on, replace them with `\"strict\": true`.\n3. For each flag, group errors by file and fix the leaf modules first (utilities, types), then the code that uses them.\n4. Fix with real types:\n   - Missing annotations: write the type from how the value is used; derive it with `typeof` or `ReturnType` when possible.\n   - Possibly null: narrow with a check or an early return. Use `?.` and `??` only when the fallback is correct.\n   - Catch variables: narrow with `instanceof Error`.\n   - Uninitialized properties: initialize in the constructor or mark optional; use `!` only with a comment naming the guarantee.\n5. If a flag yields over 150 errors, split by directory and use a per-folder tsconfig that extends the base.\n6. Run the tests and the linter before moving to the next flag.\n\n## Rules\n\n- Never add `any`, `@ts-ignore` or a blanket non-null `!` to clear an error.\n- Do not change runtime behavior; if a fix needs a behavior change, report it.\n\n## Report\n\nPer flag: errors fixed, files touched, and the final counts of any and ignores compared with the start.",
+  "example": {
+    "prompt": "Turn on strict for this project, one flag at a time.",
+    "result": "Baseline: 0 errors, strict off. noImplicitAny: 62 errors fixed in 14 files. strictNullChecks: 188 errors, split into 3 steps by folder; found 2 real bugs where `user.email` could be undefined in the mailer. Now `\"strict\": true`, tsc clean, tests pass. any count 9 to 4, no new ts-ignore."
+  },
+  "faq": [
+    {
+      "question": "Why not enable strict and fix everything together?",
+      "answer": "The diff becomes too big to review and a single bad fix hides among hundreds. Flag by flag keeps every step revertable."
+    },
+    {
+      "question": "What if a library has bad types?",
+      "answer": "The skill writes a small local declaration or wrapper with accurate types and notes it in the report, rather than casting at each call site."
+    }
+  ],
+  "access": [
+    "Reads and edits TypeScript files and tsconfig.json",
+    "Runs tsc, your linter and your tests"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

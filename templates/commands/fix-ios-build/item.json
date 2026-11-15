@@ -1,0 +1,47 @@
+{
+  "slug": "fix-ios-build",
+  "title": "Fix iOS Build",
+  "kind": "command",
+  "category": "mobile",
+  "summary": "Diagnoses an Xcode build or code signing failure from the error output and applies the smallest fix that makes it build.",
+  "description": [
+    "Xcode errors are long and the real cause is often buried near the top. This command runs the build from the terminal, reads the first genuine error and separates compiler issues, dependency problems and signing mismatches.",
+    "It fixes source and project settings that are safely reversible, and asks before touching certificates, profiles or anything in your keychain."
+  ],
+  "stacks": [
+    "swift"
+  ],
+  "topics": [
+    "debugging",
+    "ci"
+  ],
+  "useWhen": [
+    "Archive or CI build fails with a signing or provisioning error",
+    "A Swift Package or CocoaPods update broke the build",
+    "The app builds in Xcode but fails with xcodebuild",
+    "You see a wall of linker errors and need the root cause"
+  ],
+  "body": "Fix the iOS build failure. Scheme or error text: $ARGUMENTS\n\n1. Find the project: `ls *.xcworkspace *.xcodeproj`. Prefer the workspace. List schemes with `xcodebuild -list`.\n2. Reproduce: `xcodebuild -scheme <scheme> -destination 'generic/platform=iOS Simulator' build 2>&1 | tail -n 80`. If the user pasted an error, start from it but still reproduce.\n3. Find the first \"error:\" line, not the last. Classify it:\n   - Compiler: open the file and fix the code.\n   - Dependency: check Package.resolved, Podfile.lock and the minimum deployment target.\n   - Signing: compare the bundle id, team and profile with `security find-identity -v -p codesigning` and the target's signing settings.\n   - Linker: look for missing frameworks, duplicate symbols, architecture exclusions.\n4. Apply the smallest fix and rebuild. Stop after three failed attempts and report what you learned.\n\nDo not delete DerivedData, change the team, or edit certificates or profiles without asking. Report the cause, the change, and the build result.",
+  "argumentHint": "[scheme name or pasted error]",
+  "example": {
+    "prompt": "/fix-ios-build Release",
+    "result": "First error: \"No profile for team matching com.acme.app\" in the Release configuration. Debug uses automatic signing but Release is manual with an expired profile name. Switch Release to automatic signing for team ABCDE12345?"
+  },
+  "faq": [
+    {
+      "question": "Will it change my certificates?",
+      "answer": "No. It inspects what is installed and asks before any signing change."
+    },
+    {
+      "question": "Does it need a Mac?",
+      "answer": "Yes, xcodebuild only runs on macOS with Xcode installed."
+    }
+  ],
+  "access": [
+    "Runs xcodebuild and read-only security commands",
+    "Edits Swift sources and project settings after explaining the change"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,49 @@
+{
+  "slug": "block-large-writes",
+  "title": "Block Large Writes",
+  "kind": "hook",
+  "category": "code-quality",
+  "summary": "A Claude Code hook that rejects Write calls over a size limit, which catches runaway generated files before they land in your repository.",
+  "description": [
+    "A model that loops can paste a huge blob into a single file, such as a minified bundle or a repeated table. This PreToolUse hook measures the content of each Write call and refuses anything over 200 KB.",
+    "Set the MAX_WRITE_KB environment variable to move the limit. Smaller writes and Edit calls are untouched."
+  ],
+  "stacks": [],
+  "topics": [
+    "code-review",
+    "performance"
+  ],
+  "useWhen": [
+    "Stop a stuck loop from filling a file with repeated text",
+    "Keep pasted data dumps out of the repo",
+    "Catch an agent writing a bundle by hand",
+    "Add a cheap size cap on every new file"
+  ],
+  "hook": {
+    "event": "PreToolUse",
+    "matcher": "Write",
+    "command": "node -e \"process.on('uncaughtException',()=>process.exit(0));let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{let j={};try{j=JSON.parse(d)||{}}catch(e){process.exit(0)}const i=j.tool_input||{};const f=String(i.file_path||'');const fs=require('fs');const c=i.content;if(typeof c!=='string')process.exit(0);const kb=Number(process.env.MAX_WRITE_KB)||200;const n=Buffer.byteLength(c)/1024;if(n>kb){console.error('Blocked: this write is '+Math.round(n)+' KB, over the '+kb+' KB limit. Write a smaller file, split it, or generate it with a script instead of pasting its text.');process.exit(2)}process.exit(0)})\"",
+    "timeout": 10
+  },
+  "example": {
+    "prompt": "Write the full vendor library inline into src/lib.js.",
+    "result": "The write is blocked with its size and the limit. The agent installs the package or splits the content instead."
+  },
+  "faq": [
+    {
+      "question": "How do I change the limit?",
+      "answer": "Set MAX_WRITE_KB to a number of kilobytes in the environment that starts Claude Code. Without it the cap is 200."
+    },
+    {
+      "question": "Does it check edits too?",
+      "answer": "No, only whole-file Write calls carry full content, so that is the only tool it watches."
+    }
+  ],
+  "access": [
+    "Reads the content sent to the Write tool",
+    "Blocks oversized writes; writes nothing itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

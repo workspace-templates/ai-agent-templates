@@ -1,0 +1,44 @@
+{
+  "slug": "ci-pipeline-speedup",
+  "title": "CI Pipeline Speedup",
+  "kind": "skill",
+  "category": "devops",
+  "summary": "Measures where a CI pipeline spends its time, then cuts minutes with caching, parallel jobs and skipping work that did not change.",
+  "description": [
+    "A slow pipeline is rarely slow everywhere. Usually two or three steps eat most of the clock, and the rest is waiting. This skill starts from timings, not hunches: it reads recent run durations, ranks the steps, and only then proposes changes.",
+    "Each change comes with an estimate of the minutes it saves and the risk it adds. Nothing that weakens a check is applied without saying so."
+  ],
+  "stacks": [],
+  "topics": [
+    "ci",
+    "performance"
+  ],
+  "useWhen": [
+    "Developers wait more than ten minutes for a green check",
+    "The CI bill or queue time keeps climbing",
+    "Documentation-only changes still run the full test suite",
+    "You suspect dependencies are downloaded from scratch on every run"
+  ],
+  "body": "# CI pipeline speedup\n\nMeasure first. Optimize only the steps that dominate the run.\n\n## Steps\n\n1. Get timings for the last 10 to 20 runs of the main pipeline: the CI provider's CLI or API, or the run logs. Record per-job and per-step duration, and the median.\n2. Rank steps by total time. Ignore anything under 5 percent of the run.\n3. For each top step, find the cause: cold dependency install, rebuilt artifacts, a serial test suite, a large checkout, or an oversized image pull.\n4. Apply the matching fix:\n   - cache dependencies and build output, keyed on lockfile and config hashes\n   - shallow checkout (`fetch-depth: 1`) unless history is needed\n   - shard the test suite across parallel jobs and balance by past duration\n   - path filters so docs-only changes skip the tests\n   - run lint and unit tests before slow integration jobs, and cancel superseded runs\n5. Re-run twice and compare the median to the baseline. A cache only shows its value on the second run.\n\n## Rules\n\n- Never remove a check, lower coverage or mark a flaky test as allowed-to-fail to save time. Quarantine it and report it.\n- Keep a cache key specific enough that stale output cannot be restored.\n- Change one thing at a time so each saving is attributable.\n\n## Report\n\nA table of step, before, after and change made, the new median run time, and any risk you accepted.",
+  "example": {
+    "prompt": "Our pipeline takes 22 minutes. Find the waste.",
+    "result": "Baseline median 22m10s. Test job 12m (serial), dependency install 4m (no cache), Docker build 3m. Added npm cache (install 4m to 40s), split tests into 4 shards (12m to 3m30s) and added a path filter for docs. New median: 8m45s. Risk: shard balance needs a refresh every few weeks."
+  },
+  "faq": [
+    {
+      "question": "Does it need access to my CI provider?",
+      "answer": "It works from whatever you can show it: the provider CLI if installed, pasted run logs, or the workflow files alone. Real timings give better results than guesses."
+    },
+    {
+      "question": "What if my tests are flaky?",
+      "answer": "It reports them separately and suggests quarantining, because parallel shards make flaky tests fail more visibly, not less."
+    }
+  ],
+  "access": [
+    "Reads CI configuration files and project scripts",
+    "Can run read-only CI provider CLI commands to list recent runs"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

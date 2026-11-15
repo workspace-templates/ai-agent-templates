@@ -1,0 +1,45 @@
+{
+  "slug": "check-auth",
+  "title": "Check Auth",
+  "kind": "command",
+  "category": "security",
+  "summary": "Walks every route and handler in an area and confirms each one checks who the caller is and what they may do.",
+  "description": [
+    "Most access-control bugs are a single missing check on one forgotten route. This command lists every handler in the area you name and, for each, shows where authentication happens and where authorization is decided.",
+    "It pays special attention to object ownership, since fetching a record by id without checking the owner is the classic leak. The output is a matrix you can review in minutes."
+  ],
+  "stacks": [],
+  "topics": [
+    "security",
+    "api-design"
+  ],
+  "useWhen": [
+    "After adding new endpoints or admin screens",
+    "Before opening an API to outside clients",
+    "When roles or tenants were added to an existing app",
+    "During a review of a multi-tenant feature"
+  ],
+  "body": "Check authentication and authorization for: $ARGUMENTS (all routes if empty).\n\n1. Find the route table or controllers for that area and list every handler with its method and path.\n2. For each, record: how the caller is authenticated (middleware, decorator, guard, session check, none), and what authorization is applied (role check, permission, ownership check, none).\n3. For handlers that load a record by id, read the query and confirm it is scoped to the caller or tenant. Flag any lookup that uses only the id from the request.\n4. Look at the defaults: does a new route get protection automatically, or must someone remember to add it? Flag public routes that were clearly meant to be private (admin, export, internal, debug).\n5. Check that checks happen on the server and not only in the UI, and that failures return 401 or 403 rather than empty data.\n\nDo not edit code. Report a matrix of route, auth, authz, ownership check, and verdict (ok, weak, missing), with the worst gaps first and a one-line fix each. Ask which gaps to patch.",
+  "argumentHint": "[route folder, controller or area name]",
+  "example": {
+    "prompt": "/check-auth src/routes/invoices",
+    "result": "6 handlers checked.\nok: GET /invoices (auth + tenant scope)\nmissing: GET /invoices/:id loads by id only, any logged-in user can read any invoice.\nweak: DELETE /invoices/:id checks login but not the admin role.\nPatch the two gaps?"
+  },
+  "faq": [
+    {
+      "question": "Does it test the running app?",
+      "answer": "No. It reads the code. For live verification, pair its matrix with an integration test."
+    },
+    {
+      "question": "Which frameworks does it work with?",
+      "answer": "Any. It looks for middleware, guards and decorators in whatever form your framework uses."
+    }
+  ],
+  "access": [
+    "Reads route, middleware and model code",
+    "Edits only after you approve a fix"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,45 @@
+{
+  "slug": "secrets-scanning-cleanup",
+  "title": "Secrets Scanning Cleanup",
+  "kind": "skill",
+  "category": "security",
+  "summary": "Finds API keys and passwords committed to a repository, plans their rotation, removes them from history and adds a check against repeats.",
+  "description": [
+    "A leaked key is only fixed when it is revoked. Deleting the line in a new commit leaves the secret in history, in forks and in every clone. This skill puts the steps in the right order: find, rotate, then clean history, then prevent.",
+    "It never prints a full secret in its output, and it asks before any rewrite of shared history. The last step adds a pre-commit and CI scan so the same mistake is caught next time."
+  ],
+  "stacks": [],
+  "topics": [
+    "security",
+    "git"
+  ],
+  "useWhen": [
+    "A key or token showed up in a pull request or a public repo",
+    "You are about to open source a private repository",
+    "A scanner alert says a credential was found in history",
+    "You want a guard so nobody commits .env files again"
+  ],
+  "body": "# Secrets scanning cleanup\n\nTreat every secret you find as already compromised. Rotation comes before cleanup.\n\n## Steps\n\n1. Scan the working tree and history. Use gitleaks or trufflehog if installed (`gitleaks detect --redact`); otherwise search with patterns for `AKIA`, `ghp_`, `sk_live_`, private key headers, and assignments like `password=` in config files.\n2. Triage each hit: real credential, test value, or example. Record file, commit, and the service it belongs to. Mask values to the first four characters in every message you write.\n3. Produce a rotation list for the user: which provider console, which key, what depends on it. Do not rotate anything yourself. Wait for confirmation that each key is revoked.\n4. Move the value out of code: read it from an environment variable or secret manager, add the file to `.gitignore`, and commit a `.env.example` with empty names.\n5. Only after rotation, offer a history rewrite with `git filter-repo --replace-text`. Explain it changes commit hashes and forces every collaborator to re-clone. Ask before running it, and never force-push without a yes.\n6. Prevent repeats: add a gitleaks pre-commit hook and a CI step that fails on new findings.\n\n## Rules\n\n- Never paste a full secret into chat, logs or a commit message.\n- Deleting the file in a new commit is not a fix.\n- Check for the same secret in CI variables, Docker images and build logs.\n\n## Report\n\nFindings table (masked), rotation checklist with status, what changed in the repo, and the guard added.",
+  "example": {
+    "prompt": "GitHub emailed us that a Stripe key is in our repo. Clean it up.",
+    "result": "Found sk_li... in config/payments.js since commit 3f9a2c1, plus a second key in an old .env.bak. Rotation list: Stripe dashboard, roll both keys, update the deploy variable. Code now reads STRIPE_KEY from the environment and .env.bak is ignored. History rewrite is ready but waiting for your yes. Added gitleaks to pre-commit and the CI workflow."
+  },
+  "faq": [
+    {
+      "question": "Why rotate before rewriting history?",
+      "answer": "Anyone who cloned or forked the repo already has the secret, and automated scrapers find leaks within minutes. Only revoking the key makes it useless."
+    },
+    {
+      "question": "Does it rewrite history on its own?",
+      "answer": "No. Rewriting changes every hash after the leak, so it stops and asks, and it never force-pushes without your explicit approval."
+    }
+  ],
+  "access": [
+    "Reads files and git history in your repository",
+    "Runs scanners such as gitleaks if installed",
+    "Edits files and git config only to move secrets out and add the guard"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

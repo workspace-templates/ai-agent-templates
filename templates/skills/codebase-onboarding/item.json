@@ -1,0 +1,44 @@
+{
+  "slug": "codebase-onboarding",
+  "title": "Codebase Onboarding",
+  "kind": "skill",
+  "category": "productivity",
+  "summary": "Builds a written map of an unfamiliar repository: entry points, layers, conventions, the commands that work, plus the areas most likely to break.",
+  "description": [
+    "The first day in a new repository is mostly spent guessing where things live. This skill has the agent explore it in a fixed order and write down what it finds, with file paths you can check, so you start from a map instead of a blank page.",
+    "The map separates facts it confirmed from guesses, and it points at the places most likely to hurt: tangled modules, thin test coverage and files that change in every incident."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation"
+  ],
+  "useWhen": [
+    "You just joined a team or inherited a repository",
+    "You must fix a bug in a service you have never opened",
+    "You are preparing to review a large pull request in unfamiliar code",
+    "A project has no README that matches reality"
+  ],
+  "body": "# Codebase onboarding\n\nRead, run and map. Change nothing in the repository.\n\n## Steps\n\n1. Identify the project: languages, frameworks, package manager and build tool from manifests and lockfiles. List top-level directories with one line on each.\n2. Find how to run it: the README, `Makefile`, `package.json` scripts, `docker-compose.yml` and CI config. Try the install, build and test commands. Record exactly which worked and which failed, with the error.\n3. Find entry points: `main`, server bootstrap, route tables, job and queue consumers, CLI commands, scheduled tasks. Trace one request or command from entry to storage and back, naming each file it passes through.\n4. Describe the layers and the data model: the main entities, where they are defined, and where the database schema and migrations live. Note external services and the config or environment variables each needs.\n5. Read conventions from the code itself: naming, error handling, logging, how tests are laid out, how dependencies are injected. Quote one example file for each.\n6. Find the risky areas. Use `git log --since=1.year --name-only` to count the files that change most. Look for large files, deep nesting, clusters of unfinished-work comments, modules with no tests, and code that is imported everywhere.\n7. Write the map in a file the user names, or print it if none is named, using these headings: Overview, Run it, Entry points, Layers, Data, Conventions, Risky areas, Open questions.\n\n## Rules\n\n- Every claim cites a path. Mark anything inferred as a guess.\n- Do not install global tools or run anything that writes to databases or external services.\n- Keep the map under 120 lines.\n\n## Report\n\nThe map, the commands that worked, and the three files to read first.",
+  "example": {
+    "prompt": "I just inherited this repo. Give me a map before I touch anything.",
+    "result": "Overview: Express and TypeScript API with a Postgres database and a BullMQ worker. Run it: npm ci and npm test pass; npm run dev fails without DATABASE_URL (see .env.example). Entry points: src/server.ts, src/worker.ts. Risky areas: src/billing/invoice.ts changed 41 times last year and has no test; src/utils/helpers.ts is imported by 63 files. Read first: src/server.ts, src/routes/index.ts, src/billing/invoice.ts."
+  },
+  "faq": [
+    {
+      "question": "Will it modify anything?",
+      "answer": "It only writes the map file if you name one. Installing and test commands run locally, and anything that touches shared services is skipped."
+    },
+    {
+      "question": "How does it find risky areas?",
+      "answer": "It combines commit churn, file size and missing tests. A file that changes constantly and has no coverage is flagged before a large file that never moves."
+    }
+  ],
+  "access": [
+    "Reads files and git history in your project",
+    "Runs install, build and test commands locally",
+    "Writes one map file only when you name it"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

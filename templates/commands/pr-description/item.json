@@ -1,0 +1,45 @@
+{
+  "slug": "pr-description",
+  "title": "Pull Request Description",
+  "kind": "command",
+  "category": "git",
+  "summary": "Drafts a pull request title and description from the diff between your branch and the base branch, ready to paste into GitHub.",
+  "description": [
+    "Reviewers decide how carefully to read a pull request in the first few lines. This command builds a description from the real diff and commit list, so it covers what changed, why and how to check it.",
+    "It does not open the pull request. You get text to review, and anything it could not know, such as the ticket or the reason for a trade-off, is marked for you to fill in."
+  ],
+  "stacks": [],
+  "topics": [
+    "git",
+    "code-review"
+  ],
+  "useWhen": [
+    "Before opening a pull request from a feature branch",
+    "When a branch has many commits and no one remembers the story",
+    "To give reviewers a test plan they can follow",
+    "When the team template needs summary, risk and testing sections"
+  ],
+  "body": "Write a pull request description for the current branch. Base branch: $ARGUMENTS (use main if empty).\n\n1. Run `git log --oneline <base>..HEAD` and `git diff <base>...HEAD --stat`, then read the diff of the files that carry the logic. Skip lockfiles and generated files.\n2. Check for a pull request template in .github/ and follow its headings if one exists.\n3. Write a title under 70 characters that names the outcome, not the activity.\n4. Write these sections: **Summary** (two or three sentences on what and why), **Changes** (bullets grouped by area, not by commit), **How to test** (exact commands or clicks, with the expected result), **Risk** (migrations, config, behavior changes, rollback).\n5. Mark anything you cannot know from the code, such as the ticket or screenshots, as `Fill in:` instead of guessing.\n\nPrint the result in one Markdown block. Ask whether to adjust it. Do not run `gh pr create` unless the user then asks for it.",
+  "argumentHint": "[base branch, default main]",
+  "example": {
+    "prompt": "/pr-description main",
+    "result": "Title: Add retry with backoff to webhook delivery\n\nSummary: Failed webhook calls were dropped after one try. They now retry five times with exponential backoff.\n\nHow to test: run npm test -- webhooks, then point WEBHOOK_URL at a closed port and watch five attempts in the log.\n\nRisk: adds a webhook_attempts table (migration 0042)."
+  },
+  "faq": [
+    {
+      "question": "Does it create the pull request?",
+      "answer": "No. It prints the text. Ask it to run gh pr create afterward if you want that."
+    },
+    {
+      "question": "Can it use my repository template?",
+      "answer": "Yes. It looks for a template under .github and keeps its headings."
+    }
+  ],
+  "access": [
+    "Reads commits and the diff against the base branch",
+    "Reads .github templates; changes nothing"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

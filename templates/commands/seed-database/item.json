@@ -1,0 +1,45 @@
+{
+  "slug": "seed-database",
+  "title": "Seed Database",
+  "kind": "command",
+  "category": "database",
+  "summary": "Writes a seed script with realistic, properly related sample data that is safe to run twice and refuses to run in production.",
+  "description": [
+    "Empty tables make every screen look broken, and random strings make demos look fake. This command reads your schema and writes a seed script with believable names, valid foreign keys and a mix of normal and edge-case rows.",
+    "The script is idempotent, so running it again does not duplicate anything, and it stops itself when pointed at anything that looks like production."
+  ],
+  "stacks": [],
+  "topics": [
+    "sql",
+    "testing"
+  ],
+  "useWhen": [
+    "A new hire needs a database that works on day one",
+    "You want realistic demo data for a screenshot or sales call",
+    "Tests need the same starting rows every time",
+    "A new feature needs related data across many tables"
+  ],
+  "body": "Write a seed script for: $ARGUMENTS (tables, feature, or \"all\").\n\n1. Read the schema, models and migrations. Map the tables, their foreign keys, unique keys, enums and required fields. Note the project's seed convention (prisma/seed.ts, db/seeds.rb, fixtures, a management command) and follow it.\n2. Plan the insert order from parents to children. Use realistic values: plausible names, emails at example.com, dates over the last year, prices with sensible ranges. Add edge cases deliberately: a long name, a null optional field, an inactive user, a zero-total order.\n3. Make it idempotent: upsert on a natural key or truncate only seed-owned rows, using a fixed random seed so data is the same every run.\n4. Add a guard: abort if the database URL contains prod or a non-local host unless `ALLOW_SEED=1`.\n5. Never use real customer data and never write secrets or real passwords. Hash a known dev password.\n\nPrint row counts per table and the command to run it. Do not run it until the user confirms which database it points to.",
+  "argumentHint": "[tables or feature to seed]",
+  "example": {
+    "prompt": "/seed-database shop: customers, products, orders",
+    "result": "Wrote prisma/seed.ts: 25 customers, 60 products in 6 categories, 140 orders with 1 to 5 items. Includes one refunded order and one customer with no orders.\nUpserts by email and sku, seed fixed at 42, aborts on non-local URLs.\nRun npx prisma db seed against localhost?"
+  },
+  "faq": [
+    {
+      "question": "Can I run it twice?",
+      "answer": "Yes. Rows are upserted on stable keys, so a second run leaves the same data."
+    },
+    {
+      "question": "Could it touch my production database?",
+      "answer": "The script refuses to run when the connection string looks remote or production, unless you set an explicit override."
+    }
+  ],
+  "access": [
+    "Reads schema and migration files",
+    "Creates a seed script and runs it only after you confirm the target database"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

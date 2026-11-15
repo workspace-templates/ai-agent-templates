@@ -1,0 +1,45 @@
+{
+  "slug": "audit-dependencies",
+  "title": "Audit Dependencies",
+  "kind": "command",
+  "category": "security",
+  "summary": "Runs your package manager audit, explains which advisories really matter and proposes the smallest safe upgrade for each.",
+  "description": [
+    "Audit output is long and mostly noise: dev-only packages, unreachable code paths and advisories with no fix. This command runs the audit for your ecosystem, then sorts the real risks from the rest.",
+    "For each real finding it names the lowest version that fixes it and flags whether the jump is a patch, minor or major change. Nothing is installed until you agree."
+  ],
+  "stacks": [],
+  "topics": [
+    "security",
+    "ci"
+  ],
+  "useWhen": [
+    "Weekly or before every release",
+    "When CI starts failing on a new advisory",
+    "After adding several packages in one pull request",
+    "When you need to explain risk to a non-technical manager"
+  ],
+  "body": "Audit the dependencies of this project. Focus: $ARGUMENTS (all manifests if empty).\n\n1. Detect the ecosystem from lockfiles and run the matching audit: `npm audit --json`, `pnpm audit`, `pip-audit`, `cargo audit`, `bundle audit`, `composer audit` or `govulncheck ./...`. If the tool is missing, say so and stop.\n2. For every advisory, decide if it is real: is the package a production dependency or dev-only, is the vulnerable function actually called (search the code), and is the vulnerable version the one in the lockfile?\n3. For each real one, find the smallest fixed version and classify the jump as patch, minor or major. Read the changelog for breaking changes if it is major.\n4. Mention transitive packages with the parent that pulls them in, and whether an override or resolution would help.\n5. Do not install, update or edit lockfiles yet.\n\nReport a table: package, current, fixed in, severity, reachable (yes/no/unknown), upgrade size. Then list dismissed advisories with the reason. Ask which upgrades to apply, and run the tests after applying.",
+  "argumentHint": "[ecosystem or manifest folder]",
+  "example": {
+    "prompt": "/audit-dependencies",
+    "result": "3 real findings of 11 advisories.\nhigh: jsonwebtoken 8.5.1 -> 9.0.2 (major; algorithm confusion; used in src/auth/token.ts)\nmedium: axios 0.21.1 -> 0.21.4 (patch; SSRF; reachable)\nDismissed: 8 advisories in dev-only packages (eslint, jest).\nApply the two upgrades?"
+  },
+  "faq": [
+    {
+      "question": "Will it change my lockfile?",
+      "answer": "Only after you pick upgrades. The first pass is read-only apart from running the audit command."
+    },
+    {
+      "question": "Why dismiss some advisories?",
+      "answer": "Dev-only packages and code paths your app never calls rarely put users at risk; it lists each dismissal so you can disagree."
+    }
+  ],
+  "access": [
+    "Runs the package audit command, which may contact the registry",
+    "Edits manifests only after you choose upgrades"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

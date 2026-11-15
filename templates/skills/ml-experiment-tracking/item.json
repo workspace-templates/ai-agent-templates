@@ -1,0 +1,47 @@
+{
+  "slug": "ml-experiment-tracking",
+  "title": "ML Experiment Tracking",
+  "kind": "skill",
+  "category": "data",
+  "summary": "Logs params, metrics, code version and artifacts so ML experiments can be reproduced and compared. Use it when results are hard to trace back to a run.",
+  "description": [
+    "If you cannot say which code, data and settings produced a number, you cannot trust it or beat it. This skill adds tracking to an existing training script so every run records what it was, what it scored and what it produced.",
+    "The agent works with the tracker you already use, such as MLflow or Weights and Biases, or with plain files when you have none, and keeps the setup small."
+  ],
+  "stacks": [
+    "python"
+  ],
+  "topics": [
+    "python",
+    "documentation"
+  ],
+  "useWhen": [
+    "Last month's best model cannot be reproduced and nobody remembers the settings",
+    "Several people train variants and the comparisons live in chat messages",
+    "You need to compare ten runs by one metric and see what differed",
+    "A model is being promoted and you want its full lineage written down"
+  ],
+  "body": "# ML experiment tracking\n\nA run is reproducible only if its code, data, config and seed are all recorded.\n\n## Steps\n\n1. Find what is in use (`grep -rn \"mlflow\\|wandb\\|tensorboard\" .`). Use it. If nothing exists, write one JSON file per run under `runs/<run_id>/` rather than adding a service.\n2. Collect all settings in a single config object (dataclass or YAML) so one call can log it. Remove hardcoded hyperparameters scattered through the script.\n3. At run start, record: the config, the random seed, the git commit hash, whether the working tree is dirty (`git status --porcelain`), the package versions (`pip freeze` or key libraries), and the Python and hardware details.\n4. Fingerprint the data: file path plus a content hash or row count, or the version tag from your data store. A path alone is not enough.\n5. Log metrics with a step number, separate for train and validation, plus final test metrics once at the end. Name them consistently (`val/auc`, not `valAUC` in one run and `auc_val` in another).\n6. Save artifacts: the best checkpoint, the metrics file, and key plots. Link them to the run.\n7. Tag the run with a short human name and a one line purpose, such as \"lr sweep, no augmentation\".\n8. Add a small script that lists runs sorted by a metric and prints the config differences between two runs.\n\n## Rules\n\n- Never log secrets or raw personal data in params.\n- Log the failure state too: mark crashed runs as failed.\n\n## Report\n\nWhat is tracked per run, where it is stored, and the command to compare two runs.",
+  "example": {
+    "prompt": "Add experiment tracking to train.py, we use MLflow.",
+    "result": "Moved 14 hyperparameters into TrainConfig and logged it with mlflow.log_params. Each run now records commit, dirty flag, seed, dataset sha256, metrics per epoch as val/loss and val/f1, and best.pt as an artifact. Added compare_runs.py RUN_A RUN_B which prints only differing params. Crashed runs are marked FAILED."
+  },
+  "faq": [
+    {
+      "question": "Do I need a tracking server?",
+      "answer": "No. MLflow can write to a local folder, and the plain-file fallback needs nothing installed. A shared server only matters when a team wants one place to look."
+    },
+    {
+      "question": "Why record the dirty flag?",
+      "answer": "A commit hash is misleading when the code had uncommitted edits. The flag tells you whether the hash alone can recreate the run."
+    }
+  ],
+  "access": [
+    "Reads and edits your training scripts",
+    "Writes run records and artifacts to a local folder",
+    "Runs git status and git rev-parse to capture the code version"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

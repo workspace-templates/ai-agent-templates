@@ -1,0 +1,66 @@
+{
+  "slug": "huggingface-mcp",
+  "title": "Hugging Face MCP Server",
+  "kind": "mcp",
+  "category": "data",
+  "summary": "Search Hugging Face models, datasets, Spaces and papers from your agent through the official hosted MCP server and a read token.",
+  "description": [
+    "Hugging Face runs a hosted MCP server for the Hub. Once connected, the agent can look up models and datasets, find Spaces that do a given job, search papers, and query the Hub documentation in plain language.",
+    "No local package is involved: point the client at the server URL and send a Hugging Face access token in an Authorization header. Extra tools such as repository creation, jobs and sandboxes can be switched on or off in your account's MCP settings, so you decide how much the agent can do."
+  ],
+  "stacks": [],
+  "topics": [
+    "machine-learning",
+    "data"
+  ],
+  "useWhen": [
+    "Find a small model that fits a task and license",
+    "Check which datasets exist for a language or domain",
+    "Look up how a library in the Hub docs handles a feature",
+    "Find a Space that already demos what you plan to build"
+  ],
+  "mcp": {
+    "name": "huggingface",
+    "transport": "http",
+    "url": "https://huggingface.co/mcp",
+    "env": [],
+    "headers": [
+      {
+        "name": "Authorization",
+        "value": "Bearer ${HF_TOKEN}",
+        "description": "A Hugging Face access token; a read token is enough for search"
+      }
+    ],
+    "source": "https://huggingface.co/docs/hub/agents-mcp",
+    "access": [
+      "Reads public Hub models, datasets, Spaces and papers",
+      "Can reach private repos your token allows",
+      "Write tools only exist if you enable them in your MCP settings"
+    ]
+  },
+  "example": {
+    "prompt": "Find three text-to-speech models under 1B parameters with a permissive license.",
+    "result": "Three candidates with download counts and license: model A (Apache-2.0), model B (MIT), model C (Apache-2.0), each with its Hub link."
+  },
+  "faq": [
+    {
+      "question": "Which token should I use?",
+      "answer": "A fine-grained or read token is enough for search. Avoid a write token unless you want repository tools."
+    },
+    {
+      "question": "Where do I choose the tools?",
+      "answer": "In the MCP page of your Hugging Face account settings, where you can also add community Spaces as tools."
+    },
+    {
+      "question": "Is the setup the same for every client?",
+      "answer": "The settings page generates the snippet for your client. This entry uses the plain URL with a bearer header."
+    }
+  ],
+  "access": [
+    "Reads Hub content, including private repos your token can see",
+    "Changes only what you enable in your MCP settings"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

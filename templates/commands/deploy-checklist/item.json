@@ -1,0 +1,46 @@
+{
+  "slug": "deploy-checklist",
+  "title": "Deploy Checklist",
+  "kind": "command",
+  "category": "devops",
+  "summary": "Builds a deploy checklist from your current diff: migrations, config changes, feature flags, order of steps and how to roll back.",
+  "description": [
+    "Deploys go wrong in the gaps between code and everything around it: a migration that must run first, a new variable nobody set, a flag left on. This command reads the change and lists what the person shipping it has to do.",
+    "The result is a short checklist in order, with a rollback path for every risky item. It reads and reports, and it never runs a deploy."
+  ],
+  "stacks": [],
+  "topics": [
+    "devops",
+    "migrations"
+  ],
+  "useWhen": [
+    "Before merging a change that touches the database",
+    "You are releasing and want nothing forgotten",
+    "A teammate who did not write the change will deploy it",
+    "You need a rollback plan written down first"
+  ],
+  "body": "Create a deploy checklist for this change. Target branch or range: $ARGUMENTS (default: current branch against main).\n\n1. Run `git diff --stat <base>...HEAD` and read the changed files, not just the names.\n2. Check these areas and say \"none\" when they do not apply: database migrations (are they backward compatible with the old code running during rollout, and how long will they lock tables?), new or renamed environment variables, changed config or infrastructure files, new dependencies, feature flags, background jobs and queues, API changes that clients depend on, cache keys or data formats.\n3. Order the steps: before deploy, during deploy, right after, and later cleanup.\n4. For each risky item write a rollback: the exact command or action, and whether data would be lost by going back.\n5. Add smoke checks to run after the deploy, such as a URL, a log query or a metric to watch for ten minutes.\n\nOutput a Markdown checklist with checkboxes, grouped by those four phases, and a Rollback section at the end. Ask whether to save it as DEPLOY.md or paste it into the pull request description.",
+  "argumentHint": "[base branch or commit range]",
+  "example": {
+    "prompt": "/deploy-checklist main",
+    "result": "Before: set STRIPE_WEBHOOK_SECRET in production, run migration 0042 (adds nullable column, safe with old code). During: deploy API, then worker. After: watch error logs for 10 min. Rollback: revert and redeploy; column can stay. Save as DEPLOY.md?"
+  },
+  "faq": [
+    {
+      "question": "Does it deploy anything?",
+      "answer": "No. It writes a list for a person to follow and runs only read-only git commands."
+    },
+    {
+      "question": "How does it know about my infrastructure?",
+      "answer": "From the diff and files in the repository. If something lives outside it, the checklist says what to confirm by hand."
+    }
+  ],
+  "access": [
+    "Reads the git diff and changed files",
+    "Runs read-only git commands",
+    "Saves a file only if you ask"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

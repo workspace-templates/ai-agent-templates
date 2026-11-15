@@ -1,0 +1,45 @@
+{
+  "slug": "flutter-rules",
+  "title": "Flutter Rules",
+  "kind": "rules",
+  "category": "mobile",
+  "summary": "Project rules for Flutter apps: feature folders, one state solution, const widgets, ThemeData tokens and widget and unit tests.",
+  "description": [
+    "These rules give a Flutter project a predictable layout and a single way to manage state, so an agent adds features without inventing a new pattern each time.",
+    "They focus on practices that keep frames smooth and code reviewable: const constructors, small widgets, centralized theming and tests that pump real widgets."
+  ],
+  "stacks": [
+    "flutter",
+    "dart"
+  ],
+  "topics": [
+    "performance"
+  ],
+  "useWhen": [
+    "You start a new Flutter app",
+    "Widgets grow huge build methods",
+    "State is handled with a mix of setState and several packages",
+    "Colors and text styles are hard-coded across screens"
+  ],
+  "body": "# Project rules: Flutter\n\n## Layout\n- Organize by feature: `lib/features/<name>/{data,domain,presentation}`, with shared code in `lib/core`. Keep `main.dart` to bootstrapping.\n- Enable `flutter_lints` or stricter in `analysis_options.yaml` and fix every warning.\n\n## State\n- Choose one solution per app (Riverpod or Bloc) and use it everywhere. Keep `setState` for purely local, ephemeral UI state.\n- State classes are immutable. Widgets read state and call methods; they do not call repositories or HTTP directly.\n\n## Widgets\n- Prefer small widget classes over helper methods returning widgets. Mark constructors and literals `const`.\n- Use `ListView.builder` for long lists, give items keys when order changes, and dispose controllers, focus nodes and subscriptions.\n- Never use `BuildContext` after an `await` without checking `mounted`.\n\n## Theming and text\n- Define colors, typography and spacing in `ThemeData` and extensions; read them via `Theme.of(context)`. Put user-facing strings in localization files.\n\n## Quality\n- Write unit tests for logic and widget tests with `pumpWidget` for screens. Use golden tests sparingly.\n- Run `dart format --set-exit-if-changed .`, `flutter analyze` and `flutter test` before finishing.",
+  "example": {
+    "prompt": "Add a favorites tab that persists across launches",
+    "result": "The agent adds a favorites feature folder, a Riverpod notifier with local storage, const widgets using theme tokens and a widget test for toggling."
+  },
+  "faq": [
+    {
+      "question": "Why only one state package?",
+      "answer": "Mixed approaches make every feature a new reading exercise and invite sync bugs between them."
+    },
+    {
+      "question": "Are golden tests required?",
+      "answer": "No. They are allowed for stable, visual components but are not a default."
+    }
+  ],
+  "access": [
+    "Instructions only; it does not read or run anything by itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,45 @@
+{
+  "slug": "review-permissions",
+  "title": "Review Permissions",
+  "kind": "command",
+  "category": "security",
+  "summary": "Reviews roles, scopes and access lists in a config or manifest and proposes a trimmed version that keeps only what is used.",
+  "description": [
+    "Permissions grow by accident: a wildcard added to get past an error, a scope nobody remembers asking for. This command reads the file you point at and compares what is granted with what the code actually needs.",
+    "You get a before-and-after proposal with the risk of each removal, so you can cut access without breaking the app."
+  ],
+  "stacks": [],
+  "topics": [
+    "security",
+    "devops"
+  ],
+  "useWhen": [
+    "Reviewing an IAM policy, Kubernetes role or CI token",
+    "Auditing app manifest permissions on Android or a browser extension",
+    "After a security incident or a compliance request",
+    "When a service account has more access than anyone can explain"
+  ],
+  "body": "Review the permissions in: $ARGUMENTS\n\n1. Read the file and list every grant: IAM actions and resources, Kubernetes verbs and resources, OAuth scopes, GitHub Actions `permissions:`, Android or extension manifest permissions, database roles.\n2. Flag wildcards (`*`), admin-level grants, broad resources, long-lived tokens, and anything that allows writing where reading would do.\n3. Search the code and scripts for what each grant is used for. Mark each as used, unused or unclear.\n4. Propose a minimal replacement: narrower actions, specific resources, read-only where possible, short-lived credentials. Keep the original format.\n5. For every removal, state what could break and how to test it.\n6. Do not apply anything, and never run commands that change live cloud or cluster state.\n\nReport a table: grant, used, risk, proposed change. Show the trimmed file as a diff. Then ask whether to write it to disk.",
+  "argumentHint": "[policy, manifest or config path]",
+  "example": {
+    "prompt": "/review-permissions infra/iam/ci-role.json",
+    "result": "14 grants reviewed. s3:* on * (unused beyond s3:PutObject on the artifacts bucket) -> narrowed. iam:PassRole removed, no code path uses it.\nTwo grants unclear: ec2:Describe*. Test by running the deploy job in staging.\nWrite the trimmed policy to disk?"
+  },
+  "faq": [
+    {
+      "question": "What formats does it handle?",
+      "answer": "Any readable text config: JSON and YAML policies, manifests, Terraform files and workflow files."
+    },
+    {
+      "question": "Will it apply changes to the cloud?",
+      "answer": "Never. It edits a local file at most, and only on your yes."
+    }
+  ],
+  "access": [
+    "Reads the named config and the code that uses it",
+    "Writes the trimmed file only after you confirm"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

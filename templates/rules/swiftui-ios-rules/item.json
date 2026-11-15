@@ -1,0 +1,44 @@
+{
+  "slug": "swiftui-ios-rules",
+  "title": "SwiftUI iOS Rules",
+  "kind": "rules",
+  "category": "mobile",
+  "summary": "Project rules for SwiftUI apps: @Observable models, NavigationStack routing, async/await with actors, previews and XCTest coverage.",
+  "description": [
+    "These rules set the shape of a SwiftUI codebase: thin views, observable models that own state, and navigation driven by data. They steer an agent away from patterns that fight the framework.",
+    "They also address Swift concurrency and testing, so network calls stay off the main thread and each model can be exercised without launching the UI."
+  ],
+  "stacks": [
+    "swift"
+  ],
+  "topics": [
+    "testing"
+  ],
+  "useWhen": [
+    "You start a SwiftUI iOS app",
+    "Views contain networking and parsing code",
+    "Navigation uses deprecated NavigationView",
+    "Concurrency warnings appear after enabling strict checking"
+  ],
+  "body": "# Project rules: SwiftUI for iOS\n\n## Views and state\n- Keep views small and declarative. Move logic into an `@Observable` model marked `@MainActor`. Use `@State` to own a model, `@Bindable` for bindings, `@Environment` for shared dependencies.\n- Extract a subview when a body passes about 40 lines. Avoid `AnyView`; prefer generics and `@ViewBuilder`.\n- Use stable `Identifiable` ids in `ForEach`; never index-based identity for mutable lists.\n\n## Navigation\n- Use `NavigationStack` with a typed path and `navigationDestination(for:)`. Present sheets from state, not from imperative calls.\n\n## Concurrency and data\n- Use async/await. Call services from `.task { }`, which cancels with the view. Isolate shared mutable state in an `actor`. Make model types `Sendable`.\n- Never force-unwrap or use `try!` outside tests. Surface failures as state the view renders.\n- Put networking behind a protocol so tests can inject a fake. Keep secrets in Keychain.\n\n## Quality\n- Every view has a `#Preview` with sample data, including an empty and an error case.\n- Write XCTest or Swift Testing tests for each model. Add accessibility labels and support Dynamic Type.\n- Run `swift-format lint` and `xcodebuild test` on a simulator before finishing.",
+  "example": {
+    "prompt": "Show a list of recipes with a detail screen and pull to refresh",
+    "result": "The agent adds a RecipesModel, a NavigationStack with typed routes, refreshable async loading and tests using a fake service."
+  },
+  "faq": [
+    {
+      "question": "Does it target the Observation framework?",
+      "answer": "Yes, it assumes @Observable. For older deployment targets, swap in ObservableObject and keep the other rules."
+    },
+    {
+      "question": "Which test framework?",
+      "answer": "Either XCTest or Swift Testing works; pick one per target and keep to it."
+    }
+  ],
+  "access": [
+    "Instructions only; it does not read or run anything by itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,45 @@
+{
+  "slug": "fix-failing-tests",
+  "title": "Fix Failing Tests",
+  "kind": "command",
+  "category": "testing",
+  "summary": "Runs the suite, groups failures by shared cause and fixes one cause at a time, rerunning after each fix.",
+  "description": [
+    "Forty red tests rarely mean forty bugs. This command runs the suite, clusters the failures by root cause and works through the clusters in order of how many tests each one explains.",
+    "It decides, for every cluster, whether the code or the test is wrong, and tells you when a fix would mean weakening an assertion."
+  ],
+  "stacks": [],
+  "topics": [
+    "testing",
+    "debugging"
+  ],
+  "useWhen": [
+    "After a dependency bump turns the suite red",
+    "When a merge leaves many unrelated failures",
+    "Before a release when CI is blocking",
+    "When you inherit a project whose tests nobody has run lately"
+  ],
+  "body": "Fix the failing tests. Scope: $ARGUMENTS (the full suite if empty).\n\n1. Find the test command in package.json, Makefile, pyproject or CI config and run it. Save the failing test names and first error line for each.\n2. Group failures by cause: same stack frame, same error message, same missing fixture, same changed import. Name each group and count its tests.\n3. Take the largest group first. Read the test and the code it exercises and decide whether the code is wrong, the test is stale, or the environment is the problem (time, order, network, missing env var).\n4. Fix the root cause with the smallest change. Never delete a test, skip it, loosen an assertion or add retries just to turn it green. If one of those is truly right, explain why and ask.\n5. Rerun only the affected tests, then the full suite before moving to the next group.\n\nFinish with a summary: groups fixed, tests per group, what changed, anything still red with your diagnosis. Ask before committing.",
+  "argumentHint": "[test path, name pattern or empty for all]",
+  "example": {
+    "prompt": "/fix-failing-tests",
+    "result": "31 failing in 4 groups.\n1. 19 tests: dateFormat now returns UTC (fixed helper)\n2. 8 tests: removed fixture users.json (restored path)\n3. 3 tests: stale snapshot of the header (updated after review)\n4. 1 test: depends on network, left red with notes.\nSuite: 336 pass, 1 fail. Commit?"
+  },
+  "faq": [
+    {
+      "question": "Will it skip tests to get green?",
+      "answer": "No. Skipping, deleting and loosening assertions are off limits unless it explains and you agree."
+    },
+    {
+      "question": "What if the failure is flaky?",
+      "answer": "It reruns the test, looks for order or timing dependence and reports it as flaky rather than guessing."
+    }
+  ],
+  "access": [
+    "Runs the test suite and reads source and tests",
+    "Edits code and tests; commits only on your yes"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,49 @@
+{
+  "slug": "block-global-installs",
+  "title": "Block Global Installs",
+  "kind": "hook",
+  "category": "devops",
+  "summary": "A Claude Code hook that refuses global npm, pnpm, yarn, pip and gem installs so tools are added to the project and not to your whole machine.",
+  "description": [
+    "An agent that needs a missing tool will sometimes install it globally, which changes your machine and hides the dependency from the next person. Each shell call is inspected first, and the machine-wide forms are turned away.",
+    "It catches npm and pnpm with a global flag, yarn global, gem install without a user or bundle setup, and pip install when no virtual environment is active. The message tells the agent to add the tool to the project instead."
+  ],
+  "stacks": [],
+  "topics": [
+    "ci",
+    "python"
+  ],
+  "useWhen": [
+    "Keep a laptop free of tools the project should declare",
+    "Make every dependency show up in the lockfile",
+    "Work in a repo with a pinned toolchain",
+    "Stop pip from touching the system Python"
+  ],
+  "hook": {
+    "event": "PreToolUse",
+    "matcher": "Bash",
+    "command": "node -e \"let d='';process.stdin.on('data',x=>d+=x).on('end',()=>{let j={};try{j=JSON.parse(d)}catch(e){return}const i=j.tool_input||{};const c=String(i.command||'').replace(/\\x22[^\\x22]*\\x22|\\x27[^\\x27]*\\x27/g,' ')+' ';const e=process.env.VIRTUAL_ENV;const rules=[[/(^|[ ])npm[ ]+(i|install|add)[ ].*(-g|--global)[ ]/.test(c),'npm install -g'],[/pnpm[ ]+(add|install|i)[ ].*(-g|--global)[ ]/.test(c),'pnpm add -g'],[/yarn[ ]+global[ ]/.test(c),'yarn global'],[/gem[ ]+install[ ]/.test(c)&&!/--user-install|--install-dir|bundle/.test(c),'gem install'],[/pip3?[ ]+install[ ]/.test(c)&&!e&&!/venv|--target|[ ]-t[ ]/.test(c),'pip install outside a virtual environment']];const h=rules.find(r=>r[0]);if(h){console.error('Blocked: '+h[1]+' would change the whole machine. Install the tool in the project instead (devDependencies, a virtualenv, or the Gemfile) and run it through npx, python -m or bundle exec.');process.exitCode=2}})\"",
+    "timeout": 10
+  },
+  "example": {
+    "prompt": "Install typescript globally so tsc works everywhere.",
+    "result": "The global install is refused. The agent adds typescript as a dev dependency and calls it with npx tsc instead."
+  },
+  "faq": [
+    {
+      "question": "Why does pip install get blocked at times?",
+      "answer": "The hook checks the VIRTUAL_ENV variable. Activate your virtualenv before starting Claude Code, or call the venv pip by path, and it passes."
+    },
+    {
+      "question": "Does a local npm install still work?",
+      "answer": "Yes. Only commands with a global flag are refused, so plain installs inside the project are untouched."
+    }
+  ],
+  "access": [
+    "Reads each Bash command and the VIRTUAL_ENV variable",
+    "Blocks matching commands and runs nothing itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

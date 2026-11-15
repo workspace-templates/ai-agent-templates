@@ -1,0 +1,58 @@
+{
+  "slug": "gitlab-mcp",
+  "title": "GitLab MCP Server",
+  "kind": "mcp",
+  "category": "git",
+  "summary": "Work with GitLab issues, merge requests and pipelines from your agent through the MCP server built into GitLab itself.",
+  "description": [
+    "GitLab ships an MCP server inside the product, at /api/v4/mcp on your instance. An agent can read issues and merge requests, look at repository files and check CI pipelines, using the permissions of the account that signed in.",
+    "This config points at gitlab.com. For a self-managed instance, change the host. Your group owner (on GitLab.com) or administrator (self-managed) has to allow MCP server access first. Sign-in uses OAuth, so no token is stored in the config."
+  ],
+  "stacks": [],
+  "topics": [
+    "git",
+    "code-review"
+  ],
+  "useWhen": [
+    "Summarize a merge request and its review threads",
+    "List the issues assigned to you this sprint",
+    "Find out why a merge request pipeline failed",
+    "Open an issue from a bug you just found"
+  ],
+  "mcp": {
+    "name": "gitlab",
+    "transport": "http",
+    "url": "https://gitlab.com/api/v4/mcp",
+    "env": [],
+    "headers": [],
+    "source": "https://docs.gitlab.com/user/gitlab_duo/model_context_protocol/mcp_server/",
+    "access": [
+      "Reads projects, issues, merge requests, repository files and pipelines your account can see",
+      "Can create or update issues and merge requests where your account has rights"
+    ]
+  },
+  "example": {
+    "prompt": "Summarize merge request !482 in the web project and tell me whether its pipeline is green.",
+    "result": "!482 \"Paginate the audit log\" has 2 unresolved threads, both about the page size default. The latest pipeline passed on all 6 jobs, 12 minutes ago."
+  },
+  "faq": [
+    {
+      "question": "Why do I get a 403 error?",
+      "answer": "GitLab rejects legacy personal and project tokens here. Use the OAuth sign-in, or a fine-grained token with the MCP Execute permission."
+    },
+    {
+      "question": "Does it work on a self-managed instance?",
+      "answer": "Yes. Replace gitlab.com in the URL with your host, and have an administrator enable MCP access for the instance."
+    },
+    {
+      "question": "Can I limit what it exposes?",
+      "answer": "GitLab groups tools into toolsets and lets you choose them with a request header. Defaults cover core, merge requests, work items, repository and CI."
+    }
+  ],
+  "access": [
+    "Acts with the permissions of the signed-in GitLab user"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,45 @@
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "redis_host",
+      "description": "Hostname of the Redis server, default 127.0.0.1",
+      "password": true
+    },
+    {
+      "type": "promptString",
+      "id": "redis_port",
+      "description": "Port, default 6379",
+      "password": true
+    },
+    {
+      "type": "promptString",
+      "id": "redis_username",
+      "description": "Redis ACL user, use a read-only one for safety",
+      "password": true
+    },
+    {
+      "type": "promptString",
+      "id": "redis_pwd",
+      "description": "Password for that user",
+      "password": true
+    }
+  ],
+  "servers": {
+    "redis": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "redis-mcp-server@latest",
+        "redis-mcp-server"
+      ],
+      "env": {
+        "REDIS_HOST": "${input:redis_host}",
+        "REDIS_PORT": "${input:redis_port}",
+        "REDIS_USERNAME": "${input:redis_username}",
+        "REDIS_PWD": "${input:redis_pwd}"
+      }
+    }
+  }
+}

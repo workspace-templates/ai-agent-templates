@@ -1,0 +1,45 @@
+{
+  "slug": "add-endpoint",
+  "title": "Add Endpoint",
+  "kind": "command",
+  "category": "backend",
+  "summary": "Adds a new API endpoint that matches your existing routes, with validation, error handling, tests and docs in one pass.",
+  "description": [
+    "A new endpoint is rarely just a handler. It needs input checks, error shapes that match the rest of the API, tests and a line in the docs. This command finds how your project already does each of those and repeats the pattern.",
+    "It starts by reading a neighboring endpoint, so the new route lands in the right folder with the same naming, auth and response envelope. It shows the plan before it writes anything."
+  ],
+  "stacks": [],
+  "topics": [
+    "api-design",
+    "testing"
+  ],
+  "useWhen": [
+    "You need a new route and want it to look like the ones next to it",
+    "A feature ticket says \"add GET /orders/:id/refunds\"",
+    "You keep forgetting to update tests or docs after adding a route",
+    "A new teammate is unsure where handlers, schemas and services live"
+  ],
+  "body": "Add this endpoint to the project: $ARGUMENTS\n\n1. Find the closest existing endpoint with `grep` or the route table. Read its handler, schema, service call, test and doc entry. Copy that structure exactly: folder, naming, auth middleware, response envelope.\n2. State a short plan: method, path, auth, input fields with types, success status, and each error status. Ask one question if the request is ambiguous, otherwise continue.\n3. Write the handler thin. Put business logic in the layer the project already uses for it.\n4. Validate every input with the project's own validator. Return the same error shape as other routes (400 for bad input, 401 or 403 for auth, 404 for missing, 409 for conflicts).\n5. Add tests: one success case, one case per error status, one for bad input.\n6. Update the route list, OpenAPI file or README section if one exists.\n7. Run the test suite and the linter. Fix what you broke.\n\nReport the files changed, the final request and response examples, and anything you guessed. Do not touch unrelated routes or run migrations without asking first.",
+  "argumentHint": "[method path and what it does]",
+  "example": {
+    "prompt": "/add-endpoint GET /projects/:id/members, returns paginated members, owners only",
+    "result": "Plan: GET /projects/:id/members, owner auth, query page and limit, 200 with {items,total}, 403 for non-owners, 404 for unknown project.\nAdded src/routes/projects/members.ts, schema and 5 tests (all passing). Updated docs/api.md.\nAssumption: members sorted by joinedAt descending."
+  },
+  "faq": [
+    {
+      "question": "How does it know my conventions?",
+      "answer": "It reads the nearest similar route first and mirrors its layout, middleware and error format instead of using generic defaults."
+    },
+    {
+      "question": "Will it create database tables?",
+      "answer": "No. If the endpoint needs a schema change, it stops and asks, because migrations are hard to undo."
+    }
+  ],
+  "access": [
+    "Reads route, schema, test and doc files",
+    "Creates and edits source files, then runs tests and lint"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

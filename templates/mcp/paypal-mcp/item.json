@@ -1,0 +1,68 @@
+{
+  "slug": "paypal-mcp",
+  "title": "PayPal MCP Server",
+  "kind": "mcp",
+  "category": "backend",
+  "summary": "Run PayPal's official MCP server locally so your agent can create orders and invoices, manage subscriptions and list transactions in sandbox.",
+  "description": [
+    "PayPal publishes an MCP server that wraps its REST APIs as agent tools: invoices, orders and refunds, disputes, shipment tracking, product catalog, subscription plans and transaction reports.",
+    "It starts locally with npx and reads an access token from your environment. It defaults to the SANDBOX environment, which is the right place to try it before pointing anything at real money."
+  ],
+  "stacks": [],
+  "topics": [
+    "api-design"
+  ],
+  "useWhen": [
+    "Create a test invoice while building an invoicing flow",
+    "Check that an order moves from created to paid in sandbox",
+    "Set up a subscription plan to test your billing page",
+    "List recent transactions to reconcile a bug report"
+  ],
+  "mcp": {
+    "name": "paypal",
+    "transport": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "@paypal/mcp",
+      "--tools=all"
+    ],
+    "env": [
+      {
+        "name": "PAYPAL_ACCESS_TOKEN",
+        "description": "A PayPal API access token for your app. Sandbox tokens last a few hours, so refresh it when calls start failing."
+      },
+      {
+        "name": "PAYPAL_ENVIRONMENT",
+        "description": "SANDBOX or PRODUCTION. Leave it as SANDBOX while testing."
+      }
+    ],
+    "headers": [],
+    "source": "https://github.com/paypal/paypal-mcp-server",
+    "access": [
+      "Can create and send invoices, orders, refunds and subscriptions in the PayPal account behind the token",
+      "Reads transactions, disputes and products"
+    ]
+  },
+  "example": {
+    "prompt": "Create a sandbox invoice for 120 USD to buyer@example.com for 'March consulting' and send it.",
+    "result": "Invoice INV2-8K3F-2M9Q created and sent in the sandbox. Status SENT, due in 30 days. Recipient link returned."
+  },
+  "faq": [
+    {
+      "question": "Can I limit it to some tools?",
+      "answer": "Yes. The --tools flag takes a list instead of all, so you can start with invoices only and add more later."
+    },
+    {
+      "question": "Why did it stop working after a few hours?",
+      "answer": "Access tokens expire. Generate a new one and restart the agent so it picks up the new value."
+    }
+  ],
+  "access": [
+    "Acts on the PayPal account behind your access token",
+    "Runs locally through npx and calls PayPal's API"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

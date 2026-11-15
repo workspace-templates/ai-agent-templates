@@ -1,0 +1,46 @@
+{
+  "slug": "sql-query-optimization",
+  "title": "SQL Query Optimization",
+  "kind": "skill",
+  "category": "database",
+  "summary": "Speeds up slow PostgreSQL queries by reading EXPLAIN ANALYZE, fixing indexes and N+1 patterns, and rewriting only when results stay identical.",
+  "description": [
+    "A slow query is a measurement problem before it is a writing problem. This skill starts from the real plan and row counts, names the node that costs the time, and proposes the one change that fixes it.",
+    "Every rewrite is checked against the original for identical results, and every index suggestion comes with its write cost, so a faster read does not quietly slow down your inserts."
+  ],
+  "stacks": [
+    "postgresql"
+  ],
+  "topics": [
+    "sql",
+    "performance"
+  ],
+  "useWhen": [
+    "A page or job is slow and a query is the suspect",
+    "EXPLAIN shows a sequential scan on a large table",
+    "The ORM issues hundreds of queries for one request",
+    "You want to know whether a new index is worth it"
+  ],
+  "body": "# SQL query optimization (PostgreSQL)\n\nMeasure, change one thing, measure again.\n\n## Steps\n\n1. Get the exact query, its parameters and the table sizes. Run it on a copy or staging database, never guess from the text alone.\n2. Run `EXPLAIN (ANALYZE, BUFFERS) <query>`. For anything that writes, wrap it in `BEGIN; ... ROLLBACK;`. Record total time.\n3. Read the plan from the most expensive node. Look for: sequential scans on big tables, estimated rows far from actual rows (run `ANALYZE <table>`), sorts or hashes spilling to disk, nested loops over large inputs, many repeated loops.\n4. Fix in this order:\n   - Add an index matching the filter and sort: equality columns first, then range, then order. Use a partial index for a common filter and `INCLUDE` for index-only scans.\n   - Make predicates sargable: no function on the indexed column (`lower(email)` needs an expression index), no leading wildcard `LIKE '%x'`, no implicit casts.\n   - Replace `OFFSET` paging with keyset (`WHERE id > $last ORDER BY id LIMIT 50`).\n   - Select only needed columns; replace `IN (subquery)` with `EXISTS` where the plan shows it helps.\n5. For N+1: find the loop in application code, replace it with one query (`WHERE id = ANY($1)` or a join) or the ORM's eager loading, then count queries per request.\n6. Prove equal results: compare row counts and a checksum of both versions' output.\n7. Create indexes with `CREATE INDEX CONCURRENTLY` and state their write and size cost.\n\n## Report\n\nBefore and after timings and plans in short form, the change, the index cost, and what you did not try.",
+  "example": {
+    "prompt": "GET /orders is taking 4 seconds. The query is in src/orders/list.ts",
+    "result": "Plan: seq scan on orders (2.1M rows) then sort. Cause: filter on customer_id and order by created_at with no matching index. Added CREATE INDEX CONCURRENTLY ON orders (customer_id, created_at DESC): 4,100 ms to 6 ms, 41 MB, about 5% slower inserts. Also removed a per-row lookup in the loop, from 51 queries to 2. Results identical on 500 customers."
+  },
+  "faq": [
+    {
+      "question": "Will it add indexes automatically?",
+      "answer": "It proposes the exact statement with its cost and applies it only when you say so. Indexes make writes slower and use disk, so each one needs a reason."
+    },
+    {
+      "question": "Does it work on MySQL or SQLite?",
+      "answer": "The method carries over, but the commands and plan output are PostgreSQL. Expect to adapt the EXPLAIN syntax."
+    }
+  ],
+  "access": [
+    "Reads files in your project",
+    "Runs EXPLAIN and SELECT queries against the database you point it at, never writes data"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,44 @@
+{
+  "slug": "safe-refactoring",
+  "title": "Safe Refactoring",
+  "kind": "skill",
+  "category": "code-quality",
+  "summary": "Restructures code in small steps that each keep behavior identical and tests green. Use it for renames, extractions, moves and cleanup of messy modules.",
+  "description": [
+    "A refactor goes wrong when it is one big edit that also changes behavior. This skill splits the work into steps small enough that each can be run, checked and undone on its own, and it keeps new features out of the diff.",
+    "Before any change it looks for tests that pin the current behavior and adds characterization tests where there are none. You end up with a history you can review commit by commit."
+  ],
+  "stacks": [],
+  "topics": [
+    "refactoring",
+    "code-review"
+  ],
+  "useWhen": [
+    "A function or class has grown past what anyone wants to read",
+    "You need to rename or move something used in many files",
+    "Before adding a feature to code that has no tests",
+    "Duplicated logic should become one shared helper"
+  ],
+  "body": "# Safe refactoring\n\nA refactor changes structure, never behavior. If behavior must change, stop and say so.\n\n## Steps\n\n1. Run the existing tests and note the result. If the target code is not covered, write characterization tests first: call it with real inputs and assert today's outputs, even odd ones. Commit these separately.\n2. State the goal in one line, for example \"extract the pricing rules from OrderService\". List the steps, each small enough to finish in minutes.\n3. For each step: make one mechanical change, run the tests and the type checker, then commit. Use the editor or language tooling for renames and moves (`tsc`, `ruff`, `gofmt`, IDE rename) instead of search and replace.\n4. Prefer these moves in order: rename, extract function, inline, move, introduce a parameter object, replace conditional with polymorphism. Keep old and new code side by side until callers are switched, then delete the old.\n5. Search for every caller with grep, including strings, config, docs and tests, before changing a public signature.\n\n## Rules\n\n- Never mix a refactor with a bug fix or feature in one commit. If you find a bug, write it down and keep going.\n- Do not change a test to make it pass. A failing test means the step changed behavior: revert it.\n- Stop and ask if no test can reach the code and it cannot be exercised by hand.\n\n## Report\n\nThe steps taken, the commits, test results before and after, bugs spotted but left alone.",
+  "example": {
+    "prompt": "Split src/billing/invoice.ts, it is 900 lines.",
+    "result": "Added 14 characterization tests, all passing before and after. Seven commits: extracted taxRules.ts, discounts.ts and formatLines.ts, moved 3 helpers, deleted 120 lines of dead code. Public exports unchanged. Spotted but left alone: rounding in invoice.ts:410 differs from the PDF total by one cent."
+  },
+  "faq": [
+    {
+      "question": "What if there are no tests at all?",
+      "answer": "It writes characterization tests first and commits them alone. If the code cannot be called from a test, it asks before touching anything."
+    },
+    {
+      "question": "Can it fix bugs it finds along the way?",
+      "answer": "It lists them in the report instead. Mixing a fix into a refactor makes both harder to review and to revert."
+    }
+  ],
+  "access": [
+    "Reads and edits files in your project",
+    "Runs your tests, type checker and git commits"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

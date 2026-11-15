@@ -1,0 +1,44 @@
+{
+  "slug": "semantic-versioning",
+  "title": "Semantic Versioning",
+  "kind": "skill",
+  "category": "git",
+  "summary": "Works out the next version number from the real changes since the last tag, applies semver rules to breaking changes and drafts the release notes.",
+  "description": [
+    "Version numbers are a promise to the people who depend on you. Picking one from the commit titles alone misses a changed default, a removed export or a stricter validation, each of which breaks someone.",
+    "This skill reads the actual public surface that changed, classifies every change as major, minor or patch, and explains the pick so the number can be defended in review."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation",
+    "api-design"
+  ],
+  "useWhen": [
+    "You are about to tag a release and are unsure whether it is minor or major",
+    "A library changed behavior without changing a signature",
+    "You need release notes grouped by impact",
+    "Commits do not follow a convention but you still want a correct bump"
+  ],
+  "body": "# Semantic versioning\n\nDecide the bump from what consumers can observe, not from commit prefixes.\n\n## Steps\n\n1. Find the last release: `git describe --tags --abbrev=0` and its tag. If versions below 1.0.0, say so: 0.x allows breaking changes in minor releases, but still note them.\n2. Read the change since then: `git diff <tag>..HEAD --stat` and the diff of every file that is part of the public surface (exports, CLI flags, config keys, HTTP routes, database or file formats, environment variables).\n3. Classify each change:\n   - **Major**: removed or renamed public item, changed argument order or type, narrower accepted input, different return shape, changed default that alters results, dropped runtime or platform support, new required config.\n   - **Minor**: new optional feature, new export, wider accepted input, new optional field, deprecation (with the old path still working).\n   - **Patch**: bug fix that restores documented behavior, performance work, internal refactor, docs.\n4. The highest class wins. A fix that changes behavior people relied on is a major, even if it was a bug.\n5. Check internal consistency: update the version in every place it lives (`package.json`, lockfile, `pyproject.toml`, `Cargo.toml`, a version constant), the changelog, and any migration note a major bump needs.\n6. Pre-releases use `-rc.1` style suffixes; build metadata uses `+` and never affects ordering.\n\n## Rules\n\n- Do not create the tag or publish. Propose the version and the file edits.\n- If a change is ambiguous, list it under \"judgment calls\" and choose the higher bump.\n\n## Report\n\nThe version, the list of changes grouped by class with the file for each, the judgment calls, and draft release notes written for users.",
+  "example": {
+    "prompt": "We last released 2.3.1. What should the next version be?",
+    "result": "Recommend 3.0.0. Breaking: `parse()` now throws on empty input (returned null in 2.x) and `--legacy-dates` was removed. Minor: new `parseAll()` export. Patch: three fixes. Judgment call: the stricter timezone check is a major because 2.x accepted those inputs. Draft notes and a migration paragraph attached."
+  },
+  "faq": [
+    {
+      "question": "Does it need conventional commits?",
+      "answer": "No. It works from the diff of the public surface, and commit prefixes are only used as a hint."
+    },
+    {
+      "question": "Why is a bug fix sometimes a major bump?",
+      "answer": "If users depend on the old output, correcting it breaks them. Semver counts what callers see, whatever the cause."
+    }
+  ],
+  "access": [
+    "Runs git describe and git diff against the last tag",
+    "Edits version fields and the changelog after you approve"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

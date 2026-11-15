@@ -1,0 +1,24 @@
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "mdb_mcp_connection_string",
+      "description": "MongoDB connection string for your cluster",
+      "password": true
+    }
+  ],
+  "servers": {
+    "mongodb": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "mongodb-mcp-server@latest",
+        "--readOnly"
+      ],
+      "env": {
+        "MDB_MCP_CONNECTION_STRING": "${input:mdb_mcp_connection_string}"
+      }
+    }
+  }
+}

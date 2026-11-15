@@ -1,0 +1,51 @@
+{
+  "slug": "warn-console-log",
+  "title": "Warn Console Log",
+  "kind": "hook",
+  "category": "frontend",
+  "summary": "A Claude Code hook that warns the agent when an edit adds console.log to a JavaScript, TypeScript, Vue or Svelte file, so debug output is not left behind.",
+  "description": [
+    "Debug prints have a way of surviving into commits. This PostToolUse hook looks at the text each Edit or Write call adds, and when it contains console.log it sends the agent a message with the file and the line numbers.",
+    "The file has already been saved, so the message works as a nudge, not a block. Test, spec and stories files are skipped, since logging there is often deliberate."
+  ],
+  "stacks": [
+    "javascript"
+  ],
+  "topics": [
+    "debugging",
+    "code-review"
+  ],
+  "useWhen": [
+    "Keep debug prints out of production bundles",
+    "Clean up after the agent traced a bug",
+    "Review front-end diffs with less noise",
+    "Push the team toward a real logger"
+  ],
+  "hook": {
+    "event": "PostToolUse",
+    "matcher": "Edit|Write",
+    "command": "node -e \"let d='';process.stdin.on('data',x=>d+=x).on('end',()=>{let j={};try{j=JSON.parse(d)}catch(e){return}const i=j.tool_input||{};const f=String(i.file_path||'');if(!/[.](js|jsx|ts|tsx|mjs|cjs|vue|svelte)[ ]/i.test(f+' ')||/[.](test|spec|stories)[.]/i.test(f))return;const t=String(i.new_string||i.content||'');if(!/console[.]log[ ]*[(]/.test(t))return;let n='';try{n=require('fs').readFileSync(f,'utf8').split(String.fromCharCode(10)).map((l,k)=>/^[ ]*console[.]log/.test(l)?k+1:0).filter(Boolean).slice(0,5).join(', ')}catch(e){}console.error('Warning: console.log was added to '+f+(n?' (lines '+n+')':'')+'. Remove it or switch to the project logger before finishing.');process.exitCode=2})\"",
+    "timeout": 10
+  },
+  "example": {
+    "prompt": "Find out why the cart total is wrong.",
+    "result": "The agent adds a console.log to cart.ts. The hook reports the line, and the agent removes the print once the cause is found."
+  },
+  "faq": [
+    {
+      "question": "Is the edit undone?",
+      "answer": "No. The change is already written. The hook only tells the agent, which then removes the line on its own."
+    },
+    {
+      "question": "Does it flag console.error or console.warn?",
+      "answer": "No. Only console.log is matched, because the other methods are often used on purpose for real error reporting."
+    }
+  ],
+  "access": [
+    "Reads the edited text and then the saved file to find line numbers",
+    "Prints a warning and changes no file"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

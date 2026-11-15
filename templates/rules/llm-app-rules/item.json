@@ -1,0 +1,46 @@
+{
+  "slug": "llm-app-rules",
+  "title": "LLM App Rules",
+  "kind": "rules",
+  "category": "data",
+  "summary": "Project rules for LLM applications: prompts stored as files, validated structured output, bounded retries, evals, redacted logs and cost caps.",
+  "description": [
+    "An LLM call is an unreliable network service with a variable price. These rules make an agent treat it that way: prompts live in versioned files, outputs are validated, and every call has limits.",
+    "They add evals and logging so quality changes are measured instead of guessed, whether the app is written in Python or TypeScript."
+  ],
+  "stacks": [
+    "python",
+    "typescript"
+  ],
+  "topics": [
+    "api-design",
+    "logging"
+  ],
+  "useWhen": [
+    "You are adding a feature that calls a language model API",
+    "Prompts are long strings buried inside functions",
+    "Model output is parsed with regular expressions",
+    "There is no way to tell whether a prompt change made things better"
+  ],
+  "body": "# Project rules: LLM applications\n\n## Prompts\n- Store prompts as files (`prompts/*.md` or templates), not inline strings. Version them with the code and name the variables explicitly. Never build a prompt by concatenating raw user text into instructions; put user content in a clearly delimited section.\n- Keep model names, temperature and token limits in config, not scattered through call sites.\n\n## Output\n- Ask for structured output through the provider's schema or tool-calling feature and validate it with Pydantic or Zod. On a validation failure, retry once with the error, then fail with a typed error.\n- Treat model text as untrusted. Never run it as code, shell commands or SQL, and escape it before rendering.\n\n## Reliability and cost\n- Wrap every call with a timeout, a bounded retry with exponential backoff and jitter for rate limits and 5xx errors, and a per-request and per-user token budget. Stream long answers.\n- Cache deterministic calls. Use a smaller model for classification and routing.\n\n## Evals\n- Keep a golden set of real inputs with expected properties. Run it in CI and on every prompt or model change, and compare scores to the last run.\n\n## Logging and secrets\n- Log model, prompt version, token counts, latency and request id. Redact personal data and never log keys. Load keys from the environment.\n\n## Done checks\n- Run the type checker, linter, unit tests with a mocked client, and the eval suite.",
+  "example": {
+    "prompt": "Add a feature that summarizes support tickets into three bullet points",
+    "result": "The agent adds a prompt file, a schema with a bullets array of fixed length, a client wrapper with timeout and one retry, a mocked unit test, and five golden tickets in the eval set."
+  },
+  "faq": [
+    {
+      "question": "Which provider does this assume?",
+      "answer": "None. The rules describe habits that apply to any hosted or local model API."
+    },
+    {
+      "question": "Why validate output when the model supports JSON mode?",
+      "answer": "JSON mode guarantees syntax, not meaning. Validation catches missing fields, wrong types and out-of-range values."
+    }
+  ],
+  "access": [
+    "Instructions only; it does not read or run anything by itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

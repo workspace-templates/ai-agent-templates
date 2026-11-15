@@ -1,0 +1,73 @@
+{
+  "slug": "grafana-mcp",
+  "title": "Grafana MCP Server",
+  "kind": "mcp",
+  "category": "devops",
+  "summary": "Let your agent search Grafana dashboards, query Prometheus and Loki and read alert rules through Grafana's own MCP server, in read-only mode.",
+  "description": [
+    "The Grafana MCP server connects an agent to a Grafana instance through a service account. It can find dashboards, run PromQL and LogQL queries against your datasources and list alert rules, so you can ask about a metric instead of hunting through panels.",
+    "This setup starts it with uvx and passes the --disable-write flag, which blocks every create, update and delete call. Remove the flag only if you want the agent to edit dashboards or alerts."
+  ],
+  "stacks": [],
+  "topics": [
+    "logging",
+    "debugging"
+  ],
+  "useWhen": [
+    "Find the dashboard that tracks checkout latency",
+    "Run a Prometheus query for error rate over the last hour",
+    "Search Loki logs for a failing request id",
+    "See which alert rules are firing right now"
+  ],
+  "mcp": {
+    "name": "grafana",
+    "transport": "stdio",
+    "command": "uvx",
+    "args": [
+      "mcp-grafana",
+      "--disable-write"
+    ],
+    "env": [
+      {
+        "name": "GRAFANA_URL",
+        "description": "Base URL of your Grafana instance, such as https://myinstance.grafana.net"
+      },
+      {
+        "name": "GRAFANA_SERVICE_ACCOUNT_TOKEN",
+        "description": "A Grafana service account token; give the account a Viewer role to match the read-only flag"
+      }
+    ],
+    "headers": [],
+    "source": "https://github.com/grafana/mcp-grafana",
+    "access": [
+      "Reads dashboards, datasources, alert rules and query results from your Grafana",
+      "Runs queries against Prometheus, Loki and other datasources the token can reach",
+      "Cannot change anything while --disable-write is set"
+    ]
+  },
+  "example": {
+    "prompt": "Which alert rules in the payments folder are firing, and what does the p95 latency query for the checkout service return for the last 30 minutes?",
+    "result": "Two rules are firing: PaymentsQueueDepth and CheckoutErrorBudget. The p95 latency query shows 410 ms now, up from 180 ms at the start of the window, with the jump at 14:12."
+  },
+  "faq": [
+    {
+      "question": "Do I need to install Grafana tools first?",
+      "answer": "Only uv, which provides uvx. The server itself is fetched on first run."
+    },
+    {
+      "question": "Can the agent change my dashboards?",
+      "answer": "Not with this config. The --disable-write flag removes the tools that create, update or delete. The raw SQL tools are removed too."
+    },
+    {
+      "question": "Does it work with Grafana Cloud?",
+      "answer": "Yes. Set GRAFANA_URL to your .grafana.net address and use a service account token from that stack."
+    }
+  ],
+  "access": [
+    "Reads dashboards, alerts and datasource queries",
+    "Write tools are turned off by the flag"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

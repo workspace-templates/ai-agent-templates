@@ -1,0 +1,21 @@
+# Project rules: Rust CLI
+
+## Layout
+- Split a library crate (`src/lib.rs`) from a thin `src/main.rs`. Put commands in modules; `main` parses, calls the library and maps the result to an exit code.
+- Pin `rust-version`, commit `Cargo.lock` for binaries and keep dependencies few.
+
+## Arguments
+- Define arguments with `clap` derive (`Parser`, `Subcommand`, `ValueEnum`). Document every flag with doc comments so `--help` is useful. Support `--json` for machine output.
+
+## Errors and exit codes
+- Library errors are typed with `thiserror`; the binary may wrap them with `anyhow` and `.context(...)`.
+- No `unwrap`, `expect` or indexing on user data outside tests. Return `Result` and let `main` print one line to stderr.
+- Exit `0` on success, `1` on failure, `2` for usage errors. Handle broken pipes quietly.
+
+## Output and logging
+- Results go to stdout; diagnostics go to stderr through `tracing` with an `EnvFilter` and `-v` flags.
+- Prefer borrowing (`&str`, `&Path`) in signatures and `PathBuf` for owned paths.
+
+## Quality
+- Unit-test logic in the library. Test the binary with `assert_cmd` and `predicates`, using `tempfile` for files.
+- Run `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings` and `cargo test` before finishing.

@@ -1,0 +1,23 @@
+# Project rules: React with TypeScript
+
+## Types
+- Turn on `strict`. Do not use `any`; use `unknown` and narrow. Define props as a `type` next to the component and do not use `React.FC`.
+- Model variants with discriminated unions instead of several optional booleans. Derive types from schemas (Zod) at boundaries.
+
+## Components and hooks
+- Function components only. Keep them small; extract a custom hook when logic repeats or exceeds a screen.
+- Follow the Rules of Hooks and keep the dependency arrays honest; fix the cause instead of silencing the lint rule.
+- Do not copy props into state. Compute derived values during render. Reach for `useMemo` and `useCallback` only after measuring.
+- Use effects to sync with outside systems, not to transform data. Fetch with TanStack Query or the framework's loader, and handle loading, error and empty states.
+- Give list items a stable `key` from the data, never the index for reorderable lists.
+
+## Layout
+- Group by feature: `features/orders/{components,hooks,api,index.ts}`. Export only the public surface from `index.ts`.
+- Name files after the component, one exported component per file.
+
+## Accessibility
+- Use semantic elements first (`button`, `nav`, `label`). Every input has a label, every image an `alt`, and every interactive element works by keyboard.
+
+## Testing and checks
+- Use Vitest or Jest with Testing Library. Query by role and accessible name, and simulate users with `user-event`. Do not test implementation details.
+- Run `tsc --noEmit`, the linter and the tests before finishing.

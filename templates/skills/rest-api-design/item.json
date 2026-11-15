@@ -1,0 +1,43 @@
+{
+  "slug": "rest-api-design",
+  "title": "REST API Design",
+  "kind": "skill",
+  "category": "backend",
+  "summary": "Designs or reviews HTTP APIs: resource names, methods, status codes, pagination, error format and versioning, with a short spec before any code.",
+  "description": [
+    "An API outlives the code behind it, so mistakes in names, status codes and error shapes stay for years. This skill makes the agent settle the contract first, in a few lines you can read, and only then write handlers.",
+    "It also reviews an existing API against the same checklist and lists the changes that would break clients so they can be planned instead of discovered."
+  ],
+  "stacks": [],
+  "topics": [
+    "api-design"
+  ],
+  "useWhen": [
+    "Adding a new endpoint or a whole new resource",
+    "Reviewing a pull request that changes responses",
+    "Clients complain about inconsistent errors or paging",
+    "Planning a v2 and deciding what must not break"
+  ],
+  "body": "# REST API design\n\nSettle the contract before writing handlers.\n\n## Steps\n\n1. Read the existing API first: naming, casing, auth, error format, pagination. Match it unless asked to change it.\n2. Model resources as plural nouns: `GET /orders`, `GET /orders/{id}`, `POST /orders`, `PATCH /orders/{id}`, `DELETE /orders/{id}`. Nest only one level (`/orders/{id}/items`). Actions that fit no resource get a sub-resource verb (`POST /orders/{id}/cancel`).\n3. Use methods correctly: GET and DELETE are safe to retry, PUT replaces, PATCH changes fields, POST creates. Make POST retry-safe with an `Idempotency-Key` header for payments or anything with side effects.\n4. Return precise status codes: 200, 201 with `Location`, 204, 400 malformed, 401 not logged in, 403 not allowed, 404, 409 conflict, 422 invalid fields, 429 with `Retry-After`. Never 200 with an error in the body.\n5. Use one error shape everywhere: `{\"error\":{\"code\":\"out_of_stock\",\"message\":\"...\",\"fields\":[{\"name\":\"qty\",\"issue\":\"...\"}]}}`. The code is stable and machine-readable.\n6. Paginate every list: cursor-based (`?limit=50&cursor=...`) with a hard maximum and a `next` cursor. Filter and sort with named query params.\n7. Version in the path (`/v1`) and only for breaking changes. Adding optional fields is not breaking; removing, renaming or changing a type is.\n8. Write the spec (OpenAPI or a table) and get it confirmed before implementing.\n\n## Report\n\nThe endpoint table, an example request and response for each, and a list of breaking changes with a migration path.",
+  "example": {
+    "prompt": "Design endpoints for team invitations",
+    "result": "POST /v1/teams/{id}/invitations (201, Location), GET same path (cursor paged, max 100), DELETE /v1/invitations/{id} (204), POST /v1/invitations/{id}/accept. Errors: 409 already_member, 422 invalid_email, 429 on more than 20 invites per hour. Not breaking: adding \"expires_at\" to the response. Spec saved in docs/openapi.yaml."
+  },
+  "faq": [
+    {
+      "question": "Does it insist on pure REST?",
+      "answer": "No. It follows the conventions already in your API and uses plain HTTP semantics where they help. Verb sub-resources are fine for actions that are not CRUD."
+    },
+    {
+      "question": "Why cursors rather than page numbers?",
+      "answer": "Page numbers skip or repeat rows when data changes between requests, and deep offsets get slow. A cursor stays correct and cheap."
+    }
+  ],
+  "access": [
+    "Reads files in your project",
+    "Writes spec files and handlers when you approve the contract"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

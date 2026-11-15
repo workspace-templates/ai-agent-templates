@@ -1,0 +1,45 @@
+{
+  "slug": "concurrency-bug-analysis",
+  "title": "Concurrency Bug Analysis",
+  "kind": "skill",
+  "category": "code-quality",
+  "summary": "Finds races, deadlocks and lost updates by mapping shared state and lock order, then proposes the narrowest lock, queue or atomic operation that fixes them.",
+  "description": [
+    "Concurrency bugs resist the usual debugging: they vanish under a debugger and show up on a busy Tuesday. This skill reasons about them on paper first, listing what is shared, who writes it and what ordering the code assumes.",
+    "The fix it proposes is the smallest one that closes the window, with a test or stress loop that makes the failure reproducible. It avoids the reflex of adding a global lock."
+  ],
+  "stacks": [],
+  "topics": [
+    "debugging",
+    "performance"
+  ],
+  "useWhen": [
+    "A counter, balance or stock level occasionally ends up wrong",
+    "The service hangs under load and a thread dump shows blocked threads",
+    "A test passes alone and fails when run in parallel",
+    "You are adding background workers to code that was single-threaded"
+  ],
+  "body": "# Concurrency bug analysis\n\nReason first, then reproduce, then fix. A fix without a reproduction is a guess.\n\n## Steps\n\n1. Build the map. List every piece of shared mutable state (globals, singletons, caches, rows, files) and every thread, task, worker or request path that touches it. Mark each access as read or write.\n2. Look for the usual shapes:\n   - Check-then-act: `if (!exists) create`, `if (stock > 0) stock--`.\n   - Read-modify-write without atomicity: `count = count + 1`, or a SQL `SELECT` then `UPDATE`.\n   - Lock-order inversion: A takes lock 1 then 2, B takes 2 then 1.\n   - Holding a lock across I/O or a callback.\n   - Publishing an object before it is fully built; unsynchronized lazy init.\n   - Shared iteration while another path mutates the collection.\n3. Write the interleaving that breaks it as numbered steps for two actors. If you cannot write the interleaving, the finding is not proven; drop it.\n4. Reproduce with a stress test: many parallel callers in a loop, a forced yield or sleep between the check and the act, or the language's race detector (`go test -race`, ThreadSanitizer, or the equivalent).\n5. Choose the narrowest fix, in this order: remove the sharing; use an atomic or database operation (`UPDATE ... SET n = n + 1`, compare-and-swap, unique constraint); a queue that serializes writes; a lock held for the shortest code, with one global lock order.\n6. Re-run the stress test many times and confirm the failure is gone.\n\n## Rules\n\n- Never add `sleep` or retries as the fix.\n- Do not hold locks while calling unknown code.\n\n## Report\n\nThe interleaving, the evidence, the fix, the test, and the remaining shared state you could not prove safe.",
+  "example": {
+    "prompt": "Inventory sometimes goes negative under load. Find the race.",
+    "result": "Check-then-act in reserve(): src/stock.ts:31 reads stock then writes stock - qty in a separate query, so two requests both pass the check. Reproduced with 50 parallel calls: 9 oversold. Fix: single `UPDATE stock SET qty = qty - $1 WHERE id = $2 AND qty >= $1`, treating 0 rows as out of stock. 200 stress runs, no failures."
+  },
+  "faq": [
+    {
+      "question": "Why not just add a lock around the function?",
+      "answer": "A broad lock hides the bug but serializes everything and can create deadlocks. An atomic database operation or a short, ordered lock fixes the cause at lower cost."
+    },
+    {
+      "question": "Does it work for async code in one thread?",
+      "answer": "Yes. Awaiting between a check and a write lets other tasks interleave, so the same analysis applies."
+    }
+  ],
+  "access": [
+    "Reads source files and thread dumps or logs you provide",
+    "Adds stress tests",
+    "Runs your tests, including race detectors where available"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

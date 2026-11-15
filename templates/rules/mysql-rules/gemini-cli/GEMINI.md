@@ -1,0 +1,21 @@
+# Project rules: MySQL
+
+## Engine and encoding
+- Use InnoDB for every table. Set the database and tables to `utf8mb4` with `utf8mb4_0900_ai_ci` (or the server's modern default). Keep `sql_mode` strict so bad data raises errors instead of being truncated.
+- Store times in UTC with `DATETIME` or `TIMESTAMP` and convert in the application. Use `DECIMAL` for money, `BIGINT UNSIGNED` auto-increment keys or ordered UUIDs stored as `BINARY(16)`.
+
+## Schema
+- Use snake_case names. Declare `NOT NULL`, defaults, unique keys and foreign keys. Keep the primary key short, because every secondary index repeats it.
+- Prefer `VARCHAR` with a sensible length. Avoid `ENUM` for values that will change.
+
+## Indexes and queries
+- Index columns used in `WHERE`, `JOIN` and `ORDER BY`, with the most selective equality column first in composite indexes. Do not wrap an indexed column in a function or compare mismatched types.
+- Check each new query with `EXPLAIN ANALYZE`. List columns instead of `SELECT *`. Use keyset pagination instead of large `OFFSET` values.
+- Always use prepared statements and bound parameters.
+
+## Transactions and migrations
+- Keep transactions short and access rows in a consistent order to limit deadlocks; retry on deadlock errors.
+- Apply schema changes with `ALGORITHM=INPLACE` or a tool such as gh-ost or pt-online-schema-change for large tables. One change per migration, tested on a copy with production-sized data.
+
+## Checks
+- Run the migrations from scratch and the test suite against a real MySQL 8 container.

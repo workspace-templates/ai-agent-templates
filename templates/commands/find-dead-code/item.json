@@ -1,0 +1,45 @@
+{
+  "slug": "find-dead-code",
+  "title": "Find Dead Code",
+  "kind": "command",
+  "category": "code-quality",
+  "summary": "Finds unused exports, files and dependencies and shows the evidence for each, so you can delete with confidence.",
+  "description": [
+    "Dead code costs reading time and hides real structure, but deleting it by guess breaks things that load code dynamically. This command looks for unused exports, orphan files and unused packages, then proves each claim with searches.",
+    "Every result carries its evidence and a confidence level. Anything reached by reflection, string imports or a public package interface is flagged instead of listed as safe."
+  ],
+  "stacks": [],
+  "topics": [
+    "refactoring",
+    "code-review"
+  ],
+  "useWhen": [
+    "Before a cleanup or a major refactor",
+    "The bundle or image size keeps growing",
+    "You suspect packages in the manifest are no longer used",
+    "You are removing a feature and need to find what it left behind"
+  ],
+  "body": "Find dead code in: $ARGUMENTS (whole project if empty).\n\n1. Use the project's own tools first if present (knip, ts-prune, depcheck, vulture, deadcode, `go vet`). Otherwise search by hand.\n2. For each candidate export, file or dependency, search the whole repository, including tests, scripts, config, templates and docs, for the name and its string forms.\n3. Check dynamic use before calling anything dead: route or plugin auto-loading, dependency injection, reflection, `require(variable)`, framework conventions such as pages and migrations, and exports meant for outside consumers.\n4. Rate each: **certain** (no reference anywhere), **likely** (referenced only by other dead code or tests), **unsure** (dynamic or public use possible).\n5. Never delete anything in this step.\n\nReport a table with item, location, evidence (the searches run and their results), and confidence. List unused dependencies separately with the file that last imported them. Then ask which group to remove, and run the tests after removal.",
+  "argumentHint": "[folder, default whole project]",
+  "example": {
+    "prompt": "/find-dead-code src/",
+    "result": "certain: src/utils/legacyDate.ts, no imports (searched \"legacyDate\", \"utils/legacy\"), last touched 2023.\nlikely: export formatPhone in src/lib/format.ts, used only in format.test.ts.\nunsure: src/plugins/csv.ts, loaded by name from config/plugins.json.\nUnused dependencies: moment, lodash.debounce.\nRemove the certain group?"
+  },
+  "faq": [
+    {
+      "question": "Can it delete files on its own?",
+      "answer": "No. It reports first and removes only the group you choose, then runs the tests."
+    },
+    {
+      "question": "Why mark some items unsure?",
+      "answer": "Dynamic loading and public exports hide real usage. Those items need your knowledge of the system."
+    }
+  ],
+  "access": [
+    "Reads and searches the repository",
+    "Edits files only after you pick what to remove"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

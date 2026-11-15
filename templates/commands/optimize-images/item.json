@@ -1,0 +1,44 @@
+{
+  "slug": "optimize-images",
+  "title": "Optimize Images",
+  "kind": "command",
+  "category": "frontend",
+  "summary": "Scans the project for heavy images and outdated formats, then proposes sizes, conversions and markup changes before touching any file.",
+  "description": [
+    "Images are usually the largest part of a page, and the common mistakes are easy to spot: a 4000 pixel photo shown at 400, PNG used for photographs, no width and height set. This command measures what is in the project and builds a list of savings.",
+    "It proposes conversions and the markup changes that go with them, and it never overwrites an original without your approval."
+  ],
+  "stacks": [],
+  "topics": [
+    "performance"
+  ],
+  "useWhen": [
+    "Lighthouse flags oversized or unoptimized images",
+    "The repository has grown because of photos committed over the years",
+    "You are moving to WebP or AVIF and need a plan",
+    "A page feels slow on mobile data"
+  ],
+  "body": "Audit images in: $ARGUMENTS (default: the whole repository, skipping node_modules and build output).\n\n1. List image files with size on disk and pixel dimensions (`find` with `-size +200k`, and `identify`, `sharp` or `file` for dimensions). Report the 20 largest.\n2. For each, find where it is used (search for the file name in code, templates and CSS) and the largest size it is displayed at.\n3. Flag: dimensions more than 2x the displayed size, PNG or BMP photographs, JPEG graphics with flat colors, SVGs with embedded bitmaps, and files nothing references.\n4. Propose per file: target format (AVIF or WebP with a fallback, or SVG), target width, and estimated saving. Suggest `srcset`, `sizes`, `loading=\"lazy\"` below the fold, and explicit `width` and `height` to prevent layout shift.\n5. Do not convert or delete anything yet.\n\nShow a table of file, current size, proposed result and saving, with a total. Ask which files to convert, keep originals in a clearly named folder, and name the exact command you will run.",
+  "argumentHint": "[folder, default whole repository]",
+  "example": {
+    "prompt": "/optimize-images public/",
+    "result": "Top saving: public/hero.png, 3.8 MB, 4200x2800, shown at 1200 wide. Proposed: hero-1200.avif (about 140 KB) plus a webp fallback, with srcset at 600 and 1200.\nTotal: 11.2 MB can become about 1.1 MB. 3 files are unreferenced. Convert the top 10?"
+  },
+  "faq": [
+    {
+      "question": "Does it modify my images straight away?",
+      "answer": "No. You get a table of proposed changes first, and conversions start only after you pick the files."
+    },
+    {
+      "question": "Which tools does it need?",
+      "answer": "It uses whatever is installed, such as sharp, ImageMagick or squoosh-cli. If none is present it tells you which one to add instead of installing it."
+    }
+  ],
+  "access": [
+    "Reads image files and the code that references them",
+    "Writes converted images only after you confirm"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,44 @@
+{
+  "slug": "playwright-e2e-rules",
+  "title": "Playwright E2E Rules",
+  "kind": "rules",
+  "category": "testing",
+  "summary": "Project rules for Playwright suites: role-based locators, fixtures, test isolation, web-first assertions, traces and CI sharding.",
+  "description": [
+    "These rules keep end-to-end suites fast and stable. They steer an agent toward locators users would recognize, independent tests and assertions that wait for the page instead of guessing.",
+    "They also cover failure diagnosis and CI, so a red run produces a trace you can open and the suite scales across machines."
+  ],
+  "stacks": [
+    "typescript"
+  ],
+  "topics": [
+    "testing"
+  ],
+  "useWhen": [
+    "You add Playwright to a project",
+    "Tests fail intermittently because of timeouts",
+    "Locators are long CSS chains",
+    "The suite is too slow to run on every pull request"
+  ],
+  "body": "# Project rules: Playwright E2E\n\n## Locators and assertions\n- Locate by role, label, text or test id: `getByRole`, `getByLabel`, `getByTestId`. Avoid XPath and deep CSS chains. Add `data-testid` in the app when no accessible name exists.\n- Use web-first assertions (`await expect(locator).toBeVisible()`, `toHaveText`, `toHaveURL`), which retry. Never use `waitForTimeout` or fixed sleeps; wait on a condition or a network response.\n- No `if` branches in tests; one behavior per test, named like a sentence.\n\n## Isolation and setup\n- Each test runs alone and in any order. Create data through the API or a fixture, not through earlier tests.\n- Log in once in a setup project and reuse `storageState`. Put page objects and custom fixtures in `tests/fixtures`, using `test.extend`.\n- Mock only third-party services with `page.route`; keep your own backend real.\n\n## Config and CI\n- Set `baseURL`, `retries: 2` only in CI, `trace: 'on-first-retry'`, `screenshot: 'only-on-failure'`, and `forbidOnly` in CI.\n- Shard with `--shard=1/4` across jobs, merge blob reports and upload the HTML report and traces.\n- Run `npx tsc --noEmit` and `npx playwright test` locally before finishing.",
+  "example": {
+    "prompt": "Write a test for the checkout flow",
+    "result": "The agent adds a checkout spec that seeds a cart through the API, uses role locators, asserts the confirmation page with a retrying expect and has no sleeps."
+  },
+  "faq": [
+    {
+      "question": "Why retries only in CI?",
+      "answer": "Local retries hide flaky tests from the author who could still fix them."
+    },
+    {
+      "question": "Can I use CSS selectors at all?",
+      "answer": "Rarely. Prefer roles and test ids; use CSS only for elements with no accessible handle."
+    }
+  ],
+  "access": [
+    "Instructions only; it does not read or run anything by itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

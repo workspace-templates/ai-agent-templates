@@ -1,0 +1,45 @@
+{
+  "slug": "kotlin-ktor-rules",
+  "title": "Kotlin Ktor Rules",
+  "kind": "rules",
+  "category": "backend",
+  "summary": "Project rules for Ktor servers: routing extension functions, kotlinx serialization, auth plugins, structured coroutines and testApplication tests.",
+  "description": [
+    "Ktor gives you a toolkit, not a layout, so two agents will build two different servers. These rules choose a layout built from small routing extensions and installable plugins.",
+    "They also keep coroutine use safe on the server, where a blocking call or leaked job quietly reduces throughput for every request."
+  ],
+  "stacks": [
+    "kotlin"
+  ],
+  "topics": [
+    "api-design",
+    "testing"
+  ],
+  "useWhen": [
+    "You are building a new Ktor service",
+    "Routing code sits in one giant Application module",
+    "Blocking database calls run on the request dispatcher",
+    "You want tests that do not bind a real port"
+  ],
+  "body": "# Project rules: Ktor server\n\n## Structure\n- `Application.module()` only installs plugins and calls feature functions such as `Route.orderRoutes(service)`. One file per feature with routes, service and repository.\n- Wire dependencies by constructor, using Koin or plain functions. No global singletons.\n\n## Plugins\n- Install `ContentNegotiation` with kotlinx.serialization and `@Serializable` request and response classes. Do not reflect over domain objects.\n- Use `StatusPages` to map exceptions to a single error body and status. Use `CallLogging` with a call id.\n- Authenticate with the `Authentication` plugin (JWT or session); wrap protected routes in `authenticate(\"name\") { ... }`. Keep keys and secrets in environment config.\n\n## Coroutines\n- Handlers are `suspend`. Run blocking JDBC or file work in `withContext(Dispatchers.IO)`, or use a driver that suspends.\n- Never use `GlobalScope` or `runBlocking` in server code. Launch background work from an application-scoped `CoroutineScope`.\n- Respect cancellation; do not swallow `CancellationException`.\n\n## Data and config\n- Read settings from `application.conf` or YAML with environment overrides. Use Exposed or jOOQ transactions with explicit boundaries.\n\n## Tests\n- Use `testApplication { }` with the real module and a test config; call endpoints through `client`. Test auth failures as well as happy paths.\n\n## Before finishing\nRun `./gradlew ktlintCheck test build`.",
+  "example": {
+    "prompt": "Add a protected endpoint listing the caller's invoices",
+    "result": "The agent adds a routing extension under authenticate, reads the principal, queries on the IO dispatcher, returns a serializable list, and tests both 200 and 401 with testApplication."
+  },
+  "faq": [
+    {
+      "question": "Does it require Koin?",
+      "answer": "No. Any constructor-based wiring works. Koin is named only as a common option."
+    },
+    {
+      "question": "Why avoid runBlocking?",
+      "answer": "It parks a server thread until the work finishes, which cancels the benefit of coroutines and can stall unrelated requests."
+    }
+  ],
+  "access": [
+    "Instructions only; it does not run commands itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

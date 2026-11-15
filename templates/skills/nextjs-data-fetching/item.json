@@ -1,0 +1,46 @@
+{
+  "slug": "nextjs-data-fetching",
+  "title": "Next.js Data Fetching",
+  "kind": "skill",
+  "category": "frontend",
+  "summary": "Chooses server components, caching and revalidation for each data need in the Next.js App Router, and fixes slow or stale pages.",
+  "description": [
+    "In the App Router the same fetch can be static, cached, revalidated or dynamic depending on a few lines, and the defaults have changed between versions. This skill makes the agent decide deliberately for each piece of data.",
+    "It fetches on the server by default, removes waterfalls, streams slow parts behind Suspense, and ties every cache to a clear way of invalidating it."
+  ],
+  "stacks": [
+    "nextjs",
+    "react"
+  ],
+  "topics": [
+    "performance"
+  ],
+  "useWhen": [
+    "A page is slow because requests run one after another",
+    "Users see stale data after a mutation",
+    "You are moving a Pages Router app to the App Router",
+    "You cannot tell why a route is static or dynamic"
+  ],
+  "body": "# Next.js data fetching\n\nDecide the freshness of each piece of data first; the code follows from that.\n\n## Steps\n\n1. Check the Next.js version in package.json and read its docs for caching defaults; they differ between 14 and 15 and later. Do not rely on memory.\n2. For each data need ask: who sees it (everyone or one user), how fresh must it be (never changes, minutes, instant), and what changes it. Then choose:\n   - Same for everyone and rarely changes: static, with `revalidate` seconds or tag-based revalidation.\n   - Same for everyone but changes on events: tag the fetch and call `revalidateTag` or `revalidatePath` from the mutation.\n   - Per user or per request (cookies, headers, searchParams): dynamic; keep it in a small component behind `<Suspense>`.\n3. Fetch in server components with `async`/`await`. Start independent requests together with `Promise.all`; never await them in sequence. Pass promises down and unwrap them with `use` where useful.\n4. Wrap slow sections in `<Suspense fallback>` with a `loading.tsx` so the shell streams first.\n5. Deduplicate: call the same data function in several components freely, wrap non-fetch calls (ORM, SDK) in `cache()`.\n6. Mutations use Server Actions or route handlers, validate input, and then revalidate the affected tags or paths.\n7. Use client components only for interactivity. Fetch in them with a query library, and pass server-fetched initial data as props.\n8. Check the build output: it lists which routes are static, dynamic or ISR. Confirm it matches the plan.\n\n## Rules\n\n- Never put secrets or server-only imports in client components; use `server-only`.\n- Do not use `force-dynamic` to hide a caching bug.\n\n## Report\n\nA table of data, freshness choice, and invalidation, plus the build route summary.",
+  "example": {
+    "prompt": "The dashboard page takes 3 seconds and shows old totals after saving an order",
+    "result": "Cause: three awaits in sequence and a cached totals fetch with no invalidation. Now Promise.all runs the 3 queries together, the recent-orders table streams behind Suspense, and the createOrder action calls revalidateTag(\"totals\"). Build output: /dashboard is dynamic, /pricing stays static. Load time dropped to 0.9 s locally."
+  },
+  "faq": [
+    {
+      "question": "Does it work with the Pages Router?",
+      "answer": "This skill targets the App Router. For getServerSideProps and getStaticProps projects, say so and it will plan a migration instead."
+    },
+    {
+      "question": "Why does it check the version first?",
+      "answer": "Next.js changed what is cached by default between major releases, so advice that is right for one version causes stale pages in another."
+    }
+  ],
+  "access": [
+    "Reads and edits Next.js source files",
+    "Runs your build and dev server"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

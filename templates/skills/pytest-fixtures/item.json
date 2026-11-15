@@ -1,0 +1,46 @@
+{
+  "slug": "pytest-fixtures",
+  "title": "pytest Fixtures",
+  "kind": "skill",
+  "category": "testing",
+  "summary": "Designs pytest fixtures, parametrization and conftest layout so Python suites run fast, read clearly and do not share hidden state.",
+  "description": [
+    "Large pytest suites often grow giant conftest files, autouse fixtures nobody remembers and fixtures that quietly depend on each other. This skill teaches the agent to place and scope fixtures deliberately.",
+    "It covers scope choices, yield cleanup, factory fixtures, parametrize with ids, and monkeypatch, plus a habit of reading a test and seeing what it needs from its arguments."
+  ],
+  "stacks": [
+    "python"
+  ],
+  "topics": [
+    "testing",
+    "python"
+  ],
+  "useWhen": [
+    "A Python suite is slow because every test rebuilds a database",
+    "conftest.py has hundreds of lines and nobody knows what is used",
+    "Several tests repeat the same setup with tiny differences",
+    "You need to test many input cases without copy-pasting"
+  ],
+  "body": "# pytest fixtures\n\nTests should declare what they need as arguments, and each fixture should do one job at the narrowest scope that stays fast.\n\n## Fixtures\n\n- Default to function scope. Raise it to `module` or `session` only for expensive, read-only resources such as a container or a compiled schema, and reset state per test inside it (transaction rollback, truncate).\n- Use `yield` for teardown, not `request.addfinalizer` unless several finalizers are needed.\n- Give a fixture a noun name (`db_session`, `logged_in_client`). A fixture that returns a function building objects is a factory: `make_order(status=\"paid\")`. Prefer factories over many near-identical fixtures.\n- Avoid `autouse=True` except for safety nets, such as blocking real network calls or freezing time.\n\n## Layout\n\n- Put fixtures used by one file in that file, by one directory in its `conftest.py`, and by the whole suite in the root `conftest.py`. Move them up only when a second user appears.\n- Share through plugins or `pytest_plugins` rather than importing fixtures from test modules.\n\n## Parametrize\n\n- `@pytest.mark.parametrize(\"raw, expected\", [...], ids=[...])` with readable ids. Use `pytest.param(..., marks=pytest.mark.xfail(reason=...))` for known gaps.\n- Combine with fixtures through indirect parametrization only when setup depends on the case.\n\n## Rules\n\n- Use `monkeypatch` and `tmp_path` rather than manual patching and shared directories.\n- Never hide an assertion in a fixture.\n- Run `pytest --setup-show` to confirm scope and order, and a random-order plugin once to test independence.\n\n## Report\n\nFixtures added or merged, scope decisions, and the run time before and after.",
+  "example": {
+    "prompt": "tests/ takes 4 minutes. Clean up the fixtures and speed it up.",
+    "result": "The db_engine fixture was function-scoped and rebuilt the schema 612 times. Made it session-scoped with a per-test rollback in db_session. Replaced 9 near-duplicate user fixtures with make_user(). conftest.py went from 410 to 140 lines. Run time: 4m10s to 58s."
+  },
+  "faq": [
+    {
+      "question": "When should a fixture be session scoped?",
+      "answer": "When building it is costly and tests only read it, or when each test resets it through a transaction. Never when tests mutate it freely."
+    },
+    {
+      "question": "Is it ok to import a fixture from another test file?",
+      "answer": "Avoid it. Move the fixture to a conftest.py at the right level so pytest discovers it by name and your linter stops flagging unused imports."
+    }
+  ],
+  "access": [
+    "Reads Python source and test files",
+    "Edits tests and conftest.py, and runs pytest"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

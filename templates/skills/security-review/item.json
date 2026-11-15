@@ -1,0 +1,44 @@
+{
+  "slug": "security-review",
+  "title": "Security Review",
+  "kind": "skill",
+  "category": "security",
+  "summary": "Reviews a code change for injection, broken authorization, secrets, SSRF and unsafe input handling, and reports only exploitable findings with a fix.",
+  "description": [
+    "General code review misses security bugs because they look like working code. This skill walks the diff the way an attacker would: where does input come in, where does it end up, and who is allowed to do this.",
+    "Each finding names the vulnerable line, a concrete request that exploits it and the smallest fix. Theoretical issues without a path from input to impact are left out."
+  ],
+  "stacks": [],
+  "topics": [
+    "security",
+    "code-review"
+  ],
+  "useWhen": [
+    "Before merging code that handles user input, files or URLs",
+    "When adding an endpoint, login flow or admin feature",
+    "After pulling in a new dependency or integration",
+    "When you want a quick OWASP-style pass over a pull request"
+  ],
+  "body": "# Security review\n\nReview the change as an attacker. Report only what you can exploit.\n\n## Steps\n\n1. Get the change: `git diff main...HEAD` or the files named. List every entry point it touches: routes, handlers, CLI args, file uploads, webhooks, queue messages.\n2. Trace each untrusted value from entry to sink. Flag sinks reached without validation or encoding:\n   - SQL, shell, template, LDAP or NoSQL queries built from strings (injection)\n   - HTML output without escaping, `innerHTML`, `dangerouslySetInnerHTML` (XSS)\n   - Outbound requests to a user-supplied URL, including redirects and DNS names that resolve to internal addresses (SSRF)\n   - File paths with `..` or absolute paths (traversal), unsafe deserialization, archive extraction\n3. Check authorization on every handler: is the caller logged in, and are they allowed to touch this specific record? Look for IDs taken from the request without an ownership check (IDOR).\n4. Check secrets and crypto: keys in code or logs, weak hashes for passwords, home-made tokens, missing expiry, cookies without HttpOnly, Secure and SameSite.\n5. Check new dependencies and CORS, CSRF and rate limits on state-changing routes.\n6. For each candidate, write the exact request or input that exploits it. If you cannot, drop it.\n\n## Rules\n\n- Never run exploits against real services, and never print secrets you find; quote the file and line only.\n\n## Report\n\nFindings ranked Critical to Low: file:line, the exploit input, impact, the fix as a code snippet. End with the areas you checked and found clean.",
+  "example": {
+    "prompt": "Security review of the new export endpoint",
+    "result": "Critical: src/api/export.ts:34 reads invoiceId from the query and loads it without checking the owner, so GET /export?invoiceId=1002 returns another customer's invoice. Fix: add where userId = session.userId. High: line 61 builds the file name from the \"title\" field, allowing ../ traversal. Clean: SQL is parameterized, rate limit present."
+  },
+  "faq": [
+    {
+      "question": "Will it find every vulnerability?",
+      "answer": "No. It covers the common classes in the changed code and tells you which areas it checked. Keep your scanners and dependency audits running."
+    },
+    {
+      "question": "Does it try the exploits?",
+      "answer": "No. It writes the request that would work and leaves running it to you, against a test environment."
+    }
+  ],
+  "access": [
+    "Reads files in your project",
+    "Runs read-only git commands"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

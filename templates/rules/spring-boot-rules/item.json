@@ -1,0 +1,46 @@
+{
+  "slug": "spring-boot-rules",
+  "title": "Spring Boot Rules",
+  "kind": "rules",
+  "category": "backend",
+  "summary": "Project rules for Spring Boot services: controller, service and repository layers, constructor injection, typed properties, validation and test slices.",
+  "description": [
+    "Spring Boot makes it easy to wire almost anything, which is why services drift into field injection, fat controllers and slow tests. These rules set the layering and the testing approach up front.",
+    "The agent learns to bind configuration into typed classes, validate at the edge, and choose the narrowest test annotation that proves the behavior."
+  ],
+  "stacks": [
+    "java",
+    "spring-boot"
+  ],
+  "topics": [
+    "api-design",
+    "testing"
+  ],
+  "useWhen": [
+    "You are adding endpoints to a Spring Boot service",
+    "Tests start the full context for every small check",
+    "Entities are leaking into JSON responses",
+    "Configuration values are scattered as @Value strings"
+  ],
+  "body": "# Project rules: Spring Boot\n\n## Layers\n- Package by feature (`orders/`, `billing/`), each with controller, service and repository. Controllers only translate HTTP; services hold business rules; repositories hold queries.\n- Use constructor injection with `final` fields. No field `@Autowired`.\n- Expose records or DTO classes at the API edge. Never serialize JPA entities.\n\n## Configuration\n- Bind settings with `@ConfigurationProperties` on a record and `@Validated`. Avoid scattered `@Value`.\n- Profiles for environments; secrets come from environment variables or a vault, never from committed YAML.\n\n## Web\n- Validate request bodies with `@Valid` and Jakarta constraints. Handle failures in one `@RestControllerAdvice` returning `ProblemDetail`.\n- Return `ResponseEntity` only when you need to set status or headers.\n\n## Data\n- `@Transactional` belongs on service methods, not controllers. Keep reads `readOnly = true`.\n- Prevent N+1 with fetch joins or entity graphs. Manage schema with Flyway or Liquibase, not `ddl-auto`.\n\n## Tests\n- `@WebMvcTest` for controllers, `@DataJpaTest` for repositories, plain JUnit 5 and Mockito for services. Use `@SpringBootTest` sparingly, with Testcontainers for real databases.\n\n## Before finishing\nRun `./mvnw verify` (or `./gradlew check`) and fix every warning you introduced.",
+  "example": {
+    "prompt": "Add an endpoint to refund an order line",
+    "result": "The agent adds a validated request record, a service method marked transactional, a ProblemDetail response for already refunded lines, and a WebMvcTest plus a service unit test."
+  },
+  "faq": [
+    {
+      "question": "Does it work for Gradle and Maven?",
+      "answer": "Yes. Only the final verify command differs, and the file names both."
+    },
+    {
+      "question": "Why avoid ddl-auto?",
+      "answer": "It changes the schema without review. A migration tool makes every schema change a visible, versioned file."
+    }
+  ],
+  "access": [
+    "Instructions only; reading or running anything is up to the agent following them"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

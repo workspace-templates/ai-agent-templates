@@ -1,0 +1,6 @@
+[mcp_servers.monday]
+command = "npx"
+args = ["@mondaydotcomorg/monday-api-mcp@latest","--read-only"]
+
+[mcp_servers.monday.env]
+MONDAY_TOKEN = "${MONDAY_TOKEN}"

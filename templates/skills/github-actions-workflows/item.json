@@ -1,0 +1,45 @@
+{
+  "slug": "github-actions-workflows",
+  "title": "GitHub Actions Workflows",
+  "kind": "skill",
+  "category": "devops",
+  "summary": "Writes GitHub Actions workflows that run fast, cache dependencies, use least-privilege tokens and share steps through reusable workflows.",
+  "description": [
+    "Workflow files tend to grow by copy and paste until every repository has five slightly different versions of the same build job. This skill makes the agent design the workflow first: which events trigger it, what can run in parallel, what is cached, and what permissions the token really needs.",
+    "The result is a workflow that finishes in minutes, cannot write to your repository unless a job says so, and pulls repeated logic into a reusable workflow or composite action instead of duplicating it."
+  ],
+  "stacks": [
+    "github-actions"
+  ],
+  "topics": [
+    "ci"
+  ],
+  "useWhen": [
+    "You are adding CI to a repository that has none",
+    "A workflow takes too long or reruns work that did not change",
+    "You copy the same job into a third repository",
+    "A security review flagged a workflow with write-all permissions"
+  ],
+  "body": "# GitHub Actions workflows\n\nWrite workflows that are fast, minimal in permissions and easy to reuse.\n\n## Steps\n\n1. Read `.github/workflows/` and the project's build and test scripts. Reuse the exact commands developers run locally.\n2. Set `permissions: contents: read` at the top of the file. Raise it per job only when needed, such as `pull-requests: write` for a comment job.\n3. Pick triggers on purpose: `pull_request` for checks, `push` to the default branch for deploys, `workflow_dispatch` for manual runs. Add `concurrency` with `cancel-in-progress: true` for pull request runs.\n4. Use the setup action's built-in cache (`cache: npm`, `cache: pip`) before writing a custom `actions/cache` step. Key custom caches on the lockfile hash.\n5. Split independent work (lint, unit tests, build) into parallel jobs. Use `needs` only for real dependencies.\n6. Use a `strategy.matrix` for versions or operating systems, with `fail-fast: false` when you want every result.\n7. Move logic repeated in two or more places into a reusable workflow (`on: workflow_call`) or a composite action.\n8. Pin third-party actions to a full commit SHA, with the version in a comment.\n\n## Rules\n\n- Never print secrets or pass them on the command line. Use `env:` from `secrets`.\n- Never use `pull_request_target` to run code from a fork.\n- Set `timeout-minutes` on every job.\n- Do not run deploy jobs on pull requests from forks.\n\n## Report\n\nList the files changed, the permissions each job holds, what is cached, and the expected effect on run time.",
+  "example": {
+    "prompt": "Our Node CI takes 14 minutes. Rewrite the workflow.",
+    "result": "Split ci.yml into lint, test and build jobs that run in parallel, enabled cache: npm, added concurrency to cancel stale runs, and set permissions to contents: read. Extracted the deploy steps into .github/workflows/deploy.yml with workflow_call. Expected run time: about 5 minutes."
+  },
+  "faq": [
+    {
+      "question": "Will it touch my deployment secrets?",
+      "answer": "No. It references secrets by name in the workflow and never asks for or writes their values. You add them in the repository settings."
+    },
+    {
+      "question": "Why pin actions to a commit SHA?",
+      "answer": "A tag can be moved after you reviewed it. A full SHA cannot, so a compromised release of an action does not reach your pipeline unnoticed."
+    }
+  ],
+  "access": [
+    "Reads and edits files under .github/workflows",
+    "Reads project scripts and lockfiles to match local commands"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

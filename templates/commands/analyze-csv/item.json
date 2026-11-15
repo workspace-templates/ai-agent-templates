@@ -1,0 +1,47 @@
+{
+  "slug": "analyze-csv",
+  "title": "Analyze CSV",
+  "kind": "command",
+  "category": "data",
+  "summary": "Loads a CSV, profiles every column and its quality problems, and summarizes the data with a few plots saved to disk.",
+  "description": [
+    "A new data file deserves a quick honest look before anyone builds on it. This command loads the CSV, guesses types, counts missing values and duplicates, and flags columns that look wrong.",
+    "It then writes a short summary of what the file contains and saves a handful of plots next to it. Your original file is never modified."
+  ],
+  "stacks": [
+    "python"
+  ],
+  "topics": [
+    "python",
+    "debugging"
+  ],
+  "useWhen": [
+    "You just received a data export and know nothing about it",
+    "Before loading a file into a database or model",
+    "You need a quick summary for a teammate",
+    "A report built on a CSV gives odd numbers"
+  ],
+  "body": "Analyze the CSV at: $ARGUMENTS\n\n1. Confirm the file exists and print its size and first 5 lines raw, so delimiter, encoding and header problems show up. Never modify the source file.\n2. Load it with pandas (`pd.read_csv`, pass `sep`, `encoding` and `dtype` as needed). Report rows, columns, memory use.\n3. Profile each column: inferred type, null count and percent, distinct count, min, max, mean and top values. Flag mixed types, dates stored as text, numbers with currency symbols, and IDs that are not unique.\n4. Check quality: exact duplicate rows, impossible values (negative ages, future birthdates), outliers beyond 3 standard deviations, inconsistent casing or trailing spaces.\n5. Write 3 to 5 plots with matplotlib into `./csv-analysis/`: missingness bar, the main numeric distributions, one category count, and one relationship worth seeing.\n\nFinish with a short summary: what each row represents, the three biggest problems, and suggested cleaning steps. Do not clean anything until asked.",
+  "argumentHint": "[path to the csv file]",
+  "example": {
+    "prompt": "/analyze-csv data/orders_2026.csv",
+    "result": "48,210 rows, 14 columns. Each row is one order line.\nProblems: 6% of ship_date missing, 312 duplicate order_id rows, price stored as text with a $ sign.\nPlots saved in csv-analysis/ (5 files). Shall I write a cleaning script?"
+  },
+  "faq": [
+    {
+      "question": "Does it change my CSV?",
+      "answer": "Never. It reads the file and writes only the plots into a separate output folder."
+    },
+    {
+      "question": "What about very large files?",
+      "answer": "It samples or reads in chunks when the file is big and says that the numbers come from a sample."
+    }
+  ],
+  "access": [
+    "Reads the CSV file",
+    "Runs Python and writes plot images to a csv-analysis folder"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

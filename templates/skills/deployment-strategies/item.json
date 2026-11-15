@@ -1,0 +1,44 @@
+{
+  "slug": "deployment-strategies",
+  "title": "Deployment Strategies",
+  "kind": "skill",
+  "category": "devops",
+  "summary": "Picks blue-green, canary or rolling for a service from its risk and state, then writes the rollout, verification and rollback steps.",
+  "description": [
+    "The right deployment strategy depends on the service, not on what is fashionable. A stateless API with good metrics can roll; a payment service with a schema change needs a canary and a plan for the database. This skill asks the questions that decide it.",
+    "It ends with a runbook that spells out each step, the signal that says go or stop, and the exact command to roll back, written before the deploy instead of during it."
+  ],
+  "stacks": [],
+  "topics": [
+    "migrations",
+    "ci"
+  ],
+  "useWhen": [
+    "You are about to ship a risky change and want a safer path",
+    "Releases currently mean a maintenance window and crossed fingers",
+    "A rollback was attempted and made the outage worse",
+    "You need to ship a database change alongside new code"
+  ],
+  "body": "# Deployment strategies\n\nChoose the strategy from the risk, then write down how to stop it.\n\n## Steps\n\n1. Gather facts: statelessness, traffic volume, database or message-format changes, how fast bad behavior shows in metrics, infrastructure available (Kubernetes, load balancer, feature flags).\n2. Choose:\n   - **Rolling**: stateless, backward-compatible change, cheap to repeat. Set `maxUnavailable` and `maxSurge` and require readiness before the next batch.\n   - **Blue-green**: needs instant switch and instant revert, and you can afford two full environments. Warm the green side before the cutover.\n   - **Canary**: risk is in real traffic. Send 1, 5, 25, then 100 percent, pausing at each step.\n   - **Feature flag**: when code can ship dark and be enabled per cohort; separate deploy from release.\n3. Handle data: use expand and contract. Release 1 adds the new column or format while old code still works; release 2 switches over; release 3 removes the old one. Never ship code that cannot run against the previous schema.\n4. Define go and stop signals per step: error ratio, p95 latency, a business metric, with numbers and a minimum observation time.\n5. Write the rollback: the exact command, the expected time, and what state it leaves. Test it in staging.\n6. Output a runbook with the steps, owners and communication points.\n\n## Rules\n\n- Never plan a rollback that depends on a destructive migration.\n- Do not execute the deploy; produce the plan.\n\n## Report\n\nChosen strategy and why, step table with signals and thresholds, rollback command, and risks left.",
+  "example": {
+    "prompt": "Plan how we ship the new pricing engine to production",
+    "result": "Canary at 1, 10, 50, 100 percent with 15 minute holds. Go if 5xx stays under 0.5 percent and checkout conversion is within 2 percent of baseline. Schema uses expand and contract over two releases. Rollback: shift traffic weight to the stable service (about 30 seconds); no data to undo."
+  },
+  "faq": [
+    {
+      "question": "Is blue-green always the safest?",
+      "answer": "No. It doubles infrastructure and does not help when the problem is a shared database. A canary on real traffic finds issues that a clean second environment hides."
+    },
+    {
+      "question": "Does it run the deployment?",
+      "answer": "No. It writes the plan and runbook. Running it stays with you and your pipeline."
+    }
+  ],
+  "access": [
+    "Reads deployment config, pipeline files and migrations",
+    "Writes a runbook file; runs no deploy commands"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

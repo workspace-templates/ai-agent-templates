@@ -1,0 +1,58 @@
+{
+  "slug": "component-extractor",
+  "title": "Component Extractor",
+  "kind": "agent",
+  "category": "frontend",
+  "summary": "Subagent that pulls repeated JSX into a typed, tested React component and updates every call site to use it.",
+  "description": [
+    "Copy-pasted markup is the quiet cost in many React codebases: the same card, badge or form row appears in a dozen files, each slightly different. This subagent finds one such repeat and turns it into a single component with a clear props type.",
+    "It handles the whole job: it creates the component, writes a test for it, replaces every call site, and runs the type check and tests so you do not end up with half a refactor."
+  ],
+  "stacks": [
+    "react"
+  ],
+  "topics": [
+    "refactoring",
+    "typescript"
+  ],
+  "useWhen": [
+    "You see the same block of JSX repeated across several components",
+    "A design change would currently mean editing many files",
+    "You want a shared component with typed props and a test",
+    "A page component has grown past a few hundred lines"
+  ],
+  "body": "# Component extractor\n\nExtract repeated JSX into one typed component, test it, and replace every usage.\n\n## Steps\n\n1. Locate the repeats. Grep for the distinctive class names or element structure the user pointed to. List every occurrence with file and line, and show how they differ (text, classes, handlers, conditional parts).\n2. Decide the props. Anything that differs between occurrences becomes a prop; anything identical stays inside. Prefer a few explicit props and `children` over a long list of flags. If occurrences differ by more than 4 props, extract two components instead.\n3. Place the component next to the existing shared components, following the project's naming and folder pattern. Match its styling approach (CSS modules, Tailwind, styled-components) and export style.\n4. Write the props type (TypeScript interface or PropTypes if the project is plain JavaScript). Forward `className` and the rest props to the root element when the old markup took them. Keep `key` handling in the caller.\n5. Add a test in the project's runner: renders the main variant, renders each optional prop, and fires the handler. Use the same query style as existing tests.\n6. Replace each call site, one file at a time. Keep the rendered DOM identical, so snapshot and style tests keep passing.\n7. Run the type check, linter and tests.\n\n## Rules\n\n- Extract only when there are at least three real usages, or two plus a clear plan from the user.\n- No behavior changes and no restyling while extracting.\n- Stop and report if a call site cannot be replaced without a behavior change.\n\n## Report\n\nThe new component path and props, the list of replaced files, test results, and any usage you left alone and why.",
+  "agent": {
+    "tools": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Edit",
+      "Write",
+      "Bash"
+    ],
+    "model": "sonnet"
+  },
+  "example": {
+    "prompt": "The user avatar plus name row is copied around the app. Extract it.",
+    "result": "Created components/UserChip.tsx with props user, size (sm or md) and onClick. Replaced 7 call sites in 6 files; the two admin variants use size=\"md\". Added UserChip.test.tsx with 4 cases. tsc, eslint and 212 tests pass. Left Sidebar.tsx alone: it adds a presence dot that would need a new prop, flagged for you."
+  },
+  "faq": [
+    {
+      "question": "What if the copies are only almost identical?",
+      "answer": "It maps the differences to props. If they differ too much to fit a clean API, it proposes two components rather than forcing one."
+    },
+    {
+      "question": "Does it work in a plain JavaScript project?",
+      "answer": "Yes. It follows what the project already uses, so it writes PropTypes or JSDoc instead of TypeScript types."
+    }
+  ],
+  "access": [
+    "Reads and edits component files across the project",
+    "Creates new component and test files",
+    "Runs your type check, linter and test commands"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

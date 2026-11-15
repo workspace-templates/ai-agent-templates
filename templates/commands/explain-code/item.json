@@ -1,0 +1,45 @@
+{
+  "slug": "explain-code",
+  "title": "Explain Code",
+  "kind": "command",
+  "category": "productivity",
+  "summary": "Explains a file or function to a newcomer: purpose, a step-by-step walk-through with a worked example, and the gotchas.",
+  "description": [
+    "Reading unfamiliar code is slow because the purpose is hidden behind the details. This command starts with what the code is for, then walks through it in execution order using a small concrete input.",
+    "It points out the surprising parts, such as hidden state, side effects and implicit assumptions, and it says where it is not sure rather than bluffing."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation",
+    "debugging"
+  ],
+  "useWhen": [
+    "You joined a project and need to understand a core module",
+    "You must change a function nobody on the team wrote",
+    "You inherited code with no comments or tests",
+    "You want a quick check that your own reading is right"
+  ],
+  "body": "Explain this code to a developer who is new to the project: $ARGUMENTS\n\n1. Locate the target. For a function name, search for its definition. Read the whole function, then its callers and the types it uses. If the name matches several places, list them and ask which one.\n2. Start with one sentence: what problem this code solves and who calls it.\n3. Walk through it in execution order. Pick a small concrete input and show how values change at each step, quoting the lines with `file:line`.\n4. Call out the non-obvious: hidden state, side effects, error paths, performance cost, and assumptions the callers must keep.\n5. Finish with \"Where to look next\": two or three related files or functions.\n\nRules: explain what the code does, not what you wish it did. Mark guesses with \"I infer\". Do not edit anything and do not suggest refactors unless asked. Keep it under 400 words.",
+  "argumentHint": "<file path or function name>",
+  "example": {
+    "prompt": "/explain-code src/billing/prorate.ts",
+    "result": "prorate() turns a plan change into a credit or charge for the rest of the billing period.\n\nWalk-through with a $30 plan upgraded to $60 on day 10 of 30: line 18 computes 20 unused days, line 22 credits $20, line 27 charges $40, net charge $20.\n\nGotcha: line 31 rounds half up per line item, so totals can differ by a cent from the invoice."
+  },
+  "faq": [
+    {
+      "question": "Will it change the code?",
+      "answer": "No. It only reads. Suggestions for changes come only if you ask."
+    },
+    {
+      "question": "What if it misreads something?",
+      "answer": "It marks inferred parts, so you know which claims to verify against the source."
+    }
+  ],
+  "access": [
+    "Reads the named file and the code it calls",
+    "Does not edit files or run the program"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

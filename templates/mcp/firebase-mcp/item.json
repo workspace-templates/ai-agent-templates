@@ -1,0 +1,63 @@
+{
+  "slug": "firebase-mcp",
+  "title": "Firebase MCP Server",
+  "kind": "mcp",
+  "category": "backend",
+  "summary": "Run the Firebase CLI's built-in MCP server so your agent can work with Firestore, Auth, rules and hosting in your Firebase project.",
+  "description": [
+    "The Firebase CLI ships an MCP server of its own. Started with firebase-tools mcp, it gives the agent tools for projects and apps, Firestore documents and indexes, Auth users, security rules, Remote Config, Cloud Functions logs, deploys and a search over Google's developer docs.",
+    "It uses the same login as the Firebase CLI, so run firebase login first. You can narrow it to a few feature groups with the --only flag and point it at a project folder with --dir."
+  ],
+  "stacks": [
+    "firebase"
+  ],
+  "topics": [
+    "api-design"
+  ],
+  "useWhen": [
+    "Query Firestore to see why a document is missing a field",
+    "Review and validate security rules before a deploy",
+    "Read recent Cloud Functions logs after an error report",
+    "Look up a user in Auth while reproducing a sign-in bug"
+  ],
+  "mcp": {
+    "name": "firebase",
+    "transport": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "firebase-tools@latest",
+      "mcp",
+      "--only",
+      "firestore,auth,storage"
+    ],
+    "env": [],
+    "headers": [],
+    "source": "https://firebase.google.com/docs/cli/mcp-server",
+    "access": [
+      "Reads and writes Firestore, Auth and Storage data in the project you are logged in to",
+      "Uses your Firebase CLI credentials and runs on your machine"
+    ]
+  },
+  "example": {
+    "prompt": "In Firestore, list the 3 newest documents in orders and tell me which ones lack a customerId.",
+    "result": "orders/o_9921 and orders/o_9920 have customerId. orders/o_9919 has no customerId field, and its createdAt is from the older checkout flow."
+  },
+  "faq": [
+    {
+      "question": "Do I need a service account key?",
+      "answer": "No. It reuses your Firebase CLI login or Application Default Credentials, and the page documents no environment variables."
+    },
+    {
+      "question": "How do I limit what it can do?",
+      "answer": "The --only flag turns on just the feature groups you list. Leave out groups you do not need, and use a staging project when testing."
+    }
+  ],
+  "access": [
+    "Acts with your Firebase CLI credentials on the selected project",
+    "Can change Firestore data, Auth users and deploy resources"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

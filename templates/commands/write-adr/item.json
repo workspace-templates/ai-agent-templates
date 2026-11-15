@@ -1,0 +1,45 @@
+{
+  "slug": "write-adr",
+  "title": "Write ADR",
+  "kind": "command",
+  "category": "docs",
+  "summary": "Writes an architecture decision record for a decision your team just made, with context, options weighed and consequences.",
+  "description": [
+    "Six months from now nobody remembers why the team picked one queue, database or framework over another. An ADR keeps the reasoning next to the code, and this command drafts it while the discussion is still fresh.",
+    "It uses your repository numbering and template if you have them, pulls facts from the code and recent history, and marks anything you must confirm instead of inventing rationale."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation",
+    "api-design"
+  ],
+  "useWhen": [
+    "Right after a design meeting that picked a direction",
+    "When replacing a library or service",
+    "A reviewer asks \"why did we do it this way?\"",
+    "You want a record of options that were rejected"
+  ],
+  "body": "Write an architecture decision record. The decision: $ARGUMENTS\n\n1. Look for an existing ADR folder (docs/adr, docs/decisions, adr/). Copy its file naming, next number, template and status vocabulary. If none exists, propose `docs/adr/0001-<slug>.md`.\n2. Gather evidence from the repository: the code and dependencies involved, relevant pull requests or commit messages (`git log --oneline -n 30 -- <path>`), and any older ADR this one changes.\n3. Write the sections: Title, Status (proposed unless the user said accepted), Date, Context (the forces and constraints, in plain words), Decision (one active-voice paragraph starting \"We will\"), Options considered (each with real pros and cons), Consequences (good, bad and what we must now do).\n4. Mark every claim you could not verify with \"to be confirmed\" instead of making up numbers, owners or dates.\n5. If the decision replaces an earlier ADR, say so in both files.\n\nKeep it to one page. Show the draft, list the open items, and ask before creating the file or editing the status of any older record.",
+  "argumentHint": "[the decision, in one sentence]",
+  "example": {
+    "prompt": "/write-adr use Postgres LISTEN/NOTIFY instead of Redis for job wakeups",
+    "result": "Drafted docs/adr/0014-postgres-notify-for-jobs.md. Status: proposed. Options: Redis pub/sub, polling, LISTEN/NOTIFY. to be confirmed: expected jobs per second. Marks ADR 0009 as superseded. Create the file?"
+  },
+  "faq": [
+    {
+      "question": "Does it make up the reasons?",
+      "answer": "No. It uses what the repository shows and flags gaps with a marker so you can fill in the real reasoning."
+    },
+    {
+      "question": "What if we have no ADR folder?",
+      "answer": "It proposes a standard location and numbering and asks before creating them."
+    }
+  ],
+  "access": [
+    "Reads the repository and recent history",
+    "Creates one Markdown file after you approve"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

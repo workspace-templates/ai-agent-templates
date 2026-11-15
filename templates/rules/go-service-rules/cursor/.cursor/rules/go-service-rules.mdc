@@ -1,0 +1,27 @@
+---
+description: "Project rules for Go services: small interfaces, wrapped errors, context everywhere, table-driven tests and no hidden goroutines."
+alwaysApply: true
+---
+
+# Project rules: Go services
+
+## Layout and style
+- `cmd/<app>/main.go` only wires things together. Domain code lives in `internal/`. Keep packages small, named for what they provide, with no `util` or `common` packages.
+- Define interfaces where they are used, with one to three methods. Accept interfaces, return concrete types.
+- No global mutable state and no `init()` with side effects. Pass dependencies in constructors.
+
+## Errors
+- Never ignore an error. Wrap with context: `fmt.Errorf("load user %d: %w", id, err)`. Compare with `errors.Is` and `errors.As`. Handle an error once: log it or return it, not both.
+- Do not panic outside `main` and tests.
+
+## Context and concurrency
+- `ctx context.Context` is the first parameter of anything that does I/O. Use `http.NewRequestWithContext`, set server and client timeouts, and propagate cancellation.
+- Every goroutine has an owner and a way to stop: use `errgroup`, close channels from the sender, and never start one without knowing how it ends.
+
+## HTTP and logging
+- Use `net/http` with the standard mux or chi. Decode with a size limit, validate, and return JSON errors with correct status codes.
+- Log with `log/slog`, structured fields, no secrets.
+
+## Tests
+- Table-driven tests with subtests; use `t.Parallel()` where safe.
+- Before finishing run `gofmt`, `go vet ./...`, `golangci-lint run` and `go test -race ./...`.

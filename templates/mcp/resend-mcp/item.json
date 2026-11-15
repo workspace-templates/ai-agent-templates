@@ -1,0 +1,71 @@
+{
+  "slug": "resend-mcp",
+  "title": "Resend MCP Server",
+  "kind": "mcp",
+  "category": "backend",
+  "summary": "Run Resend's official MCP server so your agent can send test emails, manage domains, templates and contacts and check delivery from the chat.",
+  "description": [
+    "Resend's MCP server wraps most of the Resend platform: sending and batching email, templates, contacts and segments, broadcasts, domains, webhooks and logs. It is handy when you build transactional email and want to try a send without leaving the editor.",
+    "It runs locally with npx and needs one environment variable, RESEND_API_KEY. You can also set a default sender and restrict which folders it may read attachments from."
+  ],
+  "stacks": [],
+  "topics": [
+    "api-design"
+  ],
+  "useWhen": [
+    "Send yourself a test of a new welcome email",
+    "Check whether a sending domain is verified",
+    "List recent emails to see which ones bounced",
+    "Draft a template and send it to a staging inbox"
+  ],
+  "mcp": {
+    "name": "resend",
+    "transport": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "resend-mcp"
+    ],
+    "env": [
+      {
+        "name": "RESEND_API_KEY",
+        "description": "Your Resend API key. A key limited to sending access is enough for test sends."
+      },
+      {
+        "name": "SENDER_EMAIL_ADDRESS",
+        "description": "Optional default From address on a verified domain."
+      },
+      {
+        "name": "MCP_ALLOWED_FILE_DIRS",
+        "description": "Optional folders the server may read attachments from. Set it to keep file access narrow."
+      }
+    ],
+    "headers": [],
+    "source": "https://github.com/resend/mcp-send-email",
+    "access": [
+      "Sends real email from your Resend account",
+      "Reads and changes domains, templates, contacts and webhooks the key allows"
+    ]
+  },
+  "example": {
+    "prompt": "Send a test email from hello@mail.example.com to me@example.com with the subject 'Welcome check' and a one-line body.",
+    "result": "Email queued with id 4f1c...; status delivered after a few seconds. Sent from hello@mail.example.com."
+  },
+  "faq": [
+    {
+      "question": "Can it email real customers by accident?",
+      "answer": "It sends to any address you or the agent give it. Use a sending-only key and tell the agent to send to your own inbox while testing."
+    },
+    {
+      "question": "Does it have an HTTP mode?",
+      "answer": "Yes, resend-mcp can serve Streamable HTTP with the --http flag, where each client sends its own key as a Bearer token. The stdio setup here is simpler for one developer."
+    }
+  ],
+  "access": [
+    "Sends email and changes settings in the Resend account behind the key",
+    "On stdio, file access is unrestricted unless you set allowed folders"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

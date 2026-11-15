@@ -1,0 +1,66 @@
+{
+  "slug": "chrome-devtools-mcp",
+  "title": "Chrome DevTools MCP Server",
+  "kind": "mcp",
+  "category": "testing",
+  "summary": "Let your coding agent open Chrome, read the console and network panel, and record performance traces to debug a live page with DevTools.",
+  "description": [
+    "The Chrome team publishes this server so an agent can use DevTools instead of guessing. It can navigate a page, take screenshots, read console and network activity, and run performance traces to find slow loads.",
+    "It starts through npx and needs no account. Chrome must be installed; the server launches its own browser, and a headless or isolated mode is available through flags.",
+    "The server sends usage statistics to Google by default and may look up field data for traced URLs. This config turns both off with --no-usage-statistics and --no-performance-crux."
+  ],
+  "stacks": [],
+  "topics": [
+    "debugging",
+    "performance"
+  ],
+  "useWhen": [
+    "Find out why a page loads slowly",
+    "Read a console error that only appears in the browser",
+    "Check which network request returned a failure",
+    "Verify a layout fix after you change the CSS"
+  ],
+  "mcp": {
+    "name": "chrome-devtools",
+    "transport": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "chrome-devtools-mcp@latest",
+      "--no-usage-statistics",
+      "--no-performance-crux"
+    ],
+    "env": [],
+    "headers": [],
+    "source": "https://github.com/ChromeDevTools/chrome-devtools-mcp",
+    "access": [
+      "Controls a Chrome browser on your machine and can open any URL",
+      "Exposes page content, console output and network data to the agent"
+    ]
+  },
+  "example": {
+    "prompt": "Open http://localhost:5173, record a performance trace of the load and tell me what delays the largest paint.",
+    "result": "The largest paint is a hero image that starts loading only after a render-blocking script finishes. Preloading the image and deferring the script should move it earlier."
+  },
+  "faq": [
+    {
+      "question": "Does it send data to Google?",
+      "answer": "By default it collects usage statistics, and performance tools may query Google's CrUX service. The two flags in this config switch those off."
+    },
+    {
+      "question": "Is it safe to use with pages that hold personal data?",
+      "answer": "The server hands browser content to your agent, so avoid pointing it at pages with sensitive or personal information, or use the --isolated flag for a throwaway profile."
+    },
+    {
+      "question": "Can I run it without a window?",
+      "answer": "Yes. Add --headless to the args, or --slim for a smaller tool set aimed at basic browser tasks."
+    }
+  ],
+  "access": [
+    "Launches and controls Chrome on your machine",
+    "Reads page content, console and network data"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

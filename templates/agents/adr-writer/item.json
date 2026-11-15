@@ -1,0 +1,53 @@
+{
+  "slug": "adr-writer",
+  "title": "ADR Writer",
+  "kind": "agent",
+  "category": "docs",
+  "summary": "Subagent that drafts an architecture decision record from a decision you describe and the code around it, including options weighed and consequences.",
+  "description": [
+    "Teams make a decision, then forget why. An architecture decision record keeps the context, the alternatives and the trade-offs next to the code. This subagent writes the first draft from your description and from what it finds in the repository.",
+    "It follows the format of the ADRs you already have, numbers the new one correctly, and records real consequences instead of praise. You review and edit; it does not decide for you."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation",
+    "api-design"
+  ],
+  "useWhen": [
+    "You just chose a database, queue, framework or pattern and want it recorded",
+    "A new teammate keeps asking why something is built this way",
+    "You are about to change a past decision and need its original reasoning",
+    "A pull request makes a structural change with no written rationale"
+  ],
+  "body": "# ADR writer\n\nDraft one architecture decision record. Write only the new ADR file; change nothing else.\n\n## Steps\n\n1. Find existing ADRs (docs/adr, docs/decisions, adr/, doc/architecture). Copy their template, numbering scheme, filename pattern and status vocabulary. If none exist, use: Title, Status, Date, Context, Decision, Options considered, Consequences.\n2. Take the next free number. Read the last two ADRs to avoid contradicting or duplicating them, and link any that this one supersedes or relates to.\n3. Read the code the decision touches: the modules, config and dependencies involved. Ground the context in what exists, with file paths, not in generalities.\n4. Write Context as the forces at play: constraints, load, team skills, deadlines, what hurts today. Two short paragraphs at most.\n5. State the Decision in one or two sentences, in active voice (\"We will use Postgres advisory locks for job claiming\").\n6. List real alternatives, including doing nothing. For each, give one fair strength and the reason it lost. Do not invent strawmen.\n7. Write Consequences honestly: what becomes easier, what becomes harder, what must be monitored, and the signal that would make the team revisit this.\n\n## Rules\n\n- Ask the user when the reason for the decision is missing. Never fabricate the rationale.\n- Mark facts you inferred from code as inferred.\n- Keep it under one page. Status is Proposed unless the user says it was accepted.\n\n## Report\n\n- The path of the new file and its title\n- Open questions the author must answer\n- Any earlier ADR that this one conflicts with",
+  "agent": {
+    "tools": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Write"
+    ],
+    "model": "sonnet"
+  },
+  "example": {
+    "prompt": "Write an ADR: we moved background jobs from Redis queues to Postgres with SKIP LOCKED because we kept losing jobs on Redis restarts.",
+    "result": "Created docs/adr/0014-postgres-job-queue.md using the repo's template. Context cites worker/queue.ts and the lost-job incident you described; options covered Redis with persistence, SQS and staying put. Consequences note higher database load and a polling interval of 1s. Status Proposed. Question: what job volume do you expect per minute?"
+  },
+  "faq": [
+    {
+      "question": "Will it invent the reasons for the decision?",
+      "answer": "No. Reasons come from what you tell it and from the code. When the why is missing it asks, and marks inferred points as inferred."
+    },
+    {
+      "question": "Does it work if I have no ADRs yet?",
+      "answer": "Yes. It starts with a compact standard template and places the file in docs/adr, which you can move later."
+    }
+  ],
+  "access": [
+    "Reads source and existing decision records",
+    "Writes one new file in the ADR folder"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,49 @@
+{
+  "slug": "block-git-no-verify",
+  "title": "Block Git No Verify",
+  "kind": "hook",
+  "category": "git",
+  "summary": "A Claude Code hook that blocks git commit and git push calls using --no-verify, so pre-commit and pre-push checks always run.",
+  "description": [
+    "When a pre-commit hook fails, an agent may try to get past it with a flag. This hook reads each Bash command and refuses any git call that carries --no-verify, plus the short -n form on commit.",
+    "The push flag -n means a dry run in git, so it is left alone. Text inside quotes, such as a commit message that mentions the flag, is ignored."
+  ],
+  "stacks": [],
+  "topics": [
+    "git",
+    "code-review"
+  ],
+  "useWhen": [
+    "Make sure lint and tests run before every commit",
+    "Stop the agent from bypassing a failing check",
+    "Enforce team hooks on local work",
+    "Keep secret scanners in the commit path"
+  ],
+  "hook": {
+    "event": "PreToolUse",
+    "matcher": "Bash",
+    "command": "node -e \"let d='';process.stdin.on('data',x=>d+=x).on('end',()=>{let j={};try{j=JSON.parse(d)}catch(e){return}const i=j.tool_input||{};const c=String(i.command||'').replace(/\\x22[^\\x22]*\\x22|\\x27[^\\x27]*\\x27/g,' ')+' ';const t=c.split(/&&|[|][|]|[;|]/).map(s=>s+String.fromCharCode(32));const h=t.find(s=>/^[ ]*git[ ]/.test(s)&&(/--no-verify/.test(s)||(/[ ]commit[ ]/.test(s)&&/[ ]-[a-zA-Z]*n[a-zA-Z]*[ ]/.test(s))));if(h){console.error('Blocked: skipping git hooks hides failing checks. Fix what the pre-commit or pre-push hook reports, then run the command again without --no-verify.');process.exitCode=2}})\"",
+    "timeout": 10
+  },
+  "example": {
+    "prompt": "The hook is slow. Commit with git commit --no-verify -m wip.",
+    "result": "The commit is refused. The agent reads the hook output, fixes the failing check and commits normally."
+  },
+  "faq": [
+    {
+      "question": "Does git push -n get blocked?",
+      "answer": "No. On push that flag only simulates the push, so it is allowed. The long --no-verify form is blocked everywhere."
+    },
+    {
+      "question": "What if I truly need to skip hooks once?",
+      "answer": "Run the command yourself in your own terminal. The hook only guards commands the agent starts."
+    }
+  ],
+  "access": [
+    "Reads each Bash command before it runs",
+    "Blocks matching commands and runs nothing itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

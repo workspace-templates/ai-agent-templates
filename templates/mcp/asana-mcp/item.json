@@ -1,0 +1,54 @@
+{
+  "slug": "asana-mcp",
+  "title": "Asana MCP Server",
+  "kind": "mcp",
+  "category": "productivity",
+  "summary": "Let your coding agent read and update Asana tasks and projects through Asana's hosted V2 MCP server with a browser OAuth sign-in.",
+  "description": [
+    "Asana hosts its own MCP server, so there is nothing to install. Point a client at the V2 endpoint and approve access with your Asana account. The agent can then look up tasks, create and update them, and summarize project status.",
+    "The older beta endpoint at /sse is being retired, so use the /v2/mcp address. Your client must support OAuth and Streamable HTTP transport."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation"
+  ],
+  "useWhen": [
+    "Turn the open to-do comments in the code into Asana tasks",
+    "Ask what is still open on this sprint's project",
+    "Mark a task done and leave a comment linking the merged change",
+    "Draft a weekly status from the project's recent activity"
+  ],
+  "mcp": {
+    "name": "asana",
+    "transport": "http",
+    "url": "https://mcp.asana.com/v2/mcp",
+    "env": [],
+    "headers": [],
+    "source": "https://developers.asana.com/docs/using-asanas-mcp-server",
+    "access": [
+      "Reads tasks, projects and comments in workspaces your Asana account belongs to",
+      "Can create and change tasks and projects"
+    ]
+  },
+  "example": {
+    "prompt": "List my open tasks due this week in the Mobile Release project.",
+    "result": "3 tasks: \"Fix push token refresh\" (Wed), \"Update store screenshots\" (Thu), \"Write release notes\" (Fri). None are overdue."
+  },
+  "faq": [
+    {
+      "question": "Why does my admin have to approve it?",
+      "answer": "On Enterprise plans, admins can allow or block each MCP client in app management. If sign-in is refused, ask them to allow your client."
+    },
+    {
+      "question": "Does it need a client ID and secret?",
+      "answer": "Only if your client cannot create OAuth credentials itself. Asana's integration guide explains how to get them."
+    }
+  ],
+  "access": [
+    "Asana tasks and projects your account can open",
+    "Writes tasks and comments on request"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

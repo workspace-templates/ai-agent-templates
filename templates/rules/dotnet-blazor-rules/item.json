@@ -1,0 +1,45 @@
+{
+  "slug": "dotnet-blazor-rules",
+  "title": ".NET Blazor Rules",
+  "kind": "rules",
+  "category": "frontend",
+  "summary": "Project rules for Blazor apps: small components, scoped state, injected services, EditForm validation and bUnit component tests.",
+  "description": [
+    "These rules guide an agent building Blazor Server or WebAssembly interfaces. They keep components small, move logic into injected services and make forms and state behave the same way across the app.",
+    "They also cover the test side, so every new component arrives with a bUnit test that renders it and checks the markup and events."
+  ],
+  "stacks": [
+    "csharp",
+    "dotnet"
+  ],
+  "topics": [
+    "testing"
+  ],
+  "useWhen": [
+    "You add pages to a Blazor app",
+    "Components grow into hundreds of lines with logic inline",
+    "Forms validate in different ways on each page",
+    "You want component tests from day one"
+  ],
+  "body": "# Project rules: Blazor\n\n## Components\n- One component per `.razor` file with a code-behind `.razor.cs` partial class once logic passes a few lines. Keep markup free of business rules.\n- Use `[Parameter]` for inputs and `EventCallback<T>` for outputs. Mark required inputs with `[EditorRequired]`. Never mutate a parameter from inside the child.\n- Override `OnInitializedAsync` for loading; call `StateHasChanged` only after work done outside the render cycle.\n\n## Services and state\n- Inject services with `@inject` or `[Inject]`; never use `new` for a service. Keep HTTP and data access in typed services behind interfaces.\n- Share state with a scoped service that raises a change event, and unsubscribe by implementing `IDisposable`. Do not use static fields for user data.\n- Pass a `CancellationToken` through async calls.\n\n## Forms\n- Use `EditForm` with `DataAnnotationsValidator` or FluentValidation, and show `ValidationMessage`. Disable submit while a request runs.\n\n## Quality\n- Enable nullable reference types. Use `@key` on list items. Prefer `<Virtualize>` for long lists.\n- Write bUnit tests for each component: render, interact, assert markup and callbacks. Mock services with interfaces.\n- Run `dotnet build`, `dotnet test` and `dotnet format --verify-no-changes` before calling work done.",
+  "example": {
+    "prompt": "Add an editable customer profile page",
+    "result": "The agent adds a ProfileForm component with EditForm validation, a typed ProfileService, and a bUnit test that submits invalid and valid input."
+  },
+  "faq": [
+    {
+      "question": "Does it work for Server and WebAssembly?",
+      "answer": "Yes. The component and testing rules are the same; only service registration differs."
+    },
+    {
+      "question": "Why scoped state services?",
+      "answer": "They give each user session its own state and make components easy to test with a fake."
+    }
+  ],
+  "access": [
+    "Instructions only; it does not read or run anything by itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

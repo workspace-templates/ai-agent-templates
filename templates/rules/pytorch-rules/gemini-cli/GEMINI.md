@@ -1,0 +1,21 @@
+# Project rules: PyTorch
+
+## Structure
+- Split code into `models/`, `data/`, `train.py` and `eval.py`. Models are plain `nn.Module` classes that know nothing about paths or logging.
+- All hyperparameters, paths and sizes come from a config file (YAML with a dataclass or Hydra). Log the resolved config with every run.
+
+## Devices and tensors
+- Pick the device once: `torch.device("cuda" if torch.cuda.is_available() else "cpu")`. Move models and batches with `.to(device)`; never call `.cuda()` directly.
+- Create new tensors with `device=` and `dtype=` taken from existing ones. Avoid `.item()` and `.cpu()` inside hot loops.
+- Use `torch.amp` autocast for mixed precision, with a gradient scaler when using fp16.
+
+## Reproducibility
+- Seed Python, NumPy and torch from one function; seed `DataLoader` workers with a generator and `worker_init_fn`. State clearly when deterministic algorithms are off.
+
+## Training loop
+- Call `model.train()` and `model.eval()` explicitly. Evaluate under `torch.inference_mode()`. Zero gradients each step, clip when needed and step the scheduler in one known place.
+- Save the model, optimizer, scheduler, epoch and config in each checkpoint, and load with `weights_only=True`.
+
+## Evaluation and checks
+- Hold out validation and test sets, never tune on test. Report metrics with the seed and the commit.
+- Run `ruff check` and `pytest`, including a tiny-batch smoke test that overfits eight samples on CPU.

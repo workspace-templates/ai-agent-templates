@@ -1,0 +1,72 @@
+{
+  "slug": "browserbase-mcp",
+  "title": "Browserbase MCP Server",
+  "kind": "mcp",
+  "category": "testing",
+  "summary": "Run browser sessions in the Browserbase cloud from your agent to open pages, act on them in plain language and extract data, via the self-hosted server.",
+  "description": [
+    "Browserbase hosts headless browsers, and this server connects an agent to them through Stagehand. The tools are start, end, navigate, act, observe and extract, so the agent can describe a click in words and read structured data back.",
+    "This setup uses the self-hosted stdio package, @browserbasehq/mcp. It needs a Browserbase API key and project ID, plus a Gemini key for the default Stagehand model. You can pass --modelName and --modelApiKey to use another supported model.",
+    "Note that the repository is now archived and no longer maintained, and Browserbase points to a hosted endpoint instead. Check their docs if you want that route."
+  ],
+  "stacks": [],
+  "topics": [
+    "testing",
+    "debugging"
+  ],
+  "useWhen": [
+    "Scrape a page that needs a real browser",
+    "Walk through a sign-up flow in a cloud session",
+    "Extract a table from a site into structured text",
+    "Run web automation without installing Chrome locally"
+  ],
+  "mcp": {
+    "name": "browserbase",
+    "transport": "stdio",
+    "command": "npx",
+    "args": [
+      "@browserbasehq/mcp"
+    ],
+    "env": [
+      {
+        "name": "BROWSERBASE_API_KEY",
+        "description": "Your Browserbase API key"
+      },
+      {
+        "name": "BROWSERBASE_PROJECT_ID",
+        "description": "The Browserbase project the sessions run in"
+      },
+      {
+        "name": "GEMINI_API_KEY",
+        "description": "Key for the default Stagehand model, google/gemini-2.5-flash-lite"
+      }
+    ],
+    "headers": [],
+    "source": "https://github.com/browserbase/mcp-server-browserbase",
+    "access": [
+      "Starts remote browser sessions on your Browserbase account and visits URLs the agent picks",
+      "Sends page content to the configured language model"
+    ]
+  },
+  "example": {
+    "prompt": "Open https://example.com/pricing and extract the plan names with their monthly prices.",
+    "result": "Started a session, navigated to the pricing page and extracted three plans: Free at 0, Team at 20 per seat, Business at 45 per seat. Session ended."
+  },
+  "faq": [
+    {
+      "question": "Why do I need a Gemini key?",
+      "answer": "Stagehand uses a model to interpret act, observe and extract. The default is a Gemini model; pass --modelName and --modelApiKey to choose another one it supports."
+    },
+    {
+      "question": "Will sessions bill my account?",
+      "answer": "Sessions run on Browserbase infrastructure under your project, so usage follows your Browserbase plan. Call the end tool when you finish."
+    }
+  ],
+  "access": [
+    "Controls cloud browsers on your Browserbase account",
+    "Needs three keys in environment variables"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

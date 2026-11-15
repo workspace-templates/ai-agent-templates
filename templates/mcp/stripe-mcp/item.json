@@ -1,0 +1,54 @@
+{
+  "slug": "stripe-mcp",
+  "title": "Stripe MCP Server",
+  "kind": "mcp",
+  "category": "backend",
+  "summary": "Connect your coding agent to Stripe's hosted MCP server to look up customers, payments, subscriptions and invoices while you build billing code.",
+  "description": [
+    "Stripe runs its own hosted MCP server at mcp.stripe.com. Once connected, the agent can look at the customers, charges, subscriptions and invoices in your Stripe account and search Stripe's documentation, so billing code is written against your real data model.",
+    "Sign-in uses OAuth. You approve access in a browser window the first time, and no API key goes into your config file. The older local @stripe/mcp package is deprecated, so this setup does not use it."
+  ],
+  "stacks": [],
+  "topics": [
+    "api-design"
+  ],
+  "useWhen": [
+    "Debug why a subscription renewal failed",
+    "Check what a webhook payload should contain for a given event",
+    "Find a customer by email while you reproduce a billing bug",
+    "Look up the right Stripe API call before writing checkout code"
+  ],
+  "mcp": {
+    "name": "stripe",
+    "transport": "http",
+    "url": "https://mcp.stripe.com",
+    "env": [],
+    "headers": [],
+    "source": "https://github.com/stripe/agent-toolkit",
+    "access": [
+      "Customers, payments, subscriptions and invoices in the Stripe account you sign in to",
+      "Can create or change Stripe objects with the permissions you grant, so use a test mode account while building"
+    ]
+  },
+  "example": {
+    "prompt": "Find the customer jo@example.com and tell me why their last invoice is still open.",
+    "result": "Customer cus_Qx81 has invoice in_1042 for 49.00 USD, status open. The card on file was declined twice (insufficient funds) and the next retry is scheduled for tomorrow."
+  },
+  "faq": [
+    {
+      "question": "Will it touch my live payments?",
+      "answer": "It acts on whichever Stripe account you authorize. Authorize a sandbox account while developing, and connect the live account only when you need to inspect real records."
+    },
+    {
+      "question": "Is a secret key stored in my project?",
+      "answer": "No. The hosted server signs you in with OAuth, so nothing sensitive lands in the config file."
+    }
+  ],
+  "access": [
+    "Reads and can change objects in the Stripe account you authorize",
+    "Sends requests to mcp.stripe.com"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

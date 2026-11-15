@@ -1,0 +1,44 @@
+{
+  "slug": "kotlin-android-rules",
+  "title": "Kotlin Android Rules",
+  "kind": "rules",
+  "category": "mobile",
+  "summary": "Project rules for Android in Kotlin: Jetpack Compose UI, ViewModel with StateFlow, Hilt injection, structured coroutines and tests.",
+  "description": [
+    "These rules describe a modern Android codebase: Compose screens that render state, ViewModels that own it and repositories that hide data sources. An agent following them produces features shaped the same way every time.",
+    "They also set the coroutine and testing habits that stop leaks and flaky tests, such as injected dispatchers and lifecycle-aware collection."
+  ],
+  "stacks": [
+    "kotlin"
+  ],
+  "topics": [
+    "testing"
+  ],
+  "useWhen": [
+    "You start a Compose-based Android app",
+    "Generated screens keep logic inside composables",
+    "Coroutines are launched from GlobalScope",
+    "You want ViewModel tests that run fast on the JVM"
+  ],
+  "body": "# Project rules: Android with Kotlin\n\n## Architecture\n- One feature per package with `ui`, `domain` and `data` layers. Composables render a single immutable `UiState`; they send events up as lambdas.\n- A `ViewModel` exposes `StateFlow<UiState>` built with `stateIn` or `MutableStateFlow` and a `.asStateFlow()` view. One-off effects go through a `Channel` or are modeled as state.\n- Repositories return `Flow` or suspend results and hide Room, Retrofit and DataStore details.\n\n## Compose\n- Hoist state. Keep composables stateless and previewable. Collect with `collectAsStateWithLifecycle()`.\n- Use `remember` and `derivedStateOf` deliberately; give lazy list items stable `key`s. Take a `Modifier` parameter as the first optional one.\n\n## Injection and coroutines\n- Use Hilt with constructor injection. Inject `CoroutineDispatcher`s instead of hard-coding `Dispatchers.IO`.\n- Launch from `viewModelScope` or `lifecycleScope`; never `GlobalScope`. Rethrow `CancellationException`.\n\n## Quality\n- Keep secrets out of source; read them from `local.properties` or CI.\n- Unit-test ViewModels with `runTest` and Turbine; test composables with `createComposeRule`.\n- Run `./gradlew ktlintCheck lint testDebugUnitTest assembleDebug` before finishing.",
+  "example": {
+    "prompt": "Add a settings screen with a dark mode toggle",
+    "result": "The agent adds a SettingsViewModel with StateFlow over DataStore, a stateless SettingsScreen, Hilt wiring and a Turbine test for the toggle."
+  },
+  "faq": [
+    {
+      "question": "Does it require Hilt?",
+      "answer": "It prefers Hilt, but the constructor injection rule holds with Koin or manual wiring as well."
+    },
+    {
+      "question": "Why inject dispatchers?",
+      "answer": "Tests can then swap in a test dispatcher and run without real threads or delays."
+    }
+  ],
+  "access": [
+    "Instructions only; it does not read or run anything by itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,48 @@
+{
+  "slug": "dockerize",
+  "title": "Dockerize",
+  "kind": "command",
+  "category": "devops",
+  "summary": "Writes a Dockerfile and .dockerignore for your project with layer caching, a slim final image and a non-root user.",
+  "description": [
+    "Most first Dockerfiles run as root, copy the whole repository and rebuild every dependency on each change. This command inspects the project, picks the right base image and writes a build that avoids those habits.",
+    "It uses a multi-stage layout when the language needs a compiler, drops privileges before the app starts and builds the image once to prove the result runs. Existing Docker files are never overwritten without your answer."
+  ],
+  "stacks": [
+    "docker"
+  ],
+  "topics": [
+    "docker",
+    "ci"
+  ],
+  "useWhen": [
+    "A service has no container setup yet",
+    "Your image is over a gigabyte and builds take minutes",
+    "A security scan complains the container runs as root",
+    "You are moving a project from a VM deploy to containers"
+  ],
+  "body": "Containerize this project. Notes from the user: $ARGUMENTS\n\n1. Detect the runtime from the manifest and lockfile (package.json, pyproject.toml, go.mod, Cargo.toml, pom.xml). Read the start script and note the port the app listens on. If a Dockerfile already exists, stop and ask whether to replace it.\n2. Pick a pinned slim base tag (for example node:22-slim, python:3.12-slim, or a distroless runtime). Never use `latest`.\n3. Order layers for caching: copy only the manifest and lockfile, install dependencies, then copy the source. Use a multi-stage build when a compiler or dev dependencies are needed, and copy only the built output into the final stage.\n4. Create a non-root user and switch to it with USER before CMD. Set EXPOSE, a HEALTHCHECK if the app has a health route, and an exec-form CMD.\n5. Write .dockerignore: .git, node_modules, build output, .env files, logs and test fixtures.\n6. Run `docker build -t dockerize-check .` and report the image size. Start it briefly and confirm the port answers.\n\nShow both files and the size, then ask before writing them to disk. Never bake secrets into the image.",
+  "argumentHint": "[service name or port, optional]",
+  "example": {
+    "prompt": "/dockerize port 3000",
+    "result": "Detected Node 22 with pnpm. Wrote a two-stage Dockerfile on node:22-slim running as user app, plus .dockerignore (8 entries). Test build: 148 MB, port 3000 answered on /health. Write both files?"
+  },
+  "faq": [
+    {
+      "question": "Will it replace a Dockerfile I already have?",
+      "answer": "No. It stops and asks first, so a hand-tuned file is safe until you agree."
+    },
+    {
+      "question": "Does it need Docker installed?",
+      "answer": "The test build does. Without Docker it still writes the files and says the build was not verified."
+    }
+  ],
+  "access": [
+    "Reads manifests and source files",
+    "Runs docker build in the project folder",
+    "Writes files only after you agree"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

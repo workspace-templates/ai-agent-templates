@@ -1,0 +1,53 @@
+{
+  "slug": "deploy-readiness-checker",
+  "title": "Deploy Readiness Checker",
+  "kind": "agent",
+  "category": "devops",
+  "summary": "Read-only subagent that checks migrations, config, feature flags and rollback steps for the changes in a release before you deploy.",
+  "description": [
+    "Most failed deploys are not bad code, they are missing pieces: a migration that locks a big table, an environment variable that exists only in staging, a flag that defaults the wrong way. This subagent checks for them before you ship.",
+    "It compares what is about to go out against the last release and produces a go or no-go with the blocking items first. It reads only, so it never triggers the deploy or touches production."
+  ],
+  "stacks": [],
+  "topics": [
+    "migrations",
+    "ci"
+  ],
+  "useWhen": [
+    "You are about to release and want a last check of the diff",
+    "A release includes a database migration",
+    "New code reads config or secrets that may not exist in production yet",
+    "You need a rollback plan written down before the deploy window"
+  ],
+  "body": "# Deploy readiness checker\n\nDecide whether the changes since the last release are ready to deploy. You are read-only: do not run migrations, deploy commands or anything against production.\n\n## Steps\n\n1. Find the range: the last release tag or deployed commit to HEAD. List the commits and changed files; group them by service.\n2. Migrations: read each new one. Flag table-rewriting or locking operations on large tables (adding a column with a default on older databases, non-concurrent index creation, type changes), drops of columns still read by the code being deployed, and migrations that cannot run twice or backward.\n3. Order of operations: is the code compatible with the old schema and the new schema during the rollout? Destructive schema changes should ship after the code that stops using them.\n4. Configuration: search the diff for new env vars, secrets, config keys and external endpoints. Check each exists in the deploy config and the example env file.\n5. Feature flags: confirm new behavior is behind a flag that defaults off, and that removing a flag does not change live behavior.\n6. Rollback: say how to go back (previous image, revert commit) and whether the migration blocks that. A deploy with no safe rollback needs a named approver.\n7. Observability: are new failure paths logged, and does an existing alert cover them?\n\n## Rules\n\n- Blocking means data loss, an outage, or a failed start. Do not mark style as blocking.\n- Cite the file and line for each item.\n- If you cannot verify production state, list it as a question for a human.\n\n## Report\n\n- **Decision**: go, go with conditions, or no-go\n- **Blockers**, **Conditions**, **Rollback plan**\n- **Questions** for whoever owns production",
+  "agent": {
+    "tools": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Bash"
+    ],
+    "model": "sonnet"
+  },
+  "example": {
+    "prompt": "Check release readiness for everything since tag v2.14.0.",
+    "result": "Decision: no-go. Migration 0087 drops orders.legacy_ref while api/export.py:73 still selects it, so the old pods error during rollout. New env var PAYMENTS_TIMEOUT_MS is read at config.py:31 but is missing from deploy/prod.env. Rollback: previous image works only if 0087 is deferred. Everything else is clean."
+  },
+  "faq": [
+    {
+      "question": "Does it know what is set in production?",
+      "answer": "No. It compares code against the deploy config in the repository and lists production-only facts as questions for you to confirm."
+    },
+    {
+      "question": "Can it run my pre-deploy test suite?",
+      "answer": "It can run read-only checks and test commands you allow, but it never runs migrations or deploy steps."
+    }
+  ],
+  "access": [
+    "Reads the diff, migrations, config and deploy files",
+    "Runs read-only git commands"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,6 @@
+[mcp_servers.circleci]
+command = "npx"
+args = ["-y","@circleci/mcp-server-circleci@latest"]
+
+[mcp_servers.circleci.env]
+CIRCLECI_TOKEN = "${CIRCLECI_TOKEN}"

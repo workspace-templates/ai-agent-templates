@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{let j={};try{j=JSON.parse(d)}catch(e){process.exit(0)}const i=j.tool_input||{};const c=(j.tool_input||{}).command;if(!c)process.exit(0);const fs=require('fs');fs.mkdirSync('.claude',{recursive:true});fs.appendFileSync('.claude/command-log.txt',new Date().toISOString()+' '+JSON.stringify(c)+String.fromCharCode(10))})\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

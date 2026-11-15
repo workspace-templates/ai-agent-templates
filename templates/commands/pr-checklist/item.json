@@ -1,0 +1,46 @@
+{
+  "slug": "pr-checklist",
+  "title": "PR Checklist",
+  "kind": "command",
+  "category": "git",
+  "summary": "Runs tests, lint and type checks, hunts leftover debug code and trims the diff before you open a pull request.",
+  "description": [
+    "Most review comments on a fresh pull request are things the author could have caught: a console.log, a skipped test, an unrelated formatting change. This command runs through those checks in one pass and lists what to fix.",
+    "It works from the diff against your base branch, so findings point at lines you actually changed. It only reports and fixes small mechanical issues after you agree."
+  ],
+  "stacks": [],
+  "topics": [
+    "code-review",
+    "git"
+  ],
+  "useWhen": [
+    "Right before you push a branch and open a pull request",
+    "After a long debugging session that left experiments behind",
+    "When a reviewer keeps asking for the same cleanups",
+    "When you want to know if docs or a changelog entry are missing"
+  ],
+  "body": "Check this branch is ready for a pull request. Base: $ARGUMENTS (main if empty).\n\n1. Get the change set: `git diff --stat <base>...HEAD` and the full diff. Note files changed and lines added.\n2. Run the project's test, lint and type-check commands (read package.json scripts, Makefile, pyproject). Record pass or fail with the first failing message.\n3. Search added lines only for: console.log, print(, debugger, FIXME or HACK notes you introduced, commented-out code, .only or .skip in tests, hardcoded URLs and keys.\n4. Flag unrelated changes: whitespace-only edits, lockfile churn without a manifest change, files outside the task.\n5. Check docs: does a changed public function, flag or endpoint appear in the README or docs, and is there a changelog entry if the repo keeps one?\n6. Confirm commits are readable and no merge commits sit in the branch.\n\nOutput a checklist with pass, fail or n/a, each fail with file:line. Then suggest a pull request title and a three-line description. Ask before fixing anything; never push.",
+  "argumentHint": "[base branch, default main]",
+  "example": {
+    "prompt": "/pr-checklist",
+    "result": "Tests pass (312). Lint fails: 2 unused imports in src/api/orders.ts:4. Found console.log at src/api/orders.ts:88 and an it.only in orders.test.ts:41. CHANGELOG.md not updated. Fix the three mechanical items?"
+  },
+  "faq": [
+    {
+      "question": "Does it open the pull request?",
+      "answer": "No. It prepares a title and description and leaves publishing to you."
+    },
+    {
+      "question": "Will it flag old TODOs that were already in the repo?",
+      "answer": "No, it inspects only lines your branch added."
+    }
+  ],
+  "access": [
+    "Reads the branch diff and project config",
+    "Runs your test, lint and type-check commands",
+    "Edits files only for fixes you approve"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

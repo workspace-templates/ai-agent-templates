@@ -1,0 +1,48 @@
+{
+  "slug": "pandas-data-cleaning",
+  "title": "Pandas Data Cleaning",
+  "kind": "skill",
+  "category": "data",
+  "summary": "Cleans messy DataFrames with typed columns, explicit null handling and assertions. Use it when raw CSV or Excel data needs to become trustworthy.",
+  "description": [
+    "Quiet pandas defaults are where bad data hides: strings that look like numbers, NaN that turns an integer column into floats, duplicates nobody counted. This skill writes cleaning code that states every decision and fails loudly when the data breaks an assumption.",
+    "The result is a short, readable function per dataset, a log of rows dropped or changed, and assertions you can keep running on the next file."
+  ],
+  "stacks": [
+    "python",
+    "pandas"
+  ],
+  "topics": [
+    "python",
+    "sql"
+  ],
+  "useWhen": [
+    "A CSV from another team arrives with mixed date formats and stray whitespace",
+    "Counts differ between two reports and you suspect duplicates or nulls",
+    "You are turning a notebook of ad hoc fixes into a repeatable cleaning step",
+    "A column that should be an integer keeps becoming a float or object"
+  ],
+  "body": "# Pandas data cleaning\n\nEvery change to the data must be explicit, counted and checked.\n\n## Steps\n\n1. Load with intent: pass `dtype=` for IDs and codes (keep them as strings so leading zeros survive), `parse_dates=` for known dates, and `na_values=` for the file's own null markers such as \"N/A\" or \"-\".\n2. Look before you fix: `df.info()`, `df.isna().sum()`, `df.nunique()`, and `df.describe(include=\"all\")`. Print the number of rows at the start.\n3. Normalize text columns: `.str.strip()`, consistent case, and one canonical spelling map for categories.\n4. Convert types explicitly with `pd.to_numeric(errors=\"coerce\")` and `pd.to_datetime(errors=\"coerce\")`, then count what became null and inspect those rows before deciding.\n5. Decide each null on purpose: drop, fill with a stated default, or keep as `pd.NA` with a nullable dtype (`Int64`, `string`, `boolean`).\n6. Deduplicate on a named key with `drop_duplicates(subset=[...], keep=...)` and say which row wins and why.\n7. Finish with assertions: unique key, no nulls in required columns, values inside allowed ranges, expected dtypes.\n\n## Rules\n\n- Never use `inplace=True` or chained assignment. Return a new frame from a pure function.\n- Never drop rows silently. Log how many were removed per step.\n- Do not guess a date format; use an explicit `format=`.\n\n## Report\n\nRows in and out, per step counts, columns whose type changed, and any rows set aside for a human to review.",
+  "example": {
+    "prompt": "Clean customers_raw.csv so signup_date is a date and customer_id is unique.",
+    "result": "Wrote clean_customers() in etl/customers.py. 12,480 rows in, 12,211 out: 214 exact duplicates and 55 rows with unparseable signup_date moved to rejects.csv. customer_id kept as string, phone numbers stripped to digits, plan mapped from 9 spellings to 3. Added 5 assertions that run at the end of the function."
+  },
+  "faq": [
+    {
+      "question": "Why keep IDs as strings?",
+      "answer": "Leading zeros and long numbers are lost the moment pandas reads them as integers or floats. Strings keep them exact and safe to join on."
+    },
+    {
+      "question": "Does it modify my source file?",
+      "answer": "No. It reads the raw file and writes cleaned output and a rejects file next to it, leaving the original untouched."
+    }
+  ],
+  "access": [
+    "Reads data files such as CSV and Excel in the project",
+    "Writes a cleaning script and cleaned output files",
+    "Runs Python to check the result"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

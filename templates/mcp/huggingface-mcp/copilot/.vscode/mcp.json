@@ -1,0 +1,19 @@
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "hf_token",
+      "description": "A Hugging Face access token; a read token is enough for search",
+      "password": true
+    }
+  ],
+  "servers": {
+    "huggingface": {
+      "type": "http",
+      "url": "https://huggingface.co/mcp",
+      "headers": {
+        "Authorization": "Bearer ${input:hf_token}"
+      }
+    }
+  }
+}

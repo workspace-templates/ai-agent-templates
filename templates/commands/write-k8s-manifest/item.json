@@ -1,0 +1,48 @@
+{
+  "slug": "write-k8s-manifest",
+  "title": "Write Kubernetes Manifest",
+  "kind": "command",
+  "category": "devops",
+  "summary": "Writes Deployment, Service and config manifests for a service with probes, resource limits and a rollout that can be undone.",
+  "description": [
+    "A manifest that applies cleanly can still take a service down: no readiness probe, no limits, and a rollout that kills every pod at once. This command writes the set of files with those decisions made on purpose.",
+    "It reads the code for ports and health routes, follows the folder layout your repository already uses and validates the YAML with a dry run before it asks to save anything."
+  ],
+  "stacks": [
+    "kubernetes"
+  ],
+  "topics": [
+    "devops",
+    "ci"
+  ],
+  "useWhen": [
+    "A new service needs its first Kubernetes deployment",
+    "Pods restart in a loop and you suspect missing probes or limits",
+    "You want a rollout strategy that never drops capacity",
+    "Your manifests are copy-pasted and drifted apart"
+  ],
+  "body": "Write Kubernetes manifests for: $ARGUMENTS (service name; infer it from the repository if empty).\n\n1. Look for existing manifests, Helm charts or kustomize folders and match their layout, labels and naming. Read the app for its port, health route, config variables and startup time.\n2. Create a Deployment with the image set to a specific tag (never latest), app.kubernetes.io labels, and a RollingUpdate strategy with maxUnavailable 0 and maxSurge 1.\n3. Add readinessProbe, livenessProbe and a startupProbe if boot is slow. Point them at the health route, not at /.\n4. Set resource requests and limits with a short note on how you chose the numbers. Add securityContext: runAsNonRoot, readOnlyRootFilesystem where the app allows it.\n5. Add a Service, a ConfigMap for non-secret settings, and reference secrets by name only. Never write secret values.\n6. Run `kubectl apply --dry-run=client -f <dir>` and, if a cluster is reachable, `--dry-run=server`.\n\nShow the files and the dry-run result. Ask before writing them, and never run `kubectl apply` for real.",
+  "argumentHint": "[service name, namespace]",
+  "example": {
+    "prompt": "/write-k8s-manifest billing-api in namespace payments",
+    "result": "Proposed k8s/billing-api/: deployment.yaml (3 replicas, probes on /healthz, 250m/256Mi requests), service.yaml, configmap.yaml. Client dry run passed for all three. Secret \"billing-db\" is referenced, not created. Write these files?"
+  },
+  "faq": [
+    {
+      "question": "Does it deploy to my cluster?",
+      "answer": "No. It only dry-runs the manifests. Applying them stays your decision."
+    },
+    {
+      "question": "Can it work with Helm?",
+      "answer": "It follows an existing chart or kustomize layout if it finds one, and writes plain YAML otherwise."
+    }
+  ],
+  "access": [
+    "Reads source, Dockerfiles and existing manifests",
+    "Runs kubectl dry runs only",
+    "Writes manifest files after you approve"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,54 @@
+{
+  "slug": "api-doc-generator",
+  "title": "API Doc Generator",
+  "kind": "agent",
+  "category": "docs",
+  "summary": "Subagent that documents HTTP endpoints from the routes, types and validators in your code, with request and response examples that match them.",
+  "description": [
+    "API docs written by hand drift away from the handlers. This subagent reads the routes, the input validation and the return types, and writes reference pages from what the code actually accepts and returns.",
+    "Every endpoint gets its method, path, parameters, auth requirement, error cases and a copyable request with a realistic response. It works from the source, so it documents only what exists."
+  ],
+  "stacks": [],
+  "topics": [
+    "api-design",
+    "documentation"
+  ],
+  "useWhen": [
+    "You have an API with no reference documentation",
+    "The existing docs no longer match the handlers",
+    "You need examples partners can paste into a terminal",
+    "Before releasing a new API version with changed responses"
+  ],
+  "body": "# API doc generator\n\nWrite reference documentation for the HTTP endpoints in this codebase, derived from the code. Create or edit documentation files only; never change application source.\n\n## Steps\n\n1. Find the framework and route registration (Express, Fastify, Django, FastAPI, Rails, Spring, Go handlers). List every route with method and path, including mounted prefixes and versioning.\n2. For each endpoint, read the handler fully. Pull inputs from path, query, headers and body, and take required versus optional and constraints from the validator or schema (zod, pydantic, DTO classes), not from guesses.\n3. Pull outputs from the returned types and serializers. Record status codes the handler can really produce, including error shapes and validation failures.\n4. Record auth: which middleware, scopes or roles guard the route, and which routes are public.\n5. Write one section per endpoint: purpose in one sentence, parameters table, request example, success response, error responses.\n6. Build examples with curl using obviously fake values (example.com, token placeholders). Make every response example valid against the real type.\n7. If an OpenAPI file exists, update it instead of creating a rival format.\n\n## Rules\n\n- Never document an endpoint you did not find in code. Flag dead or unreachable routes.\n- Do not print real keys, tokens or internal hostnames.\n- Where behavior is ambiguous (default sort order, pagination limits), read the code and state the default, or note that it is unclear.\n\n## Report\n\n- Files written, endpoint count, and anything undocumented or ambiguous\n- Routes without validation, which deserve a look",
+  "agent": {
+    "tools": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Edit",
+      "Write"
+    ],
+    "model": "sonnet"
+  },
+  "example": {
+    "prompt": "Document the orders API under src/routes/orders into docs/api/orders.md.",
+    "result": "Wrote docs/api/orders.md covering 6 endpoints (list, get, create, cancel, refund, export). Each has parameters from the zod schemas, auth scopes, error cases and a curl example. Noted: GET /orders has no maximum page size (routes/orders/list.ts:22), and DELETE /orders/:id is registered but its handler is commented out."
+  },
+  "faq": [
+    {
+      "question": "Does it produce OpenAPI?",
+      "answer": "If your project already has an OpenAPI file it updates that. Otherwise it writes Markdown reference pages unless you ask for a spec."
+    },
+    {
+      "question": "Are the examples tested against a live server?",
+      "answer": "They are checked against the code's types and validators, not by calling a server. Run them once against a dev instance to be sure."
+    }
+  ],
+  "access": [
+    "Reads route, type and schema files",
+    "Writes documentation files only, not application code"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

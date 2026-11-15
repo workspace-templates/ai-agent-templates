@@ -1,0 +1,45 @@
+{
+  "slug": "sql-from-question",
+  "title": "SQL From Question",
+  "kind": "command",
+  "category": "data",
+  "summary": "Turns a plain-language question into a SQL query that fits your real schema, explains each part and runs only read-only statements.",
+  "description": [
+    "Asking a database a question usually starts with guessing table and column names. This command reads the actual schema in your project first, so the query it writes uses columns that exist.",
+    "You get the SQL, a line-by-line explanation, and the assumptions it made, such as how it treated nulls or time zones. It runs only SELECT statements, and only if you say yes."
+  ],
+  "stacks": [],
+  "topics": [
+    "sql",
+    "documentation"
+  ],
+  "useWhen": [
+    "A teammate asks a business question and you need the numbers",
+    "You do not remember how the tables join",
+    "You want a query reviewed against the schema before running it",
+    "Learning an unfamiliar database"
+  ],
+  "body": "Write SQL that answers this question: $ARGUMENTS\n\n1. Find the schema before writing anything: migrations, `schema.sql`, ORM models or Prisma/Drizzle files. If a database connection is documented, use `\\d` or `information_schema` to confirm. Note the SQL dialect.\n2. Restate the question in one sentence and list the tables and columns you will use, with the join keys. If the question is ambiguous (which date, which status counts as paid), list the choices and pick the likeliest, saying so.\n3. Write the query with explicit joins, readable aliases, and filters that handle nulls and time zones. Use CTEs for steps.\n4. Explain each clause in one line each.\n5. Warn about cost: missing indexes on filtered columns, huge tables, no LIMIT.\n\nOnly SELECT or EXPLAIN may be run, never INSERT, UPDATE, DELETE or DDL. Show the query and ask: \"Run it read-only?\" If yes, run it with a row limit and interpret the result in plain words.",
+  "argumentHint": "[your question in plain words]",
+  "example": {
+    "prompt": "/sql-from-question which 10 customers spent the most in the last 90 days, excluding refunds?",
+    "result": "Tables: customers, orders, refunds (orders.customer_id, refunds.order_id).\nAssumption: \"spent\" is orders.total_cents minus refunded amounts, status = paid.\nQuery uses a CTE per customer and LIMIT 10. Uses idx_orders_created_at.\nRun it read-only?"
+  },
+  "faq": [
+    {
+      "question": "Can it change my data?",
+      "answer": "No. It writes and runs only SELECT or EXPLAIN statements, and only after you agree."
+    },
+    {
+      "question": "What if the question is vague?",
+      "answer": "It lists the interpretations, picks the most likely one, and states that choice so you can correct it."
+    }
+  ],
+  "access": [
+    "Reads migrations, models and schema files",
+    "Runs read-only queries on a connected database only after you confirm"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

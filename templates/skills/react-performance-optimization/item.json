@@ -1,0 +1,45 @@
+{
+  "slug": "react-performance-optimization",
+  "title": "React Performance Optimization",
+  "kind": "skill",
+  "category": "frontend",
+  "summary": "Finds needless React re-renders with the Profiler and adds memoization only where a measurement shows it pays off.",
+  "description": [
+    "Wrapping every component in memo makes code harder to read and often changes nothing. This skill starts with a measurement: what renders, how often, and how long it takes, and only then touches the code.",
+    "The agent fixes state placement and unstable props first, since that removes most work for free. Memoization, virtualization or code splitting follow only for the hot spots the profile identifies."
+  ],
+  "stacks": [
+    "react"
+  ],
+  "topics": [
+    "performance"
+  ],
+  "useWhen": [
+    "Typing in an input makes the whole page lag",
+    "A list of hundreds of rows scrolls badly",
+    "The React DevTools flame graph shows the same component rendering constantly",
+    "Someone wants to add useMemo everywhere \"just in case\""
+  ],
+  "body": "# React performance optimization\n\nMeasure, find the cause, make the smallest change, measure again.\n\n## Steps\n\n1. Reproduce the slow interaction and describe it precisely (typing, scroll, route change). Record a Profiler trace for it, or add a temporary `<Profiler onRender>` and log `actualDuration`. Note the baseline in milliseconds and render counts.\n2. Identify the top offenders: components rendering most often or taking longest. For each ask why it rendered (state change, parent render, context change, new prop identity). Use \"Highlight updates\" or `why-did-you-render` if installed.\n3. Fix in this order:\n   - Move state down to the component that needs it, or lift expensive static children up as `children`.\n   - Split a context so consumers of one value do not re-render for another.\n   - Stabilize props only where a memoized child receives them: `useCallback` and `useMemo` for functions and objects.\n   - Wrap a component in `React.memo` only when the profile shows it re-renders with unchanged props and costs real time.\n   - Virtualize long lists (react-window or TanStack Virtual) instead of memoizing rows.\n   - Use `useDeferredValue` or `startTransition` for expensive filtering from an input.\n   - Split heavy routes with `lazy` and `Suspense`.\n4. Never use array index as key for reorderable lists; use stable ids.\n5. Re-profile and compare against the baseline.\n\n## Rules\n\n- No optimization without a number before and after.\n- Remove any memo or callback wrapper that did not move the number.\n- Do not mutate state to avoid renders.\n\n## Report\n\nBaseline versus result, each change with the reason, and the changes you tried and reverted.",
+  "example": {
+    "prompt": "Typing in the search box is laggy on the products page",
+    "result": "Baseline: 38 ms per keystroke, 214 ProductCard renders. Cause: query state lived in the page and re-rendered every card. Moved it into SearchBox, passed the debounced term down, and wrapped ProductCard in memo (the card was re-rendering with unchanged props). Result: 4 ms per keystroke, 12 renders. Reverted two useMemo calls with no effect."
+  },
+  "faq": [
+    {
+      "question": "Does it need the React DevTools?",
+      "answer": "The Profiler gives the best data, but the agent can also use the built-in Profiler component and console timings in a test run."
+    },
+    {
+      "question": "Why would it remove memoization?",
+      "answer": "Wrappers that do not change measured time still add code and risk stale values, so the agent takes them out."
+    }
+  ],
+  "access": [
+    "Reads and edits React components",
+    "May run your dev server, tests and a profiling script"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

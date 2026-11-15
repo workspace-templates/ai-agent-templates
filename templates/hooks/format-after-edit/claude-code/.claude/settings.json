@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{let j={};try{j=JSON.parse(d)}catch(e){process.exit(0)}const i=j.tool_input||{};const f=i.file_path;const fs=require('fs');if(!f||!/[.](js|jsx|ts|tsx|json|css|scss|html|md|mdx|vue|svelte|yml|yaml)$/i.test(f)||!fs.existsSync(f)||!fs.existsSync('node_modules/prettier'))process.exit(0);require('child_process').spawnSync('npx',['--no-install','prettier','--write',f],{stdio:'ignore',shell:process.platform==='win32'});process.exit(0)})\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

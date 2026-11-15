@@ -1,0 +1,46 @@
+{
+  "slug": "css-layout-debugging",
+  "title": "CSS Layout Debugging",
+  "kind": "skill",
+  "category": "frontend",
+  "summary": "Diagnoses broken flexbox and grid layouts by inspecting the box model and computed styles, then fixes the root rule instead of piling on overrides.",
+  "description": [
+    "Most layout bugs come from one wrong rule far from the symptom: a min-width that blocks shrinking, a margin that collapses, a percentage height with no parent height. This skill sends the agent to find that rule rather than add another override.",
+    "It reproduces the problem at the failing width, reads the computed values of the element and each ancestor, names the cause, and makes the smallest change that removes it."
+  ],
+  "stacks": [
+    "css"
+  ],
+  "topics": [
+    "debugging"
+  ],
+  "useWhen": [
+    "A flex child overflows or refuses to shrink",
+    "A grid item lands in the wrong cell or leaves a gap",
+    "An element is the wrong height and you tried five fixes",
+    "Sticky positioning, scrolling or centering silently does nothing"
+  ],
+  "body": "# CSS layout debugging\n\nFind the rule that causes the problem. Do not stack `!important` on top of it.\n\n## Steps\n\n1. Pin down the failure: the element, the viewport width, the expected layout versus the actual layout. If a dev server and browser tools exist, load the page at that width and take a screenshot.\n2. Walk up from the broken element to the root. For each ancestor read the computed `display`, `position`, `width`, `height`, `min-*`, `max-*`, `overflow`, `margin`, `padding`, `box-sizing`, `flex`, `grid-template-*`, `gap` and `transform`. Use `getComputedStyle` through the browser console when you can.\n3. Check the usual causes in order:\n   - Flex items default to `min-width: auto`, so long text or images stop them shrinking; the fix is `min-width: 0` on the item.\n   - Percentage heights need a parent with a definite height.\n   - `overflow` other than visible on an ancestor breaks `position: sticky`.\n   - Margins collapse between block siblings and parent and child.\n   - `align-items: stretch` and `auto` margins fight each other.\n   - A grid track sized with `1fr` has the same min-content trap; use `minmax(0, 1fr)`.\n4. Change one property at a time, in the browser first, then in the source file that owns the rule.\n5. Recheck at the failing width and at one narrower and one wider width.\n\n## Rules\n\n- Fix the owning rule; never patch with fixed pixel widths, magic margins or `!important`.\n- Do not restructure the markup unless the cause is in it.\n\n## Report\n\nCause in one sentence, the property and file changed, and the widths you rechecked.",
+  "example": {
+    "prompt": "The sidebar pushes the main column off the screen under 900px",
+    "result": "Cause: .main is a flex child holding a pre block, and min-width: auto stopped it shrinking below the code width. Fix: min-width: 0 on .main in layout.css:42. Rechecked at 320, 600 and 1200px; the code block now scrolls inside its own box."
+  },
+  "faq": [
+    {
+      "question": "Does it need a browser?",
+      "answer": "It works better with one, since computed values settle arguments quickly. Without it, the agent reasons from the CSS and says what it could not confirm."
+    },
+    {
+      "question": "Will it rewrite my stylesheet?",
+      "answer": "No. It changes the one rule responsible and reports it, so the diff stays small."
+    }
+  ],
+  "access": [
+    "Reads HTML, CSS and component files",
+    "Edits stylesheets",
+    "May open your dev server in a browser"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

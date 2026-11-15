@@ -1,0 +1,54 @@
+{
+  "slug": "square-mcp",
+  "title": "Square MCP Server",
+  "kind": "mcp",
+  "category": "backend",
+  "summary": "Use Square's hosted MCP server to let your agent work with payments, catalog, orders and customers through the Square API after an OAuth sign-in.",
+  "description": [
+    "Square's MCP server exposes its whole API through three tools: one to discover a service's methods, one to read a method's parameters and one to make the call. That keeps the tool list small while covering payments, orders, catalog, customers and more.",
+    "The hosted endpoint signs you in with OAuth, so you do not paste an access token. If you prefer to run it yourself with your own token, Square also documents a local npx mode with a DISALLOW_WRITES switch for read-only use."
+  ],
+  "stacks": [],
+  "topics": [
+    "api-design"
+  ],
+  "useWhen": [
+    "Explore the Square API for a point-of-sale integration",
+    "Look up an order and its payments while debugging a mismatch",
+    "List catalog items to seed a staging store",
+    "Check which fields a Square method requires before you code the call"
+  ],
+  "mcp": {
+    "name": "square",
+    "transport": "http",
+    "url": "https://mcp.squareup.com/mcp",
+    "env": [],
+    "headers": [],
+    "source": "https://github.com/square/square-mcp-server",
+    "access": [
+      "Calls the Square API for the seller account you sign in with",
+      "Can read and change orders, catalog, customers and payments within that account's permissions"
+    ]
+  },
+  "example": {
+    "prompt": "Show the 5 most recent orders at my main location and flag any that have no payment.",
+    "result": "5 orders returned. Order 7Hk2 (21.50 USD) is OPEN with no tender attached; the other four are completed and paid by card."
+  },
+  "faq": [
+    {
+      "question": "Can I keep it read-only?",
+      "answer": "The local npx mode takes DISALLOW_WRITES set to true. The hosted OAuth server follows the permissions you grant when you sign in."
+    },
+    {
+      "question": "Does it work with the Square sandbox?",
+      "answer": "The local mode has a SANDBOX variable for that. Use it with a sandbox access token while you build."
+    }
+  ],
+  "access": [
+    "Reads and can change data in the Square seller account you authorize",
+    "Sends requests to mcp.squareup.com"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

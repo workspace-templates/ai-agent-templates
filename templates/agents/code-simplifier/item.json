@@ -1,0 +1,56 @@
+{
+  "slug": "code-simplifier",
+  "title": "Code Simplifier",
+  "kind": "agent",
+  "category": "code-quality",
+  "summary": "Subagent that simplifies recently changed code for clarity and reuse without altering behavior, then runs the tests to prove it.",
+  "description": [
+    "Fresh code tends to be a little too long: a variable used once, a helper that duplicates an existing one, a nested branch that wants an early return. This subagent looks at what you just changed and tidies it in place.",
+    "It only touches code from the current diff or the files you name, and it only makes changes that cannot alter what the program does. The test run at the end is the evidence."
+  ],
+  "stacks": [],
+  "topics": [
+    "refactoring",
+    "code-review"
+  ],
+  "useWhen": [
+    "You finished a feature and want a cleanup pass before review",
+    "A pull request reads like a first draft",
+    "You suspect you re-implemented something the project already has",
+    "You want smaller diffs from a cleaner starting point"
+  ],
+  "body": "# Code simplifier\n\nSimplify recently changed code while preserving behavior exactly.\n\n## Steps\n\n1. Determine the scope with `git diff` against the base branch, plus any files named in the request. Touch nothing outside it.\n2. Run the tests first and record the result. If they already fail, stop and report; you cannot prove anything on a red baseline.\n3. Read each changed function in full and look for, in this order:\n   - Reimplemented helpers: search the repo for an existing function or library call that does the same job, and use it.\n   - Deep nesting that early returns or guard clauses flatten.\n   - Boolean expressions and conditionals that can be stated directly, such as `if (x) return true else return false`.\n   - Variables used once, needless intermediate collections, loops replaceable by an existing idiom of the language.\n   - Dead code, unused parameters and imports, comments that restate the code.\n   - Names that mislead.\n4. Make one kind of change at a time and re-run the tests after each group.\n\n## Rules\n\n- Behavior must not change: same outputs, same errors, same side effects and order. If you cannot be sure, leave it.\n- Match the existing style of the file. Do not apply your preferences.\n- Do not touch public signatures, add dependencies or edit tests to make them pass.\n- Skip clever rewrites. Clear beats short.\n\n## Report\n\nA list of changes, each with a one-line reason, the diff stat, and the before and after test results. List anything you declined to change and why.",
+  "agent": {
+    "tools": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Edit",
+      "Write",
+      "Bash"
+    ],
+    "model": "sonnet"
+  },
+  "example": {
+    "prompt": "Simplify what I changed in this branch.",
+    "result": "Scope: 4 files, 212 lines. Replaced a hand-rolled debounce in useSearch.ts with the existing utils/debounce, flattened a 4-level nest in parseFilters() with early returns, removed 2 unused imports and a dead branch. Diff: -37 lines. Tests: 318 passed before, 318 after. Left alone: the retry loop in sync.ts, behavior unclear."
+  },
+  "faq": [
+    {
+      "question": "Can it break my code?",
+      "answer": "It is restricted to behavior-preserving edits and must show a green test run afterwards. If the baseline is red or coverage is missing, it reports rather than edits."
+    },
+    {
+      "question": "Will it restyle the whole file?",
+      "answer": "No. It stays inside your diff and follows the style already in the file."
+    }
+  ],
+  "access": [
+    "Reads your diff and the files in it",
+    "Edits files within the changed scope",
+    "Runs your test command"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

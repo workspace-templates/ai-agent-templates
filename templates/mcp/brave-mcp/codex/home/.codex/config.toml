@@ -1,0 +1,6 @@
+[mcp_servers.brave-search]
+command = "npx"
+args = ["-y","@brave/brave-search-mcp-server","--transport","stdio"]
+
+[mcp_servers.brave-search.env]
+BRAVE_API_KEY = "${BRAVE_API_KEY}"

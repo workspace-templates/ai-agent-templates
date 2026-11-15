@@ -1,0 +1,23 @@
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "pinecone_api_key",
+      "description": "Your Pinecone API key",
+      "password": true
+    }
+  ],
+  "servers": {
+    "pinecone": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@pinecone-database/mcp"
+      ],
+      "env": {
+        "PINECONE_API_KEY": "${input:pinecone_api_key}"
+      }
+    }
+  }
+}

@@ -1,0 +1,22 @@
+# Project rules: Symfony
+
+## Structure
+- Keep controllers thin: map the request, call one service, return a response. Use attribute routing and `#[MapRequestPayload]` or `#[MapQueryString]` for input DTOs.
+- Business logic lives in services under `src/Service` or per feature. Inject dependencies through the constructor; never fetch from the container or use static helpers.
+- Use `declare(strict_types=1)`, typed properties and readonly value objects.
+
+## Doctrine
+- Queries belong in repository classes, never in controllers. Select only what you need and fetch-join relations that will be read, to avoid N+1.
+- Change the schema only with migrations from `doctrine:migrations:diff`; read the SQL before committing. Do not call `flush()` inside loops.
+- Do not serialize entities directly. Return DTOs or use serialization groups.
+
+## Forms and validation
+- Put rules on DTOs or entities with Validator constraints. Use Form types for HTML forms, and never trust data that skipped validation.
+
+## Messenger and config
+- Send slow work (mail, exports, webhooks) through Messenger messages with idempotent handlers. Configure retry and a failure transport.
+- Configuration goes in `.env` defaults plus secrets in the vault. Autowire parameters with `#[Autowire]`.
+
+## Tests and checks
+- Use PHPUnit with `WebTestCase` for endpoints and `KernelTestCase` for services. Use fixtures, not production data.
+- Before finishing run `composer validate`, `vendor/bin/phpstan analyse`, `vendor/bin/php-cs-fixer fix --dry-run` and `bin/phpunit`.

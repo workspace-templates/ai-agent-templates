@@ -1,0 +1,58 @@
+{
+  "slug": "time-mcp",
+  "title": "Time MCP Server",
+  "kind": "mcp",
+  "category": "productivity",
+  "summary": "Give your agent the real current time and reliable time zone conversion, so it stops guessing dates, deadlines and meeting hours.",
+  "description": [
+    "Language models do not know what time it is. This reference server adds get_current_time, convert_time and get_time_ago, all based on IANA zone names such as Europe/Warsaw.",
+    "Launch it with uvx, which comes with the uv tool. It has no keys and does not use the network for answers.",
+    "Pass --local-timezone in the args if the machine's own zone is wrong or you want a fixed default."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation"
+  ],
+  "useWhen": [
+    "Schedule a call across three time zones",
+    "Check what a timestamp in a log means in local time",
+    "Work out the date for a deadline two weeks from now",
+    "Write release notes with the correct current date"
+  ],
+  "mcp": {
+    "name": "time",
+    "transport": "stdio",
+    "command": "uvx",
+    "args": [
+      "mcp-server-time"
+    ],
+    "env": [],
+    "headers": [],
+    "source": "https://github.com/modelcontextprotocol/servers/tree/main/src/time",
+    "access": [
+      "Reads the system clock and your configured time zone",
+      "No file or network access"
+    ]
+  },
+  "example": {
+    "prompt": "It is 16:30 in Tokyo. What time is that in New York and in Berlin?",
+    "result": "Asia/Tokyo 16:30 is 03:30 in America/New_York and 09:30 in Europe/Berlin on the same calendar day, with daylight saving taken into account for the current date."
+  },
+  "faq": [
+    {
+      "question": "Why did it reject my zone name?",
+      "answer": "Names must be exact IANA keys with the right case. Europe/Warsaw works, while europe/warsaw is refused."
+    },
+    {
+      "question": "What does convert_time expect?",
+      "answer": "A 24-hour time written HH:MM, plus an optional source and target zone. Both default to the local zone."
+    }
+  ],
+  "access": [
+    "Reads the system clock",
+    "No network, no file access"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,46 @@
+{
+  "slug": "debug-error",
+  "title": "Debug Error",
+  "kind": "command",
+  "category": "productivity",
+  "summary": "Finds the root cause of an error message or stack trace in your code, shows the evidence and proposes a minimal fix.",
+  "description": [
+    "Pasting an error and getting a guess back wastes time. This command locates the frames in your own code, reads the surrounding logic and tests its theory before proposing a change.",
+    "It states what it checked, separates cause from symptom and asks before applying anything."
+  ],
+  "stacks": [],
+  "topics": [
+    "debugging",
+    "logging"
+  ],
+  "useWhen": [
+    "A stack trace points into code you did not write",
+    "An error appears only in production or CI",
+    "You are staring at a cryptic message from a library",
+    "A test fails with an unhelpful assertion"
+  ],
+  "body": "Debug this error: $ARGUMENTS\n\n1. Read the message and trace. Ignore framework and library frames; find the first frame inside this repository and open that file around the line.\n2. Search the repo for the exact message text to see where it is raised, and check recent changes to those files with `git log -n 5 --oneline -- <file>`.\n3. Write down two or three hypotheses ranked by likelihood. For each, name a quick check: print a value, read a config, run a failing test, query a log.\n4. Run the cheapest checks. Do not change code to test a theory unless you can revert it at once.\n5. Identify the root cause. Distinguish the line that crashed from the line that put bad data in place.\n6. Propose the smallest fix and a test that would have caught it.\n\nReport: **Cause** (one sentence), **Evidence** (file:line and what you saw), **Fix** (diff), **Test**. If you cannot reproduce or confirm the cause, say which information is missing instead of guessing. Ask \"Apply this fix?\" before editing.",
+  "argumentHint": "<error message or stack trace>",
+  "example": {
+    "prompt": "/debug-error TypeError: Cannot read properties of undefined (reading 'id') at mapOrder (orders.js:41)",
+    "result": "Cause: getOrders returns null for guests, then mapOrder reads order.customer.id. Evidence: orders.js:33 returns early without an object. Fix: return an empty list there. Apply this fix?"
+  },
+  "faq": [
+    {
+      "question": "What if it cannot reproduce the error?",
+      "answer": "It lists what it checked and asks for the missing input, such as a request payload or log line."
+    },
+    {
+      "question": "Will it edit code while investigating?",
+      "answer": "Only temporary probes it can revert. The real fix waits for your approval."
+    }
+  ],
+  "access": [
+    "Reads source files, logs and git history",
+    "Runs tests and read-only diagnostics",
+    "Edits code only after approval"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

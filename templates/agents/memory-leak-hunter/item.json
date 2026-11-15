@@ -1,0 +1,53 @@
+{
+  "slug": "memory-leak-hunter",
+  "title": "Memory Leak Hunter",
+  "kind": "agent",
+  "category": "code-quality",
+  "summary": "Read-only subagent that traces listeners, caches and long-lived references that grow without bound and explains how to release them.",
+  "description": [
+    "A memory leak is usually a reference that outlives the thing it was meant to serve. This subagent starts from what is held for the life of the process, such as module-level maps, event emitters, timers and singletons, and asks what is added to each and when it is ever removed.",
+    "It reads code only. The report ranks suspects by how fast they can grow and describes how to confirm each with a heap snapshot or a counter."
+  ],
+  "stacks": [],
+  "topics": [
+    "performance",
+    "debugging"
+  ],
+  "useWhen": [
+    "A server needs a restart every few days as memory climbs",
+    "A browser tab slows after navigating between views many times",
+    "A worker is killed for exceeding its memory limit",
+    "You added a cache and want to check it has a bound"
+  ],
+  "body": "# Memory leak hunter\n\nFind code that retains memory it should release. You are read-only: do not edit files.\n\n## Steps\n\n1. Ask for the symptom if missing: which process, how fast memory grows, what action drives it. Look for existing heap dumps, metrics or logs the user mentions.\n2. Inventory long-lived holders with Grep: module-level collections (Map, Set, array, dict), singletons, global caches, memoization, connection pools, and timers (`setInterval`, schedulers).\n3. For each holder, find every add and every remove. A holder with adds and no removal path is a suspect. Check the cap and eviction policy of caches, and the key space: keys derived from user input are unbounded.\n4. Check subscriptions: event listeners, observers, subscriptions and callbacks registered per request or per component without a matching unregister on teardown.\n5. Check closures and captured scope: callbacks that capture large objects, request or response objects stored on long-lived structures, and promises that never settle.\n6. Check native and external resources: file handles, streams, sockets, worker threads, DOM nodes detached but referenced.\n\n## Rules\n\n- Rank suspects by growth rate multiplied by retained size, not by how suspicious the code looks.\n- Do not suggest a fix before naming the add path and the missing removal path.\n\n## Report\n\nFor each suspect: file:line, what grows, why nothing frees it, how to confirm (snapshot comparison or a size counter to log), and the shape of the fix.",
+  "agent": {
+    "tools": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Bash"
+    ],
+    "model": "opus"
+  },
+  "example": {
+    "prompt": "The API server grows about 40 MB an hour. Find the leak.",
+    "result": "Top suspect: socket/hub.ts:27 adds a listener per connection on a shared emitter and only removes it in the clean-close path, never on error. Second: a per-user memo cache in profile.ts keyed by raw query string with no cap. Confirm with two heap snapshots 10 minutes apart."
+  },
+  "faq": [
+    {
+      "question": "Can it find a leak without running the app?",
+      "answer": "It finds structural suspects by reading code. Confirming one still needs a heap snapshot or a counter, and the report says which to use."
+    },
+    {
+      "question": "Does it work for garbage-collected and manual languages?",
+      "answer": "Yes. In collected languages it looks for lingering references; in C or C++ it also looks for unmatched allocation and free paths."
+    }
+  ],
+  "access": [
+    "Reads files in your project",
+    "Runs read-only commands such as git log"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

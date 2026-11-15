@@ -1,0 +1,45 @@
+{
+  "slug": "document-endpoint",
+  "title": "Document Endpoint",
+  "kind": "command",
+  "category": "backend",
+  "summary": "Writes reference docs for one endpoint from the real code: parameters, responses, errors and a working example call.",
+  "description": [
+    "API docs go stale when they are written from memory. This command reads the handler, its validation and its tests, then writes the reference from what the code actually does.",
+    "The result follows the format of your existing docs when there is one. If the code and the tests disagree, it lists the mismatch instead of picking a side quietly."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation",
+    "api-design"
+  ],
+  "useWhen": [
+    "A route shipped without any documentation",
+    "Frontend developers keep asking what an endpoint returns",
+    "You are preparing docs for a public or partner API",
+    "An endpoint changed and its page needs a refresh"
+  ],
+  "body": "Write reference documentation for this endpoint: $ARGUMENTS\n\n1. Locate the route, its handler, validation schema, auth middleware and tests. Read all of them.\n2. Look for existing API docs (docs folder, README, OpenAPI file). Match their headings and tone. If none exist, use plain Markdown.\n3. Document, in this order: purpose in one sentence, method and path, authentication and required roles, path and query parameters, request body fields (type, required, limits), success response with status and fields, every error status with its cause and body, rate limits if any.\n4. Build a request example that really works (curl with a dummy token) and the matching real-shaped response. Take values from tests or fixtures, never invent fields the code does not return.\n5. If the code, tests and any older doc disagree, do not choose silently. List each mismatch.\n\nShow the finished page. Ask before saving it or overwriting an existing doc file.",
+  "argumentHint": "[method and path, or handler file]",
+  "example": {
+    "prompt": "/document-endpoint POST /invoices",
+    "result": "Documented POST /invoices: bearer auth, role billing, body fields customerId, items[], dueDate; 201 returns the invoice; errors 400, 401, 403, 422.\nMismatch: the old doc says dueDate is optional, but the schema requires it.\nSave to docs/api/invoices.md?"
+  },
+  "faq": [
+    {
+      "question": "Does it guess response fields?",
+      "answer": "No. Fields come from the handler code, serializers and test fixtures, and anything unclear is flagged as a question."
+    },
+    {
+      "question": "Can it update an OpenAPI file?",
+      "answer": "It writes the page in your docs format. For spec changes, the Update OpenAPI command is the better tool."
+    }
+  ],
+  "access": [
+    "Reads handlers, schemas, tests and existing docs",
+    "Writes a doc file only after you approve"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

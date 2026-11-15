@@ -1,0 +1,45 @@
+{
+  "slug": "add-types",
+  "title": "Add Types",
+  "kind": "command",
+  "category": "code-quality",
+  "summary": "Adds precise type annotations to one file and fixes the checker errors that show up, without leaning on any or ignores.",
+  "description": [
+    "Loose types such as any or untyped dicts defeat the point of a type checker. This command annotates one file with specific types, reading call sites to learn what values really flow through.",
+    "It runs your configured checker, mypy, pyright or tsc, and fixes the errors at the source. If a real bug appears, it reports it rather than hiding it with a cast."
+  ],
+  "stacks": [],
+  "topics": [
+    "typescript",
+    "python"
+  ],
+  "useWhen": [
+    "A file is full of any or missing annotations",
+    "You are turning on strict mode one file at a time",
+    "Autocomplete is useless on a core module",
+    "A runtime error was caused by an unexpected shape"
+  ],
+  "body": "Add precise types to: $ARGUMENTS\n\n1. Identify the language and the checker already configured (tsconfig.json, mypy.ini, pyproject.toml, pyright). Run it once and record the starting error count. Do not change checker settings.\n2. Read the file and its callers and tests to learn the real shapes of parameters, return values and data structures. Check library types in node_modules or site-packages rather than guessing.\n3. Annotate bottom-up: data shapes first (interfaces, TypedDict, dataclasses, enums, union literals), then function signatures, then variables the checker cannot infer.\n4. Avoid `any`, `object`, `Any`, `as unknown as`, `# type: ignore` and `@ts-ignore`. If a value really is unknown, use `unknown` and narrow it.\n5. Run the checker again and fix each error at its cause. If an error exposes a genuine bug, stop and describe it instead of silencing it.\n6. Run the tests to make sure runtime behavior is unchanged.\n\nReport starting versus ending error counts, the new types you defined, and any real bugs found. Do not edit other files without asking.",
+  "argumentHint": "[file to type]",
+  "example": {
+    "prompt": "/add-types src/api/client.ts",
+    "result": "tsc errors: 23 before, 0 after. Added interfaces ApiResponse<T>, RequestOptions, RetryPolicy; removed 9 any.\nFound a bug: fetchUser() returns undefined on 404 but is typed as User; changed the return to User | null and updated 2 callers.\nTests pass."
+  },
+  "faq": [
+    {
+      "question": "Will it just use any to quiet errors?",
+      "answer": "No. Ignores, casts and any are off the table, and unclear values are narrowed instead."
+    },
+    {
+      "question": "Does it work for Python?",
+      "answer": "Yes, it uses mypy or pyright when configured and writes annotations, TypedDicts and dataclasses to match."
+    }
+  ],
+  "access": [
+    "Reads the file, its callers and library types",
+    "Edits the file and sometimes direct callers, runs the checker and tests"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

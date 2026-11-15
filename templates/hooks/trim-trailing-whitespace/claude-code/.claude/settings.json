@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"process.on('uncaughtException',()=>process.exit(0));let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{let j={};try{j=JSON.parse(d)||{}}catch(e){process.exit(0)}const i=j.tool_input||{};const f=String(i.file_path||'');const fs=require('fs');const rd=()=>{try{return fs.readFileSync(f,'utf8')}catch(e){return null}};const e=require('path').extname(f).toLowerCase();if(['.md','.markdown','.mdx','.diff','.patch'].includes(e))process.exit(0);const t=rd();if(t===null||t.includes(String.fromCharCode(0)))process.exit(0);const o=t.split('\\n').map(l=>{const cr=l.endsWith('\\r');let b=cr?l.slice(0,-1):l;while(b.endsWith(' ')||b.endsWith('\\t'))b=b.slice(0,-1);return cr?b+'\\r':b}).join('\\n');if(o!==t)fs.writeFileSync(f,o);process.exit(0)})\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}

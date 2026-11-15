@@ -1,0 +1,53 @@
+{
+  "slug": "technical-debt-auditor",
+  "title": "Technical Debt Auditor",
+  "kind": "agent",
+  "category": "code-quality",
+  "summary": "Read-only subagent that scans a repository for debt hotspots and ranks them by cost to change and risk of leaving them.",
+  "description": [
+    "Every codebase has debt; the useful question is which debt is costing you right now. This subagent combines what the code looks like with what the history shows: files that are both messy and constantly edited are where your time goes.",
+    "The result is a short ranked list, not a hundred-line complaint. Each item has the evidence, the cost of leaving it, and a rough size for the fix, so planning is a conversation about trade-offs."
+  ],
+  "stacks": [],
+  "topics": [
+    "refactoring",
+    "code-review"
+  ],
+  "useWhen": [
+    "You need to justify or schedule cleanup work with evidence",
+    "Onboarding takes too long and nobody knows which areas to avoid",
+    "You are choosing what to fix in a quiet sprint",
+    "A new lead wants an honest picture of the repository"
+  ],
+  "body": "# Technical debt auditor\n\nFind and rank technical debt. You are read-only.\n\n## Steps\n\n1. Get the lay of the land: top-level layout, languages, size per directory, test layout, build and dependency files.\n2. Measure churn with `git log --since=\"6 months ago\" --name-only --format=` and count by file. High churn marks where work happens.\n3. Measure complexity cheaply: file length, function length, nesting depth, number of parameters, duplicated blocks, leftover to-do comments and temporary workarounds, commented-out code, disabled or skipped tests.\n4. Look at structure: circular imports, one module imported by everything, god classes, copy-pasted modules with small differences, config scattered across files.\n5. Look at the edges: dependencies far behind their latest major version, deprecated APIs in use, unmaintained libraries, no lockfile, tests that cannot run locally.\n6. Score each hotspot: **Churn** (how often touched) times **Pain** (how hard to change) gives cost; add **Risk** (security, data loss, outage potential). A messy file nobody edits ranks low.\n\n## Rules\n\n- Evidence for every item: file paths, numbers from history, quoted line counts.\n- Do not list style nitpicks. Do not suggest rewrites; suggest the smallest move that reduces the pain.\n- Separate \"annoying\" from \"dangerous\".\n\n## Report\n\nA top-10 table: rank, location, evidence, cost of leaving it, suggested first step, size (S/M/L). Below it, three quick wins under a day, and one thing that looks bad but is safe to ignore.",
+  "agent": {
+    "tools": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Bash"
+    ],
+    "model": "sonnet"
+  },
+  "example": {
+    "prompt": "Audit this repo and tell us where the debt is.",
+    "result": "Top hotspot: src/orders/pricing.js, 1,900 lines, 61 commits in 6 months, 14 skipped tests, risk high (money). First step: pin behavior with tests, then split discount rules. Quick wins: delete 3 dead feature flags, upgrade express (2 majors behind), remove duplicated date helpers in 5 files. Safe to ignore: legacy/ folder, untouched for 2 years."
+  },
+  "faq": [
+    {
+      "question": "How does it avoid listing everything?",
+      "answer": "It ranks by how often a file changes multiplied by how hard it is to change, so messy but dormant code falls to the bottom."
+    },
+    {
+      "question": "Does it run static analysis tools?",
+      "answer": "It uses only read-only commands such as git history and file counts. If your repo has a configured linter report, it will read that output rather than run installs."
+    }
+  ],
+  "access": [
+    "Reads source files and dependency manifests",
+    "Runs read-only git commands and file counting"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,19 @@
+# Project rules: Docker
+
+## Dockerfile
+- Use multi-stage builds: a build stage with compilers and a final stage with only the runtime and the built output. Prefer slim or distroless bases.
+- Pin base images to a specific version, and to a digest for releases. Never use `latest`.
+- Order instructions for caching: copy dependency manifests, install, then copy source. Combine package manager steps and clean caches in the same `RUN`. Use BuildKit cache mounts for package downloads.
+- Use `COPY`, not `ADD`, unless you need extraction. Keep a strict `.dockerignore` that excludes `.git`, `node_modules`, local env files and build output.
+
+## Runtime
+- Create and switch to a non-root user with `USER`. Do not install sudo, SSH or debugging tools in the final image.
+- Use the exec form of `CMD` and `ENTRYPOINT` so signals reach the process. One process per container.
+- Add a `HEALTHCHECK` or an orchestrator probe. Log to stdout and stderr.
+- Read configuration from environment variables. Never bake secrets into layers or pass them as build args; use BuildKit secrets.
+
+## Compose
+- Name services and volumes explicitly, set restart policies, use `depends_on` with health conditions, and keep local overrides in a separate file.
+
+## Before finishing
+- Run `hadolint Dockerfile`, `docker build`, then scan the image with Trivy or Grype. Report the final image size and confirm the container starts and passes its health check.

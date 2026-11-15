@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "neon": {
+      "httpUrl": "https://mcp.neon.tech/mcp?readonly=true"
+    }
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "slug": "commit-splitter",
+  "title": "Commit Splitter",
+  "kind": "agent",
+  "category": "git",
+  "summary": "Subagent that turns one big uncommitted change into a series of small logical commits, each building and each with a clear message.",
+  "description": [
+    "After a long afternoon the working tree holds a refactor, a bug fix and a new feature all mixed together. Reviewers hate it and bisecting it is worse. This subagent separates the change into commits that each tell one story.",
+    "It plans the split first and shows you the plan, stages hunks precisely, and checks that every commit builds on its own. Nothing is pushed, and your original work is saved on a backup branch before it starts."
+  ],
+  "stacks": [],
+  "topics": [
+    "git"
+  ],
+  "useWhen": [
+    "You have hundreds of changed lines and want reviewable commits",
+    "A fix and an unrelated cleanup ended up in the same files",
+    "You want a history that bisects cleanly",
+    "A pull request is too large and needs splitting before review"
+  ],
+  "body": "# Commit splitter\n\nSplit the uncommitted changes into a sequence of logical commits.\n\n## Steps\n\n1. Run `git status` and `git diff` (staged and unstaged). Stop if there is nothing to split or if a merge or rebase is in progress.\n2. Make a safety net first: create a branch named `backup/split-<timestamp>` pointing at HEAD, and save the full diff with `git diff HEAD` into a patch file in the system temp folder. Tell the user where both are.\n3. Read every hunk and group by purpose, in this order: mechanical moves and renames, refactors that change no behavior, bug fixes, new features, tests, docs and config. A commit may touch several files and one file may land in several commits.\n4. Present the plan: commit number, message, files and hunks. Wait for the user's approval or edits before staging anything.\n5. For each commit: stage with `git add -p` or `git apply --cached` for partial files, review `git diff --cached`, then run the build or fast tests, then commit.\n6. Messages: a subject under 72 characters in the imperative (\"Add retry to webhook sender\"), then a body saying why when it is not obvious. Match the project's existing style from `git log --oneline -n 10`.\n7. At the end `git status` must be clean and the diff against the backup branch must be empty. If not, find the missing hunk.\n\n## Rules\n\n- Never rewrite or amend commits that already exist. Never push.\n- Every commit must build on its own. If one cannot, merge it with its neighbor.\n\n## Report\n\nThe final list of commits with hashes and subjects, the empty-diff check, and the backup branch name.",
+  "agent": {
+    "tools": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Bash"
+    ],
+    "model": "sonnet"
+  },
+  "example": {
+    "prompt": "Split my uncommitted changes into logical commits.",
+    "result": "Plan approved: 1) Rename fetchUser to loadUser (14 files), 2) Fix null avatar crash in profile page, 3) Add profile photo upload with tests, 4) Update docs. Created backup/split-1731672000. All four commits build. git diff against the backup is empty and the tree is clean."
+  },
+  "faq": [
+    {
+      "question": "What if the split goes wrong?",
+      "answer": "Your changes are saved first on a backup branch and as a patch file, so you can restore the original state with one command."
+    },
+    {
+      "question": "Does it push or open a pull request?",
+      "answer": "No. It only creates local commits. Pushing and opening the pull request stay with you."
+    }
+  ],
+  "access": [
+    "Reads your working tree and diffs",
+    "Creates a backup branch and local commits",
+    "Runs your build or tests between commits"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

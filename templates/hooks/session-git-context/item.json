@@ -1,0 +1,48 @@
+{
+  "slug": "session-git-context",
+  "title": "Session Git Context",
+  "kind": "hook",
+  "category": "git",
+  "summary": "A Claude Code hook that gives each new session the branch, the five latest commits and the changed files as starting context, with no prompt needed.",
+  "description": [
+    "A fresh session knows nothing about what happened yesterday. This SessionStart hook prints a short briefing that Claude Code places in context: the branch, the five newest commit subjects and a list of files with pending changes.",
+    "With that in hand the agent can pick up where the last commit left off instead of asking you to explain. In a folder that is not a Git repository the hook stays quiet."
+  ],
+  "stacks": [],
+  "topics": [
+    "git",
+    "code-review"
+  ],
+  "useWhen": [
+    "Resume work the next morning",
+    "Start a session on a branch someone else pushed",
+    "Let the agent see what changed recently without asking",
+    "Open Claude Code in a repo you have not touched for weeks"
+  ],
+  "hook": {
+    "event": "SessionStart",
+    "command": "node -e \"let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{let j={};try{j=JSON.parse(d)}catch(e){}const cp=require('child_process');const g=a=>cp.execFileSync('git',a,{cwd:j.cwd||process.cwd(),encoding:'utf8',stdio:['ignore','pipe','ignore']}).trimEnd();try{const b=g(['branch','--show-current'])||'detached HEAD';let o='Session start. Branch: '+b+String.fromCharCode(10)+'Last commits:'+String.fromCharCode(10)+g(['log','-5','--oneline']);const c=g(['status','--short']).split(String.fromCharCode(10)).filter(Boolean);o+=String.fromCharCode(10)+(c.length?'Changed files ('+c.length+'): '+c.slice(0,15).join('; ')+(c.length>15?'; and more':''):'No changed files.');console.log(o)}catch(e){}process.exit(0)})\"",
+    "timeout": 10
+  },
+  "example": {
+    "prompt": "Continue with the work from yesterday.",
+    "result": "The session opens with the branch name, five commit lines such as 'a1b2c3d Add retry to uploader' and the files still modified, so Claude can name the unfinished task."
+  },
+  "faq": [
+    {
+      "question": "Can I show more than five commits?",
+      "answer": "Yes. Change the number after the log flag inside the command, for example from 5 to 10."
+    },
+    {
+      "question": "Does it run when I resume or clear a session?",
+      "answer": "SessionStart fires for startup, resume and clear alike, so the briefing is refreshed each time."
+    }
+  ],
+  "access": [
+    "Runs git branch, git log and git status in the project folder",
+    "Prints text into the session; changes no files"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

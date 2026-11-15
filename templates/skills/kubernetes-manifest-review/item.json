@@ -1,0 +1,46 @@
+{
+  "slug": "kubernetes-manifest-review",
+  "title": "Kubernetes Manifest Review",
+  "kind": "skill",
+  "category": "devops",
+  "summary": "Reviews Kubernetes manifests for missing limits, probes, security context and unsafe rollout settings, and returns fixes ranked by risk.",
+  "description": [
+    "Manifests that apply cleanly can still take a cluster down: a pod with no memory limit, a readiness probe that checks nothing, a deployment that replaces every replica at once. This skill reads each manifest the way an on-call engineer would and flags what will hurt at 3 a.m.",
+    "Findings are tied to the exact resource and field, and each comes with the YAML to change. Style preferences are skipped."
+  ],
+  "stacks": [
+    "kubernetes"
+  ],
+  "topics": [
+    "security",
+    "ci"
+  ],
+  "useWhen": [
+    "Before you apply manifests to a shared cluster",
+    "A deployment caused downtime during a rollout",
+    "You inherit a repository of YAML nobody has audited",
+    "A security team asks for pod hardening evidence"
+  ],
+  "body": "# Kubernetes manifest review\n\nReview the manifests as if you will be paged when they fail.\n\n## Steps\n\n1. Find all manifests, Kustomize overlays and rendered Helm output (`helm template`). Review the rendered result, not the template.\n2. For every workload (Deployment, StatefulSet, DaemonSet, Job, CronJob) check:\n   - **Resources**: `requests` and `limits` for memory and CPU. Memory limit should be set; a CPU limit is optional but requests are not.\n   - **Probes**: a `readinessProbe` that exercises the app, a `livenessProbe` that does not depend on downstream services, and a `startupProbe` for slow starts.\n   - **Security context**: `runAsNonRoot: true`, `allowPrivilegeEscalation: false`, `readOnlyRootFilesystem: true`, `capabilities.drop: [ALL]`, no `privileged`.\n   - **Rollout**: `maxUnavailable`, `maxSurge`, `minReadySeconds`, and a PodDisruptionBudget for anything with two or more replicas.\n   - **Availability**: replicas of at least 2 for serving workloads, plus topology spread or anti-affinity.\n   - **Images**: no `latest` tag, a digest or exact version, and `imagePullPolicy` that matches.\n   - **Config**: secrets from `secretKeyRef`, never inline values.\n3. Validate with `kubectl apply --dry-run=server` or `kubeconform` when available.\n\n## Rules\n\n- Do not apply anything to a cluster.\n- Only flag what you can point to by resource and field.\n\n## Report\n\nFindings grouped as blocker, should fix, consider. For each: resource, field, why it matters, and the YAML fix.",
+  "example": {
+    "prompt": "Review k8s/ before we deploy to production",
+    "result": "Blockers: deployment/api has no readinessProbe, so traffic reaches pods before they are ready (k8s/api.yaml:34). deployment/api runs as root with no securityContext. Should fix: no PodDisruptionBudget for api with 3 replicas; image tag is latest. Validated with kubeconform: 0 schema errors."
+  },
+  "faq": [
+    {
+      "question": "Does it need cluster access?",
+      "answer": "No. It reads files and, if you have them installed, runs offline validators. It never applies or deletes anything."
+    },
+    {
+      "question": "Why review rendered Helm output?",
+      "answer": "Values change what a chart produces, so the template alone does not show what will reach the cluster."
+    }
+  ],
+  "access": [
+    "Reads Kubernetes YAML, Kustomize and Helm files",
+    "Runs offline tools such as helm template and kubeconform"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

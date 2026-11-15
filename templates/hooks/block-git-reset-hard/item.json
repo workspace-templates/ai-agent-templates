@@ -1,0 +1,49 @@
+{
+  "slug": "block-git-reset-hard",
+  "title": "Block Git Reset Hard",
+  "kind": "hook",
+  "category": "git",
+  "summary": "A Claude Code hook that blocks git reset --hard and forced git clean in the shell, so uncommitted work is never wiped without you running it.",
+  "description": [
+    "Two git commands erase work that no commit holds: reset with the hard option and clean with force. This PreToolUse hook refuses both when the agent tries them in Bash.",
+    "A clean run with the dry-run flag still passes, since it only lists files. The message points the agent to stash or a scratch branch, which keep the work recoverable."
+  ],
+  "stacks": [],
+  "topics": [
+    "git",
+    "debugging"
+  ],
+  "useWhen": [
+    "Let an agent try risky fixes without losing your edits",
+    "Protect untracked files such as local notes",
+    "Work in a dirty tree on purpose",
+    "Keep a safety net during large refactors"
+  ],
+  "hook": {
+    "event": "PreToolUse",
+    "matcher": "Bash",
+    "command": "node -e \"let d='';process.stdin.on('data',x=>d+=x).on('end',()=>{let j={};try{j=JSON.parse(d)}catch(e){return}const i=j.tool_input||{};const c=String(i.command||'').replace(/\\x22[^\\x22]*\\x22|\\x27[^\\x27]*\\x27/g,' ')+' ';const t=c.split(/&&|[|][|]|[;|]/).map(s=>s+String.fromCharCode(32));const reset=t.find(s=>/^[ ]*git[ ]+reset[ ].*--hard/.test(s));const clean=t.find(s=>/^[ ]*git[ ]+clean[ ]/.test(s)&&/[ ](-[a-zA-Z]*f[a-zA-Z]*|--force)[ ]/.test(s)&&!/[ ](-[a-zA-Z]*n[a-zA-Z]*|--dry-run)[ ]/.test(s));const h=reset?'git reset --hard':clean?'git clean with force':'';if(h){console.error('Blocked: '+h+' throws away uncommitted work for good. Use git stash or a new branch to keep it, or ask the user to run this command themselves.');process.exitCode=2}})\"",
+    "timeout": 10
+  },
+  "example": {
+    "prompt": "Undo everything and get back to a clean tree with git reset --hard.",
+    "result": "The command is blocked. The agent offers to stash your changes first and asks whether you want to run the reset yourself."
+  },
+  "faq": [
+    {
+      "question": "Is git reset --soft allowed?",
+      "answer": "Yes. Only the hard option is refused, because soft and mixed resets keep your file contents intact."
+    },
+    {
+      "question": "Can I preview what clean would delete?",
+      "answer": "Yes. git clean -n or --dry-run is allowed and lists the files without removing anything."
+    }
+  ],
+  "access": [
+    "Reads each Bash command before it runs",
+    "Blocks matching commands and runs nothing itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

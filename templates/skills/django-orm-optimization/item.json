@@ -1,0 +1,48 @@
+{
+  "slug": "django-orm-optimization",
+  "title": "Django ORM Optimization",
+  "kind": "skill",
+  "category": "backend",
+  "summary": "Finds slow Django queries and N+1 patterns, then fixes them with select_related, prefetch_related, only and indexes, with query counts as proof.",
+  "description": [
+    "Django makes it easy to loop over a queryset and touch a related object on every row, which silently runs one query per row. This skill has the agent measure the real number of queries per view before editing anything.",
+    "It then applies the narrowest fix, whether that is a join, a prefetch, fewer columns or a missing index, and adds an assertion on the query count so the problem cannot come back without a failing test."
+  ],
+  "stacks": [
+    "python",
+    "django"
+  ],
+  "topics": [
+    "performance",
+    "sql"
+  ],
+  "useWhen": [
+    "A Django view or admin page is slow with real data",
+    "django-debug-toolbar shows hundreds of duplicated queries",
+    "A serializer or template touches related objects in a loop",
+    "You need to decide which index a query actually needs"
+  ],
+  "body": "# Django ORM optimization\n\nCount queries, fix the worst one, count again.\n\n## Steps\n\n1. Measure one slow view or serializer. Use `assertNumQueries` in a scratch test, `django-debug-toolbar`, or `connection.queries` with `CaptureQueriesContext`. Record the count and the slowest statements.\n2. Find the pattern in the code: attribute access on a foreign key inside a loop or template (use `select_related`), reverse or many-to-many access in a loop (use `prefetch_related`), serializers with nested fields.\n3. Apply the narrowest fix. `select_related(\"customer\")` for forward foreign keys and one-to-one. `prefetch_related(Prefetch(\"items\", queryset=Item.objects.select_related(\"product\")))` for collections, and filter inside `Prefetch` rather than filtering after.\n4. Load fewer columns on wide tables with `only()` or `defer()`; use `values()` or `values_list()` when you do not need model instances.\n5. Move work to the database: `annotate(Count(...))`, `Exists()` instead of `len(qs)` or `if qs`, `bulk_create` and `bulk_update` for loops of saves, `update()` for set-based changes.\n6. Check the plan of the slow statement with `qs.explain(analyze=True)`. Add an index with `Meta.indexes` that matches the filter and ordering columns, in a migration; use `AddIndexConcurrently` on PostgreSQL for big tables.\n7. Pin the result in a test with `assertNumQueries(n)` for the view.\n\n## Rules\n\n- Never add `select_related` across many-valued relations; it multiplies rows.\n- Never use `.count()` and then iterate the same queryset; evaluate once.\n- Do not add an index without evidence from the plan.\n\n## Report\n\nQueries before and after, the statements changed, indexes added and the test that guards them.",
+  "example": {
+    "prompt": "The /orders/ admin list takes 6 seconds. Optimize it.",
+    "result": "The page ran 1,212 queries for 100 rows: customer and items were loaded per row. Added select_related(\"customer\") and a Prefetch for items with product joined, deferred the notes column, and annotated the item count. Now 4 queries and 180 ms. Added an index on (status, created_at) after EXPLAIN showed a sequential scan; test pins 4 queries."
+  },
+  "faq": [
+    {
+      "question": "select_related or prefetch_related?",
+      "answer": "Use select_related when each row has one related object, since it joins. Use prefetch_related for collections, which run as a second query and are joined in Python."
+    },
+    {
+      "question": "Does it touch my production database?",
+      "answer": "No. It works against your test or local database and only suggests an index migration you apply yourself."
+    }
+  ],
+  "access": [
+    "Reads models, views, serializers and migrations",
+    "Edits querysets and adds tests and an index migration when approved",
+    "Runs your Django tests against the local test database"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,43 @@
+{
+  "slug": "diagram-as-code",
+  "title": "Diagram as Code",
+  "kind": "skill",
+  "category": "docs",
+  "summary": "Produces Mermaid diagrams of flows, sequences and data models read from the actual code, ready to commit next to your docs.",
+  "description": [
+    "Hand-drawn architecture pictures are wrong within a month. A Mermaid block lives in Markdown, renders on GitHub, and can be fixed in a pull request. This skill has the agent trace the real code before drawing a single box.",
+    "It picks the right diagram type for the question, keeps each diagram small enough to read, and checks that every node maps to a real file, table or service."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation"
+  ],
+  "useWhen": [
+    "You need a sequence diagram of a login or checkout flow",
+    "A new teammate asks how data moves between services",
+    "A schema changed and the ER diagram in the wiki is wrong",
+    "You want diagrams reviewed in pull requests like any other text"
+  ],
+  "body": "# Diagram as code\n\nDraw what the code does. Every box must trace to a file, table or service.\n\n## Steps\n\n1. Clarify the question the diagram answers (how a request flows, how services talk, what states an order has, how tables relate). One question per diagram.\n2. Choose the type: `sequenceDiagram` for interactions over time, `flowchart` for decisions and pipelines, `stateDiagram-v2` for lifecycles, `erDiagram` for data models, `classDiagram` only for real type hierarchies.\n3. Trace the code: start at the entry point (route, handler, job, CLI) and follow calls, queries and outgoing requests. For data models read migrations or ORM models for tables, keys and relations.\n4. Write the Mermaid. Use real names from the code for nodes. Keep it to roughly 12 nodes; split into two diagrams when larger. Label edges with the verb or payload.\n5. Check syntax: keep labels with brackets or colons in quotes, avoid reserved word `end` as a node id, and render with `npx @mermaid-js/mermaid-cli` if available.\n6. Place the diagram in a Markdown file in a `mermaid` fenced block, with two sentences of explanation above it.\n\n## Rules\n\n- No invented components or \"future\" boxes.\n- Do not draw every function; show boundaries that matter.\n- Note what you left out below the diagram.\n\n## Report\n\nFile path, what question each diagram answers, and the source files you traced.",
+  "example": {
+    "prompt": "Diagram how an order is placed, from the API call to the email",
+    "result": "Added docs/order-flow.md with a sequence diagram of 7 participants (client, orders route, OrderService, Postgres, Stripe, queue, mailer) traced from src/orders/create.ts, plus an ER diagram of orders, line_items and payments. Left out: the admin refund path. Rendered both with mermaid-cli without errors."
+  },
+  "faq": [
+    {
+      "question": "Will it work outside GitHub?",
+      "answer": "Mermaid renders in GitHub, GitLab and many docs tools. If yours does not, the CLI renderer exports SVG or PNG."
+    },
+    {
+      "question": "Can it update a diagram I already have?",
+      "answer": "Yes. Point it at the file and it compares the diagram to the code, then edits only the parts that drifted."
+    }
+  ],
+  "access": [
+    "Reads source files, migrations and config",
+    "Writes Markdown files with Mermaid blocks"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

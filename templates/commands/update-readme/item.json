@@ -1,0 +1,44 @@
+{
+  "slug": "update-readme",
+  "title": "Update README",
+  "kind": "command",
+  "category": "docs",
+  "summary": "Compares your README with the real code and fixes install, run and usage sections that no longer match what the project does.",
+  "description": [
+    "READMEs rot quietly: a renamed script, a new required tool, an option that was removed last spring. This command checks every claim in the file against the project and corrects the ones that are wrong.",
+    "Where the README is silent, it adds only what a new user needs to get started. Your tone and structure stay, and the diff is shown before anything is saved."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation"
+  ],
+  "useWhen": [
+    "After a release that changed commands or options",
+    "A new teammate says the setup steps do not work",
+    "You inherited a project with an outdated README",
+    "Before making a repository public"
+  ],
+  "body": "Update the README so it matches the code. Focus from the user: $ARGUMENTS\n\n1. Read the README and list each factual claim: prerequisites and versions, install commands, run and build scripts, configuration, example code, ports, and links.\n2. Verify each against the project: scripts in the manifest or Makefile, version files, environment variable names in code, CLI flags in the argument parser, and whether linked files inside the repository exist. Run commands only if they are safe and read-only, such as `--help` or `--version`.\n3. Fix wrong statements, delete sections for features that no longer exist, and add missing steps a new user would hit: a required tool, an env file to copy, a first-run command.\n4. Keep the existing headings, voice and formatting. Do not add badges, marketing text or a table of contents unless one already exists.\n5. Keep code blocks runnable: copy command names exactly.\n\nShow the changes as a diff with a one-line reason for each edit, plus anything you could not verify. Ask before saving the file.",
+  "argumentHint": "[section to focus on, optional]",
+  "example": {
+    "prompt": "/update-readme installation and usage",
+    "result": "6 edits: Node 18 changed to 20 (see .nvmrc), \"npm start\" is now \"npm run dev\", removed the --legacy flag docs (flag gone since v2), added copying .env.example. Not verified: the Docker badge URL. Save the README?"
+  },
+  "faq": [
+    {
+      "question": "Will it rewrite my whole README?",
+      "answer": "No. It keeps your structure and wording and changes only statements that are wrong or missing."
+    },
+    {
+      "question": "Does it run my install commands?",
+      "answer": "Only safe, read-only ones like version checks. Anything that installs or builds is left for you."
+    }
+  ],
+  "access": [
+    "Reads the README, manifests and source",
+    "Edits README.md after you approve"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

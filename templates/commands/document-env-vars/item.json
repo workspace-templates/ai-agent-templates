@@ -1,0 +1,46 @@
+{
+  "slug": "document-env-vars",
+  "title": "Document Env Vars",
+  "kind": "command",
+  "category": "devops",
+  "summary": "Finds every environment variable your code reads and writes an example env file plus a table of what each one does.",
+  "description": [
+    "New teammates lose an afternoon to a missing variable that nobody wrote down. This command searches the code, scripts and deployment files for every place the environment is read and builds the documentation from what it finds.",
+    "It marks which variables are required, which have defaults and which look like secrets, and it never copies real values from your own env file."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation",
+    "devops"
+  ],
+  "useWhen": [
+    "Onboarding a developer who cannot start the app",
+    "Before moving the service to a new host",
+    "Your .env.example has drifted from what the code reads",
+    "Auditing which variables hold secrets"
+  ],
+  "body": "Document the environment variables used by: $ARGUMENTS (whole project if empty).\n\n1. Search for reads in every language present: `process.env`, `import.meta.env`, `os.environ`, `os.getenv`, `ENV[`, `System.getenv`, `std::env::var`, and config loaders such as dotenv or pydantic settings. Also search Dockerfiles, compose files, CI workflows and shell scripts.\n2. For each variable record: name, file and line of first use, whether code fails without it (required) or falls back to a default, the default value, and the expected type or format.\n3. Mark likely secrets by name (KEY, TOKEN, SECRET, PASSWORD, DSN). Leave their example value empty or as a clear dummy value such as `changeme`.\n4. Read existing .env files only to learn names. Never print or copy actual values.\n5. Write `.env.example` grouped by area with a comment above each line, and a Markdown table with the columns Name, Required, Default, Purpose.\n\nShow the table and the file contents, list variables found in code but missing from the old .env.example, and ask before creating or overwriting anything.",
+  "argumentHint": "[folder, default whole project]",
+  "example": {
+    "prompt": "/document-env-vars",
+    "result": "Found 17 variables in 9 files. Required: DATABASE_URL, SESSION_SECRET, STRIPE_KEY. 4 are in code but missing from .env.example (REDIS_URL, LOG_LEVEL, SENTRY_DSN, PORT). Write the new .env.example and docs table?"
+  },
+  "faq": [
+    {
+      "question": "Does it copy values from my real .env?",
+      "answer": "No. It reads only the names there. Example files get dummy values."
+    },
+    {
+      "question": "Will it find variables set in CI?",
+      "answer": "Yes, it also scans workflow files, compose files and Dockerfiles for names the app expects."
+    }
+  ],
+  "access": [
+    "Reads source, scripts and config files",
+    "Reads variable names from env files, not values",
+    "Writes .env.example and docs after you approve"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

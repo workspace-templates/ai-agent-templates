@@ -1,0 +1,45 @@
+{
+  "slug": "serverless-lambda-rules",
+  "title": "Serverless Lambda Rules",
+  "kind": "rules",
+  "category": "devops",
+  "summary": "Project rules for AWS Lambda functions: thin handlers, cold start care, validated environment config, structured logs and idempotent processing.",
+  "description": [
+    "These rules guide an agent writing AWS Lambda functions that stay small, fast to start and safe to retry. They separate the handler from business logic so most code can be tested without AWS.",
+    "They also cover the operational habits that matter in production: structured logs, timeouts, partial batch failures and duplicate event handling."
+  ],
+  "stacks": [
+    "aws"
+  ],
+  "topics": [
+    "logging",
+    "performance"
+  ],
+  "useWhen": [
+    "You add a new Lambda function with an agent",
+    "Cold starts or timeouts hurt latency",
+    "Events get processed twice and cause duplicates",
+    "Logs are plain strings that are hard to query"
+  ],
+  "body": "# Project rules: AWS Lambda\n\n## Structure\n- Keep the handler a thin adapter: parse the event, call a plain function, shape the response. Business logic lives in modules that know nothing about Lambda.\n- Create SDK clients and read config once, outside the handler, so warm invocations reuse them.\n- One function, one job. Share code through a layer or a bundled package, not by importing between functions.\n\n## Cold start and size\n- Bundle with esbuild or the framework's bundler, tree-shake, and import only the SDK client modules you use.\n- Choose memory by measurement; more memory also means more CPU. Set the timeout just above the real worst case, below the upstream caller's timeout.\n\n## Configuration\n- Read environment variables through one typed loader that fails fast when a value is missing. Secrets come from Secrets Manager or Parameter Store, cached between invocations. Never put them in plain environment variables committed to git.\n\n## Reliability\n- Assume at-least-once delivery. Make handlers idempotent with a key (event ID or business ID) stored with a conditional write.\n- For SQS batches, return `batchItemFailures` so one bad record does not retry the whole batch. Attach a dead-letter queue to every async source.\n\n## Logging\n- Log one JSON object per line with request ID, function name and outcome. Never log payloads containing personal data.\n\n## Before finishing\n- Run unit tests on the core logic, a local invoke with a sample event, and the type check and linter.",
+  "example": {
+    "prompt": "Write a Lambda that processes S3 upload events and stores metadata in DynamoDB",
+    "result": "The agent writes a thin handler, a pure metadata function with tests, a conditional put for idempotency, JSON logging, a dead-letter queue and a sample event for local invoke."
+  },
+  "faq": [
+    {
+      "question": "Does this assume a specific framework?",
+      "answer": "No. It works with SAM, CDK, Serverless Framework or Terraform, because it only covers the function code and its settings."
+    },
+    {
+      "question": "Why create clients outside the handler?",
+      "answer": "Warm invocations then reuse connections instead of rebuilding them on every call, which cuts latency and cost."
+    }
+  ],
+  "access": [
+    "Guidance text only; it does not call AWS or change any files by itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

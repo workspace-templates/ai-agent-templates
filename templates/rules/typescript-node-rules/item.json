@@ -1,0 +1,46 @@
+{
+  "slug": "typescript-node-rules",
+  "title": "TypeScript Node.js Rules",
+  "kind": "rules",
+  "category": "backend",
+  "summary": "Project rules for TypeScript services on Node.js: strict types, validated boundaries, structured logging and safe async error handling.",
+  "description": [
+    "Node services fail in quiet ways: an unhandled rejection, a body nobody validated, a config value that was undefined. These rules make the agent close those gaps by default.",
+    "They set the compiler options, how to treat input from outside, how to handle errors and shutdown, and which commands prove a change is finished."
+  ],
+  "stacks": [
+    "typescript",
+    "nodejs"
+  ],
+  "topics": [
+    "typescript",
+    "api-design"
+  ],
+  "useWhen": [
+    "You start a new Node backend in TypeScript",
+    "Generated handlers trust request bodies as typed",
+    "Process crashes come from unhandled promise rejections",
+    "You want identical lint, test and logging habits across services"
+  ],
+  "body": "# Project rules: TypeScript on Node.js\n\n## Compiler and style\n- `strict` true, plus `noUncheckedIndexedAccess` and `noImplicitOverride`. No `any` and no `as` casts to silence errors; use `unknown` and narrow it. ES modules only.\n- Prefer small pure functions and explicit return types on exported functions. Keep files under 300 lines.\n\n## Boundaries\n- Treat everything from outside as `unknown`: request bodies, queries, env, files, queue messages. Parse with zod and derive types with `z.infer`.\n- Load configuration once at startup into a typed, frozen object. Fail fast on a missing variable. Never read `process.env` elsewhere.\n\n## Async and errors\n- Every promise is awaited or returned. No floating promises (`@typescript-eslint/no-floating-promises` is on).\n- Throw `Error` subclasses with a `cause`. Map them to HTTP codes in one error handler. Never send stack traces to clients.\n- Use `AbortSignal` and timeouts for outbound calls. Handle `SIGTERM`: stop accepting requests, drain, then exit.\n\n## Logging and security\n- Use pino with structured fields and a request id. Never log tokens, passwords or full request bodies.\n- Parameterize every SQL query. Pin dependencies with a lockfile and run `npm audit` in CI.\n\n## Tests\n- Vitest, one test file per module, mock only network and time.\n- Before finishing run `tsc --noEmit`, `eslint .` and `vitest run`.",
+  "example": {
+    "prompt": "Add a POST /subscriptions endpoint",
+    "result": "The agent writes a zod schema for the body, a typed service function, a mapped domain error for duplicates, a pino log line with the request id and a Vitest case for the invalid payload."
+  },
+  "faq": [
+    {
+      "question": "Does it require a specific web framework?",
+      "answer": "No. The rules apply to Express, Fastify, Hono or plain http. Add framework notes if you want more detail."
+    },
+    {
+      "question": "Why ban type assertions?",
+      "answer": "A cast hides a mismatch the compiler found. Narrowing or parsing fixes the real problem instead."
+    }
+  ],
+  "access": [
+    "Instructions only; it does not read or run anything by itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

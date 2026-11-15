@@ -1,0 +1,62 @@
+{
+  "slug": "pagerduty-mcp",
+  "title": "PagerDuty MCP Server",
+  "kind": "mcp",
+  "category": "devops",
+  "summary": "Read PagerDuty incidents, services, schedules and on-call rotations from your coding agent using PagerDuty's local MCP server in read-only mode.",
+  "description": [
+    "PagerDuty's MCP server gives an agent a view of your incident data: open incidents, which services they touch, who is on call and how escalation policies are set up. It helps when you are debugging a service and want the paging context next to the code.",
+    "The package runs through uvx with a PagerDuty user API token. It exposes only read tools until you pass the --enable-write-tools flag, which this setup leaves off. PagerDuty has marked this repository deprecated in favor of its hosted remote server, so check the source page before you rely on it long term."
+  ],
+  "stacks": [],
+  "topics": [
+    "debugging",
+    "logging"
+  ],
+  "useWhen": [
+    "Find out who is on call for a service tonight",
+    "List open high-urgency incidents before a deploy",
+    "Pull the timeline of a past incident into a postmortem draft",
+    "Check which escalation policy covers a service you are changing"
+  ],
+  "mcp": {
+    "name": "pagerduty",
+    "transport": "stdio",
+    "command": "uvx",
+    "args": [
+      "pagerduty-mcp"
+    ],
+    "env": [
+      {
+        "name": "PAGERDUTY_USER_API_KEY",
+        "description": "A PagerDuty user API token"
+      }
+    ],
+    "headers": [],
+    "source": "https://github.com/PagerDuty/pagerduty-mcp-server",
+    "access": [
+      "Reads incidents, services, teams, schedules and on-call data in your PagerDuty account",
+      "Changes nothing unless you add the --enable-write-tools flag"
+    ]
+  },
+  "example": {
+    "prompt": "Who is on call for the billing-api service right now, and are there any open incidents on it?",
+    "result": "Dana Ruiz is primary on call until 09:00 UTC and Lee Chen is secondary. One open incident: \"Elevated 5xx on billing-api\", triggered 40 minutes ago, urgency high, status acknowledged."
+  },
+  "faq": [
+    {
+      "question": "Can it resolve or acknowledge incidents?",
+      "answer": "Not by default. Write tools stay hidden unless you start the server with --enable-write-tools."
+    },
+    {
+      "question": "Is this server still maintained?",
+      "answer": "The repository says it is deprecated and read-only, and points to PagerDuty's hosted MCP server with OAuth. This local setup still runs, but plan to move."
+    }
+  ],
+  "access": [
+    "Reads PagerDuty incident and schedule data with your token"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

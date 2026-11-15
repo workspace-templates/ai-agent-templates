@@ -1,0 +1,44 @@
+{
+  "slug": "contract-testing",
+  "title": "Contract Testing",
+  "kind": "skill",
+  "category": "testing",
+  "summary": "Adds consumer-driven contract tests between services so a breaking API change fails in CI before it ships to the service that depends on it.",
+  "description": [
+    "Integration environments catch broken APIs late and fail for unrelated reasons. A contract test moves the check to each team build: the consumer states what it needs, and the provider proves it still delivers exactly that.",
+    "The skill guides the agent through scoping the contract to fields actually used, wiring the provider verification into CI, and handling versions so a change can be rolled out safely."
+  ],
+  "stacks": [],
+  "topics": [
+    "testing",
+    "api-design"
+  ],
+  "useWhen": [
+    "Two services are deployed on different schedules",
+    "A renamed field took down a downstream consumer",
+    "You are splitting a monolith and need guardrails on the new seams",
+    "Staging tests are slow and fail for reasons unrelated to your change"
+  ],
+  "body": "# Contract testing\n\nThe consumer writes down what it relies on. The provider proves it still delivers that.\n\n## Steps\n\n1. Identify the pair: one consumer, one provider, one interface (HTTP endpoint or message). Do one pair at a time.\n2. Check what the project already uses (Pact, Spring Cloud Contract, schema files). Reuse it. If nothing exists, default to Pact for HTTP and message interactions.\n3. Consumer side: record each interaction the consumer code really performs, using its real client. Include the request, the status and only the response fields the consumer reads. Use matchers for types and formats, not literal values.\n4. Cover failure responses the consumer handles: 404, 409, 422, 500 with an error body.\n5. Publish the contract with the consumer version and branch, to a broker or a shared folder.\n6. Provider side: replay every pending contract against the real provider with seeded state through provider states (\"order 42 exists\"). Fail the build on any mismatch.\n7. Gate deploys: before releasing either side, check that the pair is compatible.\n\n## Rules\n\n- Never assert fields the consumer ignores. Over-specified contracts block safe changes.\n- Never point contract tests at a shared staging environment.\n- Additive changes must pass. Removing or retyping a used field must fail.\n\n## Report\n\nThe interactions covered, the files added, the CI step, and one demonstration: rename a field in the provider and show the verification fail.",
+  "example": {
+    "prompt": "Add contract tests between web-checkout and the inventory service",
+    "result": "Added 4 Pact interactions in web-checkout/tests/contracts (get stock, reserve, reserve conflict, unknown SKU). Inventory verifies them in its CI job with 3 provider states. Demo: renaming \"available\" to \"qty\" fails verification with the exact interaction named. Contracts publish to ./pacts until a broker exists."
+  },
+  "faq": [
+    {
+      "question": "Do I need a Pact broker?",
+      "answer": "Not at first. A shared folder or artifact store works for one pair. A broker becomes worth it when many consumers need versions and a can-I-deploy check."
+    },
+    {
+      "question": "Does this replace end-to-end tests?",
+      "answer": "No. It covers the API seam. Keep a few end-to-end journeys for wiring and configuration problems that contracts cannot see."
+    }
+  ],
+  "access": [
+    "Reads source and API definition files",
+    "Adds contract test files and a CI step, and runs the tests"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

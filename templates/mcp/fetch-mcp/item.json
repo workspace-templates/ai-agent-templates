@@ -1,0 +1,62 @@
+{
+  "slug": "fetch-mcp",
+  "title": "Fetch MCP Server",
+  "kind": "mcp",
+  "category": "productivity",
+  "summary": "Let your agent download a web page and read it as clean markdown, in chunks, using the reference fetch server from the MCP project.",
+  "description": [
+    "The fetch server adds one tool, fetch, that takes a URL and returns the page as markdown. You can ask for a longer slice with max_length and start_index, or request the raw HTML.",
+    "It is a Python package started with uvx, so you need uv installed. There is no account and no key.",
+    "By default it refuses private and loopback addresses and obeys a site's robots.txt for requests the model makes, which keeps an agent from poking at your internal network."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation"
+  ],
+  "useWhen": [
+    "Read a documentation page you paste as a link",
+    "Summarize a long blog post or RFC in several chunks",
+    "Pull the text of a public issue or changelog into the chat",
+    "Compare two vendor pages without opening a browser"
+  ],
+  "mcp": {
+    "name": "fetch",
+    "transport": "stdio",
+    "command": "uvx",
+    "args": [
+      "mcp-server-fetch"
+    ],
+    "env": [],
+    "headers": [],
+    "source": "https://github.com/modelcontextprotocol/servers/tree/main/src/fetch",
+    "access": [
+      "Makes outbound HTTP requests to any public URL the agent chooses",
+      "Blocks loopback and private addresses unless you add a flag"
+    ]
+  },
+  "example": {
+    "prompt": "Fetch https://example.com/docs/migration and give me the steps in order.",
+    "result": "The page came back as markdown in one chunk. Steps: 1. Update the config key. 2. Rename the two deprecated methods. 3. Run the codemod. 4. Rebuild. The page has a note that step 3 is optional."
+  },
+  "faq": [
+    {
+      "question": "Why did a fetch fail with a robots.txt error?",
+      "answer": "The server checks robots.txt for model-initiated fetches and refuses when the site disallows it or the file cannot be reached. The flag --ignore-robots-txt turns the check off, so use it only for sites you own."
+    },
+    {
+      "question": "Can I limit which sites it may visit?",
+      "answer": "Yes. Add --allowed-hosts followed by hostnames, such as docs.python.org or a wildcard like *.wikipedia.org, to the args."
+    },
+    {
+      "question": "How do I read a very long page?",
+      "answer": "The default cap is 5000 characters per call. Ask the agent to call fetch again with a higher start_index to continue where it stopped."
+    }
+  ],
+  "access": [
+    "Reads public web pages over the network",
+    "Writes nothing to your files"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,44 @@
+{
+  "slug": "mutation-testing",
+  "title": "Mutation Testing",
+  "kind": "skill",
+  "category": "testing",
+  "summary": "Runs mutation testing, reads the surviving mutants and strengthens the tests whose assertions failed to notice a deliberate code change.",
+  "description": [
+    "Line coverage says a test executed the code. Mutation testing says whether the test would notice if the code were wrong. The tool flips operators and removes statements, and every mutant that survives marks an assertion gap.",
+    "The agent focuses the run on a small, important area, sorts survivors into real gaps and harmless equivalents, and tightens the tests until the meaningful ones are killed."
+  ],
+  "stacks": [],
+  "topics": [
+    "testing",
+    "code-review"
+  ],
+  "useWhen": [
+    "Your dashboard shows high coverage yet defects keep escaping",
+    "You are about to rely on a core module and want proof its tests work",
+    "Reviewing a test suite that seems to assert very little",
+    "Setting up a quality gate for new code"
+  ],
+  "body": "# Mutation testing\n\nProve the tests can fail. A surviving mutant is a bug the suite would let through.\n\n## Steps\n\n1. Choose the tool for the stack: Stryker (JavaScript, TypeScript, C#), mutmut or cosmic-ray (Python), PIT (Java), go-mutesting (Go). Use the one in the project if present.\n2. Scope the run to one module or the files changed on this branch. Never mutate the whole repository first. Set a timeout per mutant.\n3. Run it and read the report: killed, survived, timed out, no coverage.\n4. For each survivor, read the mutated line and decide:\n   - **Real gap:** a boundary (`>` to `>=`), a removed condition, a changed constant or a dropped return that no assertion checks. Add or sharpen a test with a concrete input that distinguishes the original from the mutant.\n   - **Equivalent mutant:** the change cannot alter behavior (log text, an unreachable branch, a performance tweak). Record it and move on.\n   - **No coverage:** write the missing test first.\n5. Rerun only the affected files and confirm the mutant is now killed.\n6. Stop at diminishing returns. Report the score, not a demand for 100 percent.\n\n## Rules\n\n- Never kill a mutant by asserting on the implementation detail. Assert behavior.\n- Never exclude mutants just to raise the score.\n- Keep the added tests fast.\n\n## Report\n\nScore before and after, mutants killed by category, the tests added, and the equivalent mutants left with a one-line reason each.",
+  "example": {
+    "prompt": "Run mutation testing on src/pricing and tighten the tests",
+    "result": "Stryker on 4 files: 142 mutants, score 71 percent. 29 survivors: 17 real gaps (discount threshold >= vs >, rounding mode, free-shipping cutoff), 8 equivalent (log strings), 4 uncovered. Added 11 assertions. Score 92 percent. Eight equivalent mutants listed for exclusion."
+  },
+  "faq": [
+    {
+      "question": "Is mutation testing slow?",
+      "answer": "It reruns tests once per mutant, so yes. That is why the skill limits scope to changed or critical files and sets a timeout per mutant."
+    },
+    {
+      "question": "What score should I aim for?",
+      "answer": "There is no universal number. Use it to find weak assertions in important code, and track the trend instead of a hard gate on old modules."
+    }
+  ],
+  "access": [
+    "Reads source and test files",
+    "Runs the mutation tool and your tests, and edits test files"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

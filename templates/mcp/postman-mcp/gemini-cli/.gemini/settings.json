@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "postman": {
+      "httpUrl": "https://mcp.postman.com/minimal"
+    }
+  }
+}

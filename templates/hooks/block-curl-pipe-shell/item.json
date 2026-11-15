@@ -1,0 +1,49 @@
+{
+  "slug": "block-curl-pipe-shell",
+  "title": "Block Curl Pipe Shell",
+  "kind": "hook",
+  "category": "security",
+  "summary": "A Claude Code hook that refuses commands which pipe curl or wget output into sh or bash, or run a downloaded script through a command substitution.",
+  "description": [
+    "One-line installers are convenient and risky, because the code runs before anyone reads it. This PreToolUse hook inspects each Bash command and stops a download that feeds a shell, whether through a pipe, process substitution or eval.",
+    "The agent is told to save the script to a file first, so you or it can read what it does. Plain curl calls that fetch JSON or files, and pipes into tools such as jq or tar, are left alone."
+  ],
+  "stacks": [],
+  "topics": [
+    "security"
+  ],
+  "useWhen": [
+    "Run an agent that may follow install instructions from a README",
+    "Review any bootstrap script before it executes",
+    "Work on a machine that holds production credentials",
+    "Keep supply chain surprises out of a build box"
+  ],
+  "hook": {
+    "event": "PreToolUse",
+    "matcher": "Bash",
+    "command": "node -e \"let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{let j={};try{j=JSON.parse(d)||{}}catch(e){process.exit(0)}const i=j.tool_input||{};const q=String.fromCharCode(34),sq=String.fromCharCode(39),bs=String.fromCharCode(92),nl=String.fromCharCode(10);const c=String(i.command||'');const sh='(a|ba|da|fi|k|z|c)?sh';const piped=c.split(/[;&]+/).some(s=>{const p=s.split('|');return p.some((x,k)=>k>0&&new RegExp('^(sudo[ ]+)?(env[ ]+)?'+sh+'([ ]|$)').test(x.trim())&&p.slice(0,k).some(y=>/(^|[ (])(curl|wget)[ ]/.test(y)))});const sub=new RegExp('(^|[ ;&|])'+sh+'[ ]+(-[a-z]+[ ]+)*.{0,4}[(][ ]*(curl|wget)[ ]').test(c)||new RegExp('(^|[ ;&|])('+sh+'|source|[.])[ ]+[<][(][ ]*(curl|wget)[ ]').test(c)||/(^|[ ;&|])eval[ ]+.{0,4}[(][ ]*(curl|wget)[ ]/.test(c);if(piped||sub){console.error('Blocked: this runs downloaded code without a look. Download the script to a file, read it, then run it, or ask the user to approve the source.');process.exit(2)}})\"",
+    "timeout": 10
+  },
+  "example": {
+    "prompt": "Install the tool with curl -fsSL https://example.com/install.sh | sh.",
+    "result": "The command is blocked. The agent downloads install.sh to a file, shows you its contents and waits before running it."
+  },
+  "faq": [
+    {
+      "question": "Will curl piped into jq be blocked?",
+      "answer": "No. Only a shell, such as sh, bash, zsh or dash, at the end of the pipe counts, or a shell fed by a command substitution."
+    },
+    {
+      "question": "Is the check airtight?",
+      "answer": "It matches the common spellings. A script that builds the command from variables or encodes it can still get past a text match."
+    }
+  ],
+  "access": [
+    "Inspects the command string of every Bash call",
+    "Stops the call when a download would feed a shell",
+    "Does not download, fetch or run anything itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

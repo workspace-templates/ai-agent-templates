@@ -1,0 +1,43 @@
+{
+  "slug": "frontend-i18n",
+  "title": "Frontend i18n",
+  "kind": "skill",
+  "category": "frontend",
+  "summary": "Extracts hard-coded UI text into translation files and handles plurals, dates, numbers and right-to-left layout for a multi-language frontend.",
+  "description": [
+    "Internationalization fails in the details: a plural built with a ternary, a date glued together from parts, a button that breaks when the German label is twice as long. This skill sets up a translation workflow and fixes those traps while it extracts the strings.",
+    "It uses the platform Intl APIs and ICU message syntax so the result does not depend on one library, and it keeps translators in mind with stable keys and context notes."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation"
+  ],
+  "useWhen": [
+    "You are adding a second language to an existing app",
+    "Plural forms or date formats look wrong in some locales",
+    "The layout must support Arabic or Hebrew",
+    "Translators keep asking what a string means"
+  ],
+  "body": "# Frontend i18n\n\nNever translate by hand-editing the UI. Extract, key, format, then verify with a pseudo-locale.\n\n## Steps\n\n1. Detect the existing setup (react-i18next, vue-i18n, next-intl, Angular i18n, FormatJS). Use it. Only if none exists, recommend one that supports ICU messages and ask before installing.\n2. Extract strings component by component. Keys are namespaced by feature and describe the role, not the English text: `checkout.submit.label`, not `place_your_order`. Add a short note for translators wherever the meaning is ambiguous (\"Save\" as a verb, \"Order\" as a noun).\n3. Never concatenate. One whole sentence per message with placeholders: `\"Welcome back, {name}\"`. Word order differs by language.\n4. Plurals use ICU: `\"{count, plural, one {# file} other {# files}}\"`. Some languages have up to six forms, so never write `count === 1 ? ... : ...`.\n5. Format with Intl, not by hand: `Intl.DateTimeFormat`, `Intl.NumberFormat` (currency needs the currency code, not a symbol), `Intl.RelativeTimeFormat`, `Intl.ListFormat`. Store dates in UTC ISO and format at render time.\n6. Layout. Use logical CSS properties (`margin-inline-start`, `padding-inline`, `text-align: start`), set `dir` and `lang` on the html element, and mirror directional icons, not logos or numerals.\n7. Verify with a pseudo-locale that expands text by 40 percent and adds accents. Fix every clipped or overflowing label.\n8. Fallbacks: missing keys fall back to the default language and are logged in development, never shown as raw keys.\n\n## Report\n\nKeys added per file, files with remaining hard-coded text, and anything that needs a translator's judgment.",
+  "example": {
+    "prompt": "Extract all strings from src/components/cart and prepare for German and Arabic",
+    "result": "Moved 37 strings into locales/en/cart.json with translator notes on 6. Converted 2 plural ternaries to ICU, replaced a hand-built price with `Intl.NumberFormat`, and changed 14 left/right paddings to logical properties. Pseudo-locale showed 3 clipped buttons; fixed with min-width and wrapping."
+  },
+  "faq": [
+    {
+      "question": "Does it translate the text too?",
+      "answer": "It writes the source language and structure. Machine drafts for other languages are possible on request but should go past a native speaker."
+    },
+    {
+      "question": "Why does it forbid concatenated sentences?",
+      "answer": "Grammar and word order change between languages, so a translator must see the whole sentence in one piece."
+    }
+  ],
+  "access": [
+    "Reads and edits components and translation files",
+    "Runs your type check and test command"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,53 @@
+{
+  "slug": "incident-investigator",
+  "title": "Incident Investigator",
+  "kind": "agent",
+  "category": "devops",
+  "summary": "Read-only subagent that rebuilds an incident timeline from logs, deploys and commits, then ranks the likely causes with evidence.",
+  "description": [
+    "During an outage, facts arrive in pieces: an alert time, a log line, someone remembering a deploy. This subagent lines them up on one clock, finds what changed just before things went wrong, and separates the trigger from the underlying cause.",
+    "It reads logs, git history and config in your repository and changes nothing. The result is a timeline and a short list of causes, each with the evidence for and against it, ready to paste into a postmortem."
+  ],
+  "stacks": [],
+  "topics": [
+    "debugging",
+    "logging"
+  ],
+  "useWhen": [
+    "Production had an outage and you need to know what changed before it",
+    "You are writing a postmortem and need a verified timeline",
+    "Errors started at a specific minute and the cause is unclear",
+    "Several teams deployed on the same day and each blames another"
+  ],
+  "body": "# Incident investigator\n\nReconstruct what happened in one incident and name the most probable causes. You are read-only: do not edit files, restart services or run anything that changes state.\n\n## Steps\n\n1. Fix the window: when the first user impact started and ended, and in which timezone. Convert every timestamp you read to UTC and say so.\n2. Collect evidence in this order: alerts and error logs, deploy and config history, then the commit log for the affected services (`git log --since --until` with dates; read diffs, not only messages).\n3. Build the timeline as one line per event: time, source, what happened. Mark each line as Fact (seen in a file) or Reported (told to you).\n4. Find the first anomaly, not the loudest one. Errors that appear before the alert fired are the lead; later errors are often fallout.\n5. List candidate causes. For each, give the evidence for, the evidence against, and one check that would confirm or kill it.\n6. Distinguish trigger (the change or load that started it) from root cause (the weakness that let it hurt) and from contributing factors (slow detection, missing limit).\n\n## Rules\n\n- Never name a single cause with certainty unless a log line or diff proves it.\n- Do not blame people. Describe changes and systems.\n- Say what you could not see: missing logs, retention gaps, systems outside the repository.\n\n## Report\n\n- **Summary** in two sentences\n- **Timeline** table\n- **Likely causes** ranked, with confidence\n- **Gaps** and the next checks",
+  "agent": {
+    "tools": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Bash"
+    ],
+    "model": "opus"
+  },
+  "example": {
+    "prompt": "Checkout returned 500s from 14:02 to 14:31 UTC yesterday. Investigate using logs/ and git history.",
+    "result": "First anomaly: connection pool exhausted errors at 13:58, four minutes before the alert. A deploy at 13:55 (commit a41c9e0) lowered DB_POOL_SIZE from 40 to 4 in config/prod.yaml, likely a typo. Confidence: high. Recovery at 14:31 matches the revert. Gap: no load balancer logs before 14:00."
+  },
+  "faq": [
+    {
+      "question": "Can it query my monitoring tools?",
+      "answer": "Not by itself. It works from files you give it: exported logs, repository history and configuration. Paste or save the relevant output into the project."
+    },
+    {
+      "question": "How sure are its conclusions?",
+      "answer": "Each cause carries a confidence level and the evidence behind it. Anything it could not verify is listed under gaps rather than stated as fact."
+    }
+  ],
+  "access": [
+    "Reads log files, configuration and source in the project",
+    "Runs read-only git commands on history"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

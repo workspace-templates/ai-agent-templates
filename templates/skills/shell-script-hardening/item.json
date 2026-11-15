@@ -1,0 +1,45 @@
+{
+  "slug": "shell-script-hardening",
+  "title": "Shell Script Hardening",
+  "kind": "skill",
+  "category": "devops",
+  "summary": "Hardens bash scripts with strict mode, safe quoting, cleanup traps and clean shellcheck results, without changing what the script does.",
+  "description": [
+    "Shell scripts fail in quiet ways: an unquoted variable splits on a space, a failed command in a pipe is ignored, a temp file is left behind. This skill goes through a script the way shellcheck and a careful reviewer would, and fixes the causes while keeping its behavior.",
+    "It adds strict mode, argument checks, a cleanup trap and a usage message, then runs shellcheck until it is clean and tests the script with awkward input such as spaces in file names."
+  ],
+  "stacks": [
+    "bash"
+  ],
+  "topics": [
+    "debugging"
+  ],
+  "useWhen": [
+    "A deploy or backup script has run unattended for years without review",
+    "A script broke because a file name contained a space",
+    "You are asked to make a script safe to run in CI",
+    "Shellcheck prints a wall of warnings on code you inherited"
+  ],
+  "body": "# Shell script hardening\n\nKeep behavior identical. Remove ways for the script to fail silently or do damage.\n\n## Steps\n\n1. Read the script fully and note what it does. If there are no tests, write a small harness or a dry-run first.\n2. Check the shebang: `#!/usr/bin/env bash`. If it uses bash features, do not claim POSIX sh.\n3. Add strict mode after the shebang: `set -Eeuo pipefail`, and a safe `IFS=$'\\n\\t'` only if the script relies on word splitting you have verified.\n4. Quote every expansion: `\"$var\"`, `\"${arr[@]}\"`. Use arrays for command arguments, never strings. Prefer `$(...)` to backticks and `[[ ]]` to `[ ]`.\n5. Validate input: required arguments with `${1:?usage: script <dir>}`, existence of files and tools (`command -v jq >/dev/null`), and refuse empty variables in `rm -rf \"${dir:?}\"/`.\n6. Create temp files with `mktemp` and register `trap 'rm -rf \"$tmp\"' EXIT`. Add `trap ... ERR` to print the failing line when useful.\n7. Handle expected failures explicitly with `if cmd; then` or `cmd || true` and a comment. Do not hide errors with `2>/dev/null`.\n8. Run `shellcheck -x script.sh` until clean. Fix the cause; use a disable comment only with a reason.\n9. Test with file names that contain spaces, quotes and a leading dash, an unset variable and a failing middle command in a pipe.\n\n## Rules\n\n- Never add features while hardening.\n- Use `--` before file arguments to commands that accept options.\n\n## Report\n\nChanges grouped by risk fixed, the shellcheck result, and the tests run.",
+  "example": {
+    "prompt": "Harden scripts/backup.sh before we run it from cron",
+    "result": "Added set -Eeuo pipefail, quoted 23 expansions, replaced the fixed /tmp/backup.tmp with mktemp and an EXIT trap, guarded rm -rf with ${dest:?}. shellcheck: 11 warnings to 0. Tested with a directory named \"my files\" and a failing tar step; the script now stops with a clear error."
+  },
+  "faq": [
+    {
+      "question": "Can set -e break my script?",
+      "answer": "It can expose failures that were previously ignored. That is the point, but the agent checks each place where a nonzero exit is expected and handles it on purpose."
+    },
+    {
+      "question": "Is shellcheck required?",
+      "answer": "It is used when installed. Without it, the agent applies the same checks by hand and says shellcheck was not run."
+    }
+  ],
+  "access": [
+    "Reads and edits shell scripts",
+    "Runs shellcheck and the script itself with test input, in a temporary directory"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

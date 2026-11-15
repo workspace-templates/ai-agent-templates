@@ -1,0 +1,45 @@
+{
+  "slug": "memory-leak-diagnosis",
+  "title": "Memory Leak Diagnosis",
+  "kind": "skill",
+  "category": "code-quality",
+  "summary": "Locates memory leaks by measuring growth, comparing heap snapshots and tracing the reference that keeps objects alive, then fixes that reference.",
+  "description": [
+    "A leak is an object that should be gone but is still reachable. Guessing at it wastes days; measuring it takes an hour. This skill starts by proving there is growth, then finds which type of object grows and who holds it.",
+    "The result is the retaining path in plain words, a small fix at the point where the reference should have been released, and a measurement that shows the curve flatten."
+  ],
+  "stacks": [],
+  "topics": [
+    "debugging",
+    "performance"
+  ],
+  "useWhen": [
+    "A service restarts every few days after running out of memory",
+    "Memory climbs steadily under constant traffic and never comes back down",
+    "A long-running browser tab or worker becomes slow over time",
+    "A fix for a suspected leak was shipped and you need proof it worked"
+  ],
+  "body": "# Memory leak diagnosis\n\nProve the growth, find the growing type, find what holds it. Do not change code before the third step.\n\n## Steps\n\n1. Establish growth. Run the workload in a loop (a script, a load tool or repeated UI action) and sample memory at fixed intervals after forcing garbage collection where the runtime allows it. Growth that persists after collection is a leak; a sawtooth that returns to baseline is not.\n2. Take at least two heap snapshots, one after warm-up and one after many iterations. Use the platform's tool: Chrome DevTools or `node --inspect` with `--heapsnapshot-signal`, `tracemalloc` or `objgraph` in Python, `jmap` or JFR in Java, `pprof -inuse_space` in Go.\n3. Compare the snapshots. Sort by count and by retained size; look for types whose count grows in step with iterations (for example 10,000 more `Session` objects after 10,000 requests).\n4. For the growing type, read the retaining path from the GC root. Typical culprits: a module-level map or cache with no eviction, event listeners and timers never removed, closures capturing large objects, unbounded queues, per-request data stored in a global, and unclosed connections or streams.\n5. State the cause in one sentence, naming the variable and the line.\n6. Fix by releasing at the right moment: bound the cache (LRU or TTL), remove listeners on teardown, clear timers, use weak references only when ownership is truly unclear, close resources in `finally`.\n7. Repeat steps 1 and 3 to show the count is flat.\n\n## Rules\n\n- Never raise the memory limit or schedule restarts as the fix.\n- Do not take snapshots on production without asking; they pause the process and contain data.\n\n## Report\n\nGrowth rate before and after, the leaking type, the retaining path, the fix and the measurement that proves it.",
+  "example": {
+    "prompt": "Our Node worker grows about 40 MB an hour. Find the leak.",
+    "result": "Heap snapshots 20 minutes apart: 52,000 more `Buffer` and `JobContext` objects. Retained by `jobListeners` in src/queue.js:18, a module-level Map that gets an entry per job and is never deleted on completion. Fix: delete the key in the job's finally block. After the fix memory stayed flat at 210 MB over 2 hours of the same load."
+  },
+  "faq": [
+    {
+      "question": "Can it diagnose production memory?",
+      "answer": "It can analyze snapshots and metrics you hand over. It will not trigger snapshots on a live process without your explicit go-ahead."
+    },
+    {
+      "question": "What if memory grows but there is no leak?",
+      "answer": "Caches that fill to a fixed size and then stop are normal. The skill checks whether growth levels off before calling it a leak."
+    }
+  ],
+  "access": [
+    "Reads source files and heap snapshot output",
+    "Runs your workload script and profiling tools locally",
+    "Edits code once the cause is proven"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

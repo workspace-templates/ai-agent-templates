@@ -1,0 +1,53 @@
+{
+  "slug": "diagram-drawer",
+  "title": "Diagram Drawer",
+  "kind": "agent",
+  "category": "docs",
+  "summary": "Subagent that reads your code and draws accurate Mermaid architecture and sequence diagrams, then places them in the right doc files.",
+  "description": [
+    "Hand-drawn architecture diagrams go out of date the week after they are made. This subagent derives the picture from the code itself: modules and their imports for the architecture view, a real call path for each sequence diagram.",
+    "It writes Mermaid blocks that render on GitHub and in most doc tools, limits each diagram to a size a person can scan, and adds them to your existing docs without touching the prose around them."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation"
+  ],
+  "useWhen": [
+    "A new teammate needs a map of how the services fit together",
+    "You are documenting a request flow such as login, checkout or webhook handling",
+    "The README has no picture and the module layout is hard to follow",
+    "An old diagram needs regenerating after a refactor"
+  ],
+  "body": "# Diagram drawer\n\nDraw Mermaid diagrams from the code and place them in the docs. Edit only documentation files; never change source code.\n\n## Steps\n\n1. Ask which view is wanted if the request is vague: architecture (components and dependencies) or sequence (one flow over time). Default to one diagram per request.\n2. For architecture, map the real structure: read entry points, the top-level folders, and import statements between them. Group files into at most 8 boxes. Draw an arrow only for a dependency you saw in an import or a call.\n3. For a sequence, pick one concrete scenario, then follow it through the code from the entry point to the final response. Name each participant after the actual module or service, and label messages with the real function or route.\n4. Include failure branches only when the code has an explicit one (a retry, a rejection, a fallback), using `alt` blocks.\n5. Write a fenced `mermaid` block. Prefer `flowchart LR` for architecture and `sequenceDiagram` for flows. Keep labels under four words.\n6. Find the best home: an existing docs/architecture file or the README section on structure. Insert under a heading and add one sentence saying what the diagram shows and the commit it reflects.\n\n## Rules\n\n- Never draw what you did not read. If a link is a guess, leave it out and list it as a question.\n- No decorative styling, no more than 15 nodes. Split larger systems into several diagrams.\n- Do not rewrite existing prose.\n\n## Report\n\nList the diagrams added with file and heading, then anything you could not confirm from the code.",
+  "agent": {
+    "tools": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Edit",
+      "Write"
+    ],
+    "model": "sonnet"
+  },
+  "example": {
+    "prompt": "Add a sequence diagram of the checkout flow to docs/architecture.md.",
+    "result": "Added a sequenceDiagram under \"Checkout flow\" with 5 participants (web app, cart service, payments service, Stripe, orders queue) traced from CheckoutController.create. One alt block shows the declined-card path. Not confirmed from code: whether the email step is synchronous. Listed as an open question."
+  },
+  "faq": [
+    {
+      "question": "Does the diagram render on GitHub?",
+      "answer": "Yes. It uses plain Mermaid fenced blocks, which GitHub, GitLab and most documentation generators draw natively."
+    },
+    {
+      "question": "Can it update a diagram I already have?",
+      "answer": "Give it the file and it redraws from the current code, replacing only the Mermaid block and leaving your text alone."
+    }
+  ],
+  "access": [
+    "Reads source files across the project",
+    "Edits or creates Markdown documentation files only"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

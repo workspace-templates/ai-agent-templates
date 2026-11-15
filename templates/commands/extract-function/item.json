@@ -1,0 +1,44 @@
+{
+  "slug": "extract-function",
+  "title": "Extract Function",
+  "kind": "command",
+  "category": "code-quality",
+  "summary": "Pulls a block of code into a well-named function with few parameters, updates the callers and checks nothing else changed.",
+  "description": [
+    "The easiest way to shorten a long function is to lift a coherent block out of it. Doing that well means choosing a name that says the purpose, passing only what the block needs and returning only what the caller uses.",
+    "This command checks which variables the block reads and writes before moving it, so it does not smuggle in hidden state or change evaluation order."
+  ],
+  "stacks": [],
+  "topics": [
+    "refactoring"
+  ],
+  "useWhen": [
+    "A function does several things in sequence",
+    "The same ten lines appear in two places",
+    "You need a unit-testable piece out of a handler",
+    "A comment explains what a block does, so it wants a name"
+  ],
+  "body": "Extract a function from: $ARGUMENTS\n\n1. Read the surrounding function. Identify the block and mark every variable it reads (becomes a parameter), writes (becomes a return value) and any side effect (I/O, mutation, logging).\n2. Reject the extraction if the block exits the outer function (early return, break, throw) in several ways and the result would need flags. Explain and suggest a different boundary.\n3. Choose a verb-noun name that describes the purpose, not the steps. Keep parameters to three or fewer; group related ones into an object only if they already travel together.\n4. Prefer a pure function. If it must touch state, keep that visible in the signature.\n5. Place it near its only caller if private, or in the right shared module if two places use it. Match the file's style and add types or docstrings as neighbors do.\n6. Replace the original block, and replace duplicates elsewhere only when they are truly identical.\n7. Run tests and the type check. Add a direct test for the new function when it has logic.\n\nShow the new function and the changed call site. Ask before touching duplicates in other files.",
+  "argumentHint": "[file:start-end or description of the block]",
+  "example": {
+    "prompt": "/extract-function src/orders/checkout.py lines 88-121",
+    "result": "Extracted applyLoyaltyDiscount(order, tier) -> Money, pure, 2 parameters. Replaced the block at line 88; one identical copy exists in cart.py.\n3 new tests, suite green.\nUpdate the copy in cart.py too?"
+  },
+  "faq": [
+    {
+      "question": "Why would it refuse an extraction?",
+      "answer": "When the block returns early or throws from several places, a clean function boundary does not exist and forcing one makes the code worse."
+    },
+    {
+      "question": "Does it also remove copies elsewhere?",
+      "answer": "Only identical ones, and only after you say yes."
+    }
+  ],
+  "access": [
+    "Reads the file and nearby callers",
+    "Edits the source file and may add a test, then runs checks"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

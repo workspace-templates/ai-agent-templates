@@ -1,0 +1,44 @@
+{
+  "slug": "supply-chain-security",
+  "title": "Supply Chain Security",
+  "kind": "skill",
+  "category": "security",
+  "summary": "Pins dependencies and CI actions, checks package provenance and trims workflow permissions to reduce the damage a poisoned package could do.",
+  "description": [
+    "Your code is a fraction of what runs in your build. A hijacked package, a typosquatted name or a moved action tag can run attacker code with your tokens. This skill shrinks that exposure with a few specific, boring controls.",
+    "It works on three layers: what you install, how you install it, and what your pipeline is allowed to do once it runs. Each change is small and reversible, and the report says which risks remain."
+  ],
+  "stacks": [],
+  "topics": [
+    "security",
+    "ci"
+  ],
+  "useWhen": [
+    "You want to harden CI before a security review",
+    "A popular package was compromised and you need to check your exposure",
+    "Workflows use third-party actions by floating tag",
+    "Builds run install scripts with deploy credentials in the environment"
+  ],
+  "body": "# Supply chain security\n\nReduce what a bad package can do, and make surprises visible.\n\n## Steps\n\n1. Lockfiles: confirm one is committed for each ecosystem, and that CI installs from it strictly (`npm ci`, `pip install --require-hashes`, `cargo --locked`, `go mod verify`). Fail the build when the lockfile is out of date.\n2. Pin versions: no `latest` or open ranges in production manifests. Pin Docker base images by digest. Pin GitHub Actions to full commit SHAs, with the tag in a comment.\n3. Review the dependency list for look-alike names, abandoned packages and ones with install scripts. Disable lifecycle scripts in CI where not needed (`--ignore-scripts`).\n4. Provenance: use registry features such as npm provenance and `npm audit signatures`, sigstore or checksums for downloaded binaries. Verify checksums in scripts that `curl` installers; never pipe to a shell.\n5. CI permissions: set `permissions: contents: read` at the top of each workflow and grant more per job. Avoid `pull_request_target` with untrusted code checkout. Scope secrets to environments that need approval. Prefer short-lived OIDC credentials to stored cloud keys.\n6. Automate updates with Dependabot or Renovate, with grouped PRs and a cooldown of a few days for new releases.\n7. Generate an SBOM (`syft` or `cyclonedx`) and store it with releases.\n\n## Rules\n\n- Change one layer per commit.\n- Never remove a control to make a build pass without saying so.\n\n## Report\n\nControls added, files changed, risks still open and what each would cost to close.",
+  "example": {
+    "prompt": "Harden our CI and dependencies against supply chain attacks.",
+    "result": "Pinned 14 actions to SHAs, set read-only default permissions in 3 workflows, and switched deploy to OIDC. CI now uses npm ci with --ignore-scripts, except for the one package that needs a build step. Dockerfile base pinned by digest. Added Renovate with a 3 day cooldown. Open: two dependencies have no maintainer activity in 2 years."
+  },
+  "faq": [
+    {
+      "question": "Does pinning to a SHA make updates harder?",
+      "answer": "Slightly, but Renovate and Dependabot update SHAs for you through pull requests, so you keep reviewability."
+    },
+    {
+      "question": "What is an SBOM for?",
+      "answer": "It is an inventory of every component in a release. When a new vulnerability is announced you can answer in minutes whether you ship it."
+    }
+  ],
+  "access": [
+    "Reads manifests, lockfiles, Dockerfiles and workflow files",
+    "Edits those files and runs install and build commands"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

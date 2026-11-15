@@ -1,0 +1,43 @@
+{
+  "slug": "llm-cost-and-latency",
+  "title": "LLM Cost and Latency",
+  "kind": "skill",
+  "category": "data",
+  "summary": "Finds where an app wastes LLM tokens and time, then cuts both with prompt caching, smaller models, batching and streaming.",
+  "description": [
+    "A bill that doubled or a chat that feels slow usually traces back to a handful of calls. This skill makes the agent measure first, then change the biggest cost, instead of guessing at tweaks.",
+    "The fixes are ordered by payoff and risk: cache stable prompt prefixes, route easy work to a smaller model, batch what is not interactive, and trim what you send and ask for."
+  ],
+  "stacks": [],
+  "topics": [
+    "performance"
+  ],
+  "useWhen": [
+    "Your monthly model bill is higher than planned",
+    "Users wait too long for the first token",
+    "A pipeline calls the model thousands of times a day",
+    "You want to know if a cheaper model is good enough"
+  ],
+  "body": "# LLM cost and latency\n\nMeasure before changing anything. Optimizing the wrong call wastes a week.\n\n## Steps\n\n1. Find every model call site. For each, record the model, input tokens, output tokens, calls per day and whether a user is waiting. Use existing logs or add a temporary counter.\n2. Rank call sites by daily cost and by user-facing latency. Work only on the top three.\n3. Cache stable prefixes: put system prompt, tool definitions and reference documents first and user input last, then enable the provider's prompt caching. Check the cache hit field in responses to confirm it works.\n4. Route by difficulty: classification, extraction and formatting usually run fine on a small model. Prove it on at least 50 real examples before switching.\n5. Batch anything nobody is waiting for (nightly summaries, backfills) through the provider's batch API at a discount.\n6. Cut tokens: trim retrieved context to what the question needs, drop chat history beyond a rolling window plus a summary, and set a tight max output.\n7. For latency, stream tokens, run independent calls in parallel, and avoid chained calls that could be one.\n8. Cache whole responses for identical inputs when answers do not need to be fresh.\n\n## Rules\n\n- Never switch models without a before and after quality check.\n- Keep a kill switch to roll back.\n\n## Report\n\nA table of call sites with cost and latency before and after, the change made to each, and the quality check result.",
+  "example": {
+    "prompt": "Our summarizer costs 4,000 USD a month, cut it",
+    "result": "Ranked three call sites. The nightly digest job (62% of spend) moved to the batch API and a small model, checked on 80 digests with no drop in rated quality. The 9k-token system prompt now sits first with caching on, with a 91% hit rate. Estimated spend: 1,350 USD a month."
+  },
+  "faq": [
+    {
+      "question": "Is prompt caching safe for private data?",
+      "answer": "It caches on the provider side for a short time per account. Check your provider terms, and keep per-user data after the cached prefix, never inside it."
+    },
+    {
+      "question": "How do I know a smaller model is good enough?",
+      "answer": "Run both on the same real inputs and compare against a fixed rubric or labeled answers. Switch only when the gap is below what users would notice."
+    }
+  ],
+  "access": [
+    "Reads code and logs in your project",
+    "May add temporary counters or logging, which you review"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"process.on('uncaughtException',()=>process.exit(0));let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{let j={};try{j=JSON.parse(d)||{}}catch(e){process.exit(0)}const i=j.tool_input||{};const f=String(i.file_path||'');const fs=require('fs');const rx=new RegExp('(^|[^A-Za-z])(TO'+'DO|FIX'+'ME)([^A-Za-z]|)');const pick=s=>String(s||'').split('\\n').filter(l=>rx.test(' '+l+' '));const edits=Array.isArray(i.edits)?i.edits:[i];const found=[];edits.forEach(x=>{const old=pick(x.old_string).map(l=>l.trim());pick(x.new_string||x.content).forEach(l=>{if(!old.includes(l.trim()))found.push(l.trim().slice(0,100))})});if(found.length){console.error('You added '+found.length+' to-do or fix-me marker(s) in '+(f||'a file')+':\\n'+found.slice(0,5).join('\\n')+'\\nFinish the work now, or tell the user what is left undone and why.');process.exit(2)}process.exit(0)})\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

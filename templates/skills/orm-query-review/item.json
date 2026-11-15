@@ -1,0 +1,45 @@
+{
+  "slug": "orm-query-review",
+  "title": "ORM Query Review",
+  "kind": "skill",
+  "category": "database",
+  "summary": "Reviews ORM code for N+1 queries, lazy loading, over-fetching and missing transactions, and proves each finding by counting queries.",
+  "description": [
+    "ORMs hide the SQL, which is how a list page ends up running 400 queries. This skill makes the agent surface the real statements, count them and trace each repeated one back to a line of code.",
+    "Fixes stay small: eager loading in the right place, selecting only needed columns, and wrapping related writes in one transaction."
+  ],
+  "stacks": [],
+  "topics": [
+    "sql",
+    "performance",
+    "code-review"
+  ],
+  "useWhen": [
+    "A page or endpoint got slower as data grew",
+    "Logs show the same query repeated in a loop",
+    "A multi-step write left half its data after an error",
+    "You are reviewing a PR that touches models and queries"
+  ],
+  "body": "# ORM query review\n\nShow the SQL the ORM really sends. Judge the code by statements per request, not by how it reads.\n\n## Steps\n\n1. Turn on query logging for the framework in use (Django `connection.queries`, Rails log, Hibernate `show_sql`, SQLAlchemy `echo`, Prisma `log: ['query']`). Run the target request or test and count statements.\n2. Find N+1 patterns: a loop that touches a relation, a serializer or template that reads a related field, a property that queries on access. Confirm by seeing one parent query followed by N near-identical queries.\n3. Fix with the ORM's eager loading: join or prefetch the relation in the one query that loads the parents. Use batch loading when a join would multiply rows.\n4. Find over-fetching: whole rows loaded to read two fields, or entire tables loaded to count or check existence. Select only needed columns; use `count`, `exists` and aggregates in the database, not in memory.\n5. Find missing transactions: two or more writes that must succeed together, read-then-write sequences, counters updated in memory. Wrap them in a transaction, and lock the row (`select for update`) or use an atomic update expression when two requests could collide.\n6. Look for unbounded queries without limit or pagination, and filters on columns with no index.\n7. Re-run and show the statement count before and after.\n\n## Rules\n\n- Never fix a query you have not seen the SQL for.\n- Keep fixes local; do not rewrite the data layer.\n- Keep transactions short and free of network calls.\n\n## Report\n\nPer finding: file and line, statements before and after, and the change.",
+  "example": {
+    "prompt": "The /projects page takes 3 seconds, check the queries",
+    "result": "The page ran 214 queries. ProjectSerializer read owner.name per row (N+1): fixed with a select_related on owner, now 3 queries. Also replaced len(project.tasks.all()) with a COUNT, and wrapped archive-and-notify in one transaction. 214 queries down to 5, 3.0 s to 160 ms."
+  },
+  "faq": [
+    {
+      "question": "Is eager loading always better?",
+      "answer": "No. Joining a one-to-many relation multiplies rows and can be slower than a second batched query. Measure both."
+    },
+    {
+      "question": "Should I drop the ORM for raw SQL?",
+      "answer": "Rarely. Keep the ORM for ordinary work and write raw SQL for the few reports where the generated query cannot be shaped properly."
+    }
+  ],
+  "access": [
+    "Reads and edits your code",
+    "Runs the app or tests with query logging on"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

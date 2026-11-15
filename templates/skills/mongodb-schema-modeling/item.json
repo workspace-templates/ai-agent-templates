@@ -1,0 +1,46 @@
+{
+  "slug": "mongodb-schema-modeling",
+  "title": "MongoDB Schema Modeling",
+  "kind": "skill",
+  "category": "database",
+  "summary": "Decides between embedding and referencing in MongoDB and shapes documents around the actual read and write patterns of the app.",
+  "description": [
+    "In MongoDB the document shape is the performance plan. This skill starts from how the app reads and updates data, then chooses what to nest, what to link and what to precompute.",
+    "It also flags the usual traps: arrays that grow without bound, documents near the 16 MB limit and indexes that do not match the query."
+  ],
+  "stacks": [
+    "mongodb"
+  ],
+  "topics": [
+    "api-design",
+    "performance"
+  ],
+  "useWhen": [
+    "You are designing collections for a new service",
+    "A document keeps growing and updates are getting slow",
+    "You are moving a relational model into MongoDB",
+    "Aggregation pipelines have become hard to read and slow"
+  ],
+  "body": "# MongoDB schema modeling\n\nModel for access patterns. Data that is read together lives together.\n\n## Steps\n\n1. List the queries and writes with frequency: \"load an order with its lines (very often)\", \"update one line status (often)\", \"report by month (nightly)\".\n2. For each relationship decide:\n   - Embed when the child is read with the parent, belongs to one parent, and stays small and bounded.\n   - Reference when the child is shared, queried alone, or grows without limit.\n   - Use the subset pattern when you need only the latest few children (embed 10 recent comments, reference the rest).\n3. Never allow an unbounded array. Put growing lists in their own collection with the parent id and an index.\n4. Precompute values read far more than written (order totals, counters) and update them in the same write; use the bucket pattern for time series.\n5. Keep documents under a few hundred KB. Note the 16 MB hard limit.\n6. Design indexes from the queries: compound indexes follow equality, sort, range order. Use `explain(\"executionStats\")` and compare `totalDocsExamined` with `nReturned`.\n7. Add schema validation (`$jsonSchema`) with required fields and types, and a `schemaVersion` field to allow later changes.\n8. Use multi-document transactions only when the model truly spans documents; a better embed often removes the need.\n\n## Rules\n\n- Do not copy relational tables one to one.\n- Avoid `$lookup` on hot paths; denormalize deliberately and write down who updates the copy.\n\n## Report\n\nCollections with sample documents, indexes, and one line of reasoning per embed or reference choice.",
+  "example": {
+    "prompt": "Model collections for a blog with posts, comments and tags",
+    "result": "posts embeds tags (small, bounded) and the 5 latest comments; comments is its own collection indexed on (postId, createdAt) because threads can grow large. commentCount lives on the post and is updated with $inc. Added $jsonSchema validation and schemaVersion: 1."
+  },
+  "faq": [
+    {
+      "question": "Is duplicating data in MongoDB acceptable?",
+      "answer": "Yes, when reads dominate. Decide which copy is the truth and make the write path update the others, or accept a documented delay."
+    },
+    {
+      "question": "How do I change the shape later?",
+      "answer": "Store a schemaVersion, write code that reads both versions, and migrate documents in batches in the background."
+    }
+  ],
+  "access": [
+    "Reads code and sample documents in your project",
+    "Runs explain and read-only queries if you give it a connection"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

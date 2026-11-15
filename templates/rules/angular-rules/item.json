@@ -1,0 +1,46 @@
+{
+  "slug": "angular-rules",
+  "title": "Angular Rules",
+  "kind": "rules",
+  "category": "frontend",
+  "summary": "Project rules for Angular: standalone components, signals, typed reactive forms, safe RxJS subscriptions and TestBed component tests.",
+  "description": [
+    "These rules direct an agent to write current Angular: standalone components, signals for local state, the new control flow syntax and the inject function.",
+    "They also address the places where Angular code goes wrong, such as leaked subscriptions, untyped forms and components that do too much, and set a clear testing habit."
+  ],
+  "stacks": [
+    "angular",
+    "typescript"
+  ],
+  "topics": [
+    "typescript",
+    "testing"
+  ],
+  "useWhen": [
+    "You add features to an Angular app with an agent",
+    "Generated code uses NgModules and constructor injection only",
+    "Subscriptions leak or components re-render too often",
+    "Forms are loosely typed"
+  ],
+  "body": "# Project rules: Angular\n\n## Components\n- Standalone components only; do not create new NgModules. Set `changeDetection: ChangeDetectionStrategy.OnPush` on every component.\n- Use `input()`, `output()` and `model()` for the component API, `signal` and `computed` for state, and `effect` rarely and only for side effects.\n- Write templates with `@if`, `@for` (always with `track`) and `@switch`. Keep logic out of templates; do not call methods that do work from bindings.\n- Keep components presentational where possible. Smart containers talk to services; dumb ones take inputs and emit outputs.\n\n## Services and DI\n- Use `inject()` and `providedIn: 'root'` for singletons. One service per concern; do not put HTTP calls in components.\n- Use `HttpClient` with typed responses and interceptors for auth and error handling. Define API models as interfaces.\n\n## RxJS\n- Prefer `async` pipe or `toSignal` over manual `subscribe`. When you must subscribe, end it with `takeUntilDestroyed()`.\n- Flatten with `switchMap` for search and `concatMap` for ordered writes. Never nest subscribes.\n\n## Forms\n- Use typed reactive forms (`FormBuilder.nonNullable`) with validators; show errors only after touch.\n\n## Structure and tests\n- Group by feature with lazy-loaded routes (`loadComponent`, `loadChildren`). Strict mode stays on.\n- Test with TestBed or a component harness, query the DOM, and mock services with `provideHttpClientTesting`.\n- Run `ng lint`, `ng test --watch=false` and `ng build` before finishing.",
+  "example": {
+    "prompt": "Create a product search page with debounced input and results list",
+    "result": "The agent adds a lazy route and a standalone OnPush component, a typed form control, switchMap with debounce via toSignal, @for with track, and a TestBed test with a stubbed service."
+  },
+  "faq": [
+    {
+      "question": "Is NgModule support removed?",
+      "answer": "No, but new code does not need it. The rule applies to files the agent creates, and existing modules can stay until you migrate."
+    },
+    {
+      "question": "Why OnPush everywhere?",
+      "answer": "It limits change detection to input and signal changes, which keeps screens fast and exposes accidental mutation early."
+    }
+  ],
+  "access": [
+    "Plain instructions; it does not execute code or reach any network"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

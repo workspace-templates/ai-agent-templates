@@ -1,0 +1,67 @@
+{
+  "slug": "monday-mcp",
+  "title": "monday.com MCP Server",
+  "kind": "mcp",
+  "category": "productivity",
+  "summary": "Run monday.com's official MCP server locally in read-only mode so your agent can inspect boards and items without changing anything.",
+  "description": [
+    "monday.com publishes an MCP server as the npm package @mondaydotcomorg/monday-api-mcp. It gives an agent tools to read board schemas, fetch items, and, when allowed, create items, post updates and change column values.",
+    "This setup starts it through npx with the documented --read-only flag, so write tools are left out. You supply a personal API token through the MONDAY_TOKEN variable. Drop the flag later if you want the agent to edit boards."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation"
+  ],
+  "useWhen": [
+    "Look up what is on the product roadmap board before planning work",
+    "Check the status column of a bug item",
+    "List which items are in a group and who owns them",
+    "Read a board's columns before writing an integration against it"
+  ],
+  "mcp": {
+    "name": "monday",
+    "transport": "stdio",
+    "command": "npx",
+    "args": [
+      "@mondaydotcomorg/monday-api-mcp@latest",
+      "--read-only"
+    ],
+    "env": [
+      {
+        "name": "MONDAY_TOKEN",
+        "description": "Your monday.com personal API token"
+      }
+    ],
+    "headers": [],
+    "source": "https://github.com/mondaycom/mcp",
+    "access": [
+      "Reads boards, items, columns and users that your token can see",
+      "Read-only while the --read-only flag stays in the args"
+    ]
+  },
+  "example": {
+    "prompt": "Which items on the Sprint Board are stuck and who owns them?",
+    "result": "2 items have status Stuck: \"Webhook retries\" (owner Priya) and \"SSO redirect loop\" (owner Marcus). Both were last updated 4 days ago."
+  },
+  "faq": [
+    {
+      "question": "Where do I find the token?",
+      "answer": "In monday.com, open your profile menu, then Developers, then My access tokens. Store it in your shell environment as MONDAY_TOKEN."
+    },
+    {
+      "question": "How do I allow edits?",
+      "answer": "Remove --read-only from the args. The agent then gets tools to create items, post updates and change column values."
+    },
+    {
+      "question": "Is there a hosted option?",
+      "answer": "Yes, the repository also lists a hosted URL, https://mcp.monday.com/mcp. This setup uses the local package because it has a documented read-only switch."
+    }
+  ],
+  "access": [
+    "monday.com boards your token can see, read-only by default here",
+    "Runs a local npx process"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

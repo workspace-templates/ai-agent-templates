@@ -1,0 +1,45 @@
+{
+  "slug": "postgres-sql-rules",
+  "title": "Postgres SQL Rules",
+  "kind": "rules",
+  "category": "database",
+  "summary": "Project rules for PostgreSQL SQL: naming, column types, constraints, indexes, reversible migrations and queries that stay safe and fast.",
+  "description": [
+    "These rules set how an agent writes schemas and queries for PostgreSQL. The aim is a database that enforces its own rules, so the application cannot quietly store bad data.",
+    "They also cover migrations on live tables and common query mistakes, which are where most Postgres incidents start."
+  ],
+  "stacks": [
+    "postgres"
+  ],
+  "topics": [
+    "sql",
+    "migrations"
+  ],
+  "useWhen": [
+    "You are designing tables or writing migrations for Postgres",
+    "Generated schemas use text for everything and have no constraints",
+    "A migration might lock a busy table",
+    "Queries build SQL by joining strings"
+  ],
+  "body": "# Project rules: PostgreSQL\n\n## Naming and types\n- Use lowercase snake_case, plural table names and singular column names. Primary keys are `id`; foreign keys are `<table>_id`.\n- Use `timestamptz` for times, `numeric` for money, `uuid` or `bigint generated always as identity` for keys, `text` with a check instead of arbitrary varchar limits, and `jsonb` only for truly flexible data.\n- Never use `float` for currency, or `timestamp` without a zone.\n\n## Constraints\n- Declare `NOT NULL`, `UNIQUE`, `CHECK` and `FOREIGN KEY` in the schema. Choose `ON DELETE` behavior deliberately. Add `created_at` and `updated_at` columns.\n\n## Indexes\n- Index foreign keys and the columns used in frequent filters and sorts. Use partial and composite indexes where the query shape justifies them. Create them with `CREATE INDEX CONCURRENTLY` on live tables.\n- Check plans with `EXPLAIN (ANALYZE, BUFFERS)` before claiming a query is fast.\n\n## Migrations\n- One change per migration, with a down step where possible. Add columns as nullable, backfill in batches, then add the constraint with `NOT VALID` and `VALIDATE`. Set a `lock_timeout`. Do not rewrite big tables in one transaction.\n\n## Queries\n- Always use bound parameters. List columns instead of `SELECT *`. Page with keyset pagination for large sets, and use `ON CONFLICT` for upserts.\n- Wrap multi-statement changes in a transaction.\n\n## Checks\n- Run the migration on a copy of the schema and lint SQL with sqlfluff or squawk.",
+  "example": {
+    "prompt": "Add an orders table linked to customers with a status and a total",
+    "result": "The agent writes a migration with a bigint identity key, a customer_id foreign key and index, a status check constraint, numeric total and timestamptz columns, then runs it against a scratch database."
+  },
+  "faq": [
+    {
+      "question": "Why prefer text over varchar(n)?",
+      "answer": "Postgres stores them the same way. A check constraint states the real limit and is easier to change later."
+    },
+    {
+      "question": "Does it cover ORMs?",
+      "answer": "The schema and migration advice applies whatever tool generates the SQL. Review generated migrations against these points."
+    }
+  ],
+  "access": [
+    "Instructions only; it does not read or run anything by itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

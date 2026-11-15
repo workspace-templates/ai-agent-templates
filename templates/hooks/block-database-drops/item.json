@@ -1,0 +1,49 @@
+{
+  "slug": "block-database-drops",
+  "title": "Block Database Drops",
+  "kind": "hook",
+  "category": "database",
+  "summary": "A Claude Code hook that stops shell commands containing DROP DATABASE, DROP TABLE, DROP SCHEMA or TRUNCATE, so SQL cleanup never runs unreviewed.",
+  "description": [
+    "Agents like to reset a database when a migration misbehaves. This PreToolUse hook reads every Bash command and refuses the ones that carry a DROP or TRUNCATE statement, whether they come from psql, mysql, sqlite3 or a script argument.",
+    "The match is on the command text only, so a statement hidden in a separate SQL file is not seen. Use it next to a read-only database user for stronger protection."
+  ],
+  "stacks": [],
+  "topics": [
+    "sql",
+    "security"
+  ],
+  "useWhen": [
+    "Let an agent run migrations against a shared dev database",
+    "Work near data that has no recent backup",
+    "Stop a reset script from emptying tables",
+    "Review destructive SQL before it reaches a server"
+  ],
+  "hook": {
+    "event": "PreToolUse",
+    "matcher": "Bash",
+    "command": "node -e \"let d='';process.stdin.on('data',x=>d+=x).on('end',()=>{let j={};try{j=JSON.parse(d)}catch(e){return}const i=j.tool_input||{};const c=String(i.command||'');const m=c.match(/drop[ ]+(database|table|schema)/i)||c.match(/truncate[ ]+(table[ ]+)?[a-z_][a-z0-9_.]*[ ]*;/i);if(m){console.error('Blocked: the shell command contains '+m[0].trim().toUpperCase()+'. Show the user the statement and let them run it against the right database.');process.exitCode=2}})\"",
+    "timeout": 10
+  },
+  "example": {
+    "prompt": "The seed failed halfway. Run psql -c \"DROP TABLE orders\" and reseed.",
+    "result": "The command is blocked with a message naming DROP TABLE. The agent shows the statement and asks you to run it yourself."
+  },
+  "faq": [
+    {
+      "question": "Does it catch SQL inside a file?",
+      "answer": "No. It reads only the shell command, so psql -f reset.sql passes. Review such files by hand or add a hook on the Write tool."
+    },
+    {
+      "question": "Will a normal DELETE be stopped?",
+      "answer": "No. Only DROP DATABASE, DROP TABLE, DROP SCHEMA and TRUNCATE are refused, so routine data changes go through."
+    }
+  ],
+  "access": [
+    "Reads each Bash command before it runs",
+    "Blocks matching commands and runs nothing itself"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

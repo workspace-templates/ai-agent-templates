@@ -1,0 +1,49 @@
+{
+  "slug": "warn-long-files",
+  "title": "Warn Long Files",
+  "kind": "hook",
+  "category": "code-quality",
+  "summary": "A Claude Code hook that flags any edited source file longer than 500 lines, so the agent splits the code before the file gets unwieldy.",
+  "description": [
+    "Agents tend to keep adding to the same file. This PostToolUse hook counts the lines of each edited source file and speaks up once the count passes the limit, which is 500 unless you set WARN_LINES.",
+    "Only code extensions are counted, and minified files are skipped. The message asks for a split by responsibility or a reason to leave it."
+  ],
+  "stacks": [],
+  "topics": [
+    "refactoring",
+    "code-review"
+  ],
+  "useWhen": [
+    "Keep modules small as an agent adds features",
+    "Enforce a soft size budget without a linter",
+    "Spot god files early in a long session",
+    "Prompt a split before review starts"
+  ],
+  "hook": {
+    "event": "PostToolUse",
+    "matcher": "Edit|Write",
+    "command": "node -e \"process.on('uncaughtException',()=>process.exit(0));let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{let j={};try{j=JSON.parse(d)||{}}catch(e){process.exit(0)}const i=j.tool_input||{};const f=String(i.file_path||'');const fs=require('fs');const rd=()=>{try{return fs.readFileSync(f,'utf8')}catch(e){return null}};const e=require('path').extname(f).toLowerCase();const ok=['.js','.jsx','.ts','.tsx','.mjs','.cjs','.py','.rb','.go','.rs','.java','.kt','.cs','.php','.swift','.c','.cpp','.h','.vue','.svelte'];if(!ok.includes(e)||f.includes('.min.'))process.exit(0);const t=rd();if(t===null)process.exit(0);const max=Number(process.env.WARN_LINES)||500;const n=t.split('\\n').length-(t.endsWith('\\n')?1:0);if(n>max){console.error(f+' now has '+n+' lines (limit '+max+'). Split it into smaller modules by responsibility, or tell the user why it stays long.');process.exit(2)}process.exit(0)})\"",
+    "timeout": 15
+  },
+  "example": {
+    "prompt": "Add CSV export to the report service.",
+    "result": "After the edit the hook notes that report.ts has 640 lines. The agent moves the exporter into its own module."
+  },
+  "faq": [
+    {
+      "question": "Can I change the limit?",
+      "answer": "Yes. Set WARN_LINES to your number in the environment before starting Claude Code."
+    },
+    {
+      "question": "Does it count blank lines?",
+      "answer": "Yes, it counts every line in the file, so the number matches what an editor shows."
+    }
+  ],
+  "access": [
+    "Reads the edited source file to count lines",
+    "Reports a message; changes no files"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

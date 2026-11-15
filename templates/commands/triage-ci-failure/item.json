@@ -1,0 +1,46 @@
+{
+  "slug": "triage-ci-failure",
+  "title": "Triage CI Failure",
+  "kind": "command",
+  "category": "devops",
+  "summary": "Reads a failing CI log, finds the first real error behind the noise and proposes a specific fix you can approve.",
+  "description": [
+    "A red pipeline usually prints thousands of lines, and the last error is often a side effect of an earlier one. This command works from the top of the failure down to the step that actually broke.",
+    "It separates real code failures from flaky tests, expired caches and missing secrets, and tells you which kind you have before touching any file."
+  ],
+  "stacks": [],
+  "topics": [
+    "ci",
+    "debugging"
+  ],
+  "useWhen": [
+    "A pull request check turned red and the log is huge",
+    "The same job passes locally but fails in CI",
+    "A test fails only sometimes and you suspect flakiness",
+    "You inherited a pipeline and do not know its steps"
+  ],
+  "body": "Triage the failing CI run: $ARGUMENTS (a log file, run URL or job name; if empty, use the latest failed run of the current branch).\n\n1. Fetch the log. With the GitHub CLI use `gh run list --branch \"$(git branch --show-current)\" --limit 5` then `gh run view <id> --log-failed`. For other systems read the file the user pointed to.\n2. Find the first error in time order, not the last. Skip warnings, deprecation notices and retry chatter. Note the job, step name and exit code.\n3. Classify it: code bug, test failure, flaky test, dependency or cache problem, environment or secret missing, timeout, or runner outage.\n4. Reproduce locally with the same command and versions the workflow uses. If it passes, compare Node, Python or tool versions and environment variables.\n5. Read the workflow file for the failing step and the commits since the last green run (`git log --oneline <last-green>..HEAD`).\n\nReport: the root cause in one sentence, the evidence (log lines with line numbers), the classification and a proposed fix as a diff. Do not edit files or re-run the pipeline until the user agrees.",
+  "argumentHint": "[run URL, log path or job name]",
+  "example": {
+    "prompt": "/triage-ci-failure https://github.com/acme/api/actions/runs/812",
+    "result": "Root cause: job \"test\" fails at step 6 because migrations ran against Postgres 14 but the service container is Postgres 12 (log line 412, syntax error near GENERATED). Not flaky. Fix: bump the image in .github/workflows/ci.yml. Apply the diff?"
+  },
+  "faq": [
+    {
+      "question": "Can it read logs from CI systems other than GitHub?",
+      "answer": "Yes, if you give it the saved log file or paste the text. The run-fetching shortcut is only for the GitHub CLI."
+    },
+    {
+      "question": "Will it re-run my pipeline?",
+      "answer": "Not on its own. It proposes the fix and waits for your approval before editing or triggering anything."
+    }
+  ],
+  "access": [
+    "Reads CI logs and workflow files",
+    "Runs read-only gh and git commands",
+    "Edits files only after you approve"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

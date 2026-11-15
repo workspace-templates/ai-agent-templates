@@ -1,0 +1,44 @@
+{
+  "slug": "e2e-test-design",
+  "title": "E2E Test Design",
+  "kind": "skill",
+  "category": "testing",
+  "summary": "Chooses the few user journeys that deserve end-to-end coverage and writes stable browser tests with resilient locators and no fixed waits.",
+  "description": [
+    "End-to-end suites tend to grow into slow, flaky piles that people stop trusting. The cure is fewer tests, chosen with care: the journeys that make money or break trust if they fail, written to survive ordinary UI changes.",
+    "This skill picks those journeys with you, then writes them with role-based locators, per-test data and condition-based waits. The tests are small, independent and fast to diagnose when they do fail."
+  ],
+  "stacks": [],
+  "topics": [
+    "testing",
+    "accessibility"
+  ],
+  "useWhen": [
+    "You are starting Playwright or Cypress on an existing app",
+    "The current E2E suite is flaky or takes too long",
+    "You need a smoke test for the release pipeline",
+    "Business-critical flows such as signup or checkout have no coverage"
+  ],
+  "body": "# E2E test design\n\nCover the journeys that matter with a handful of dependable tests. Everything else belongs in faster layers.\n\n## Steps\n\n1. Choose journeys. Ask what failing would cost: signup and login, checkout or payment, the core create-and-save action, permission boundaries. Aim for 5 to 15 tests. Skip anything a unit or API test can cover.\n2. Check the existing tool and config (Playwright, Cypress, WebdriverIO) and follow it. Do not introduce a second runner.\n3. Write each test as one user story with a single outcome. Name it for the result: \"a returning customer can pay with a saved card\".\n4. Locators: prefer role and accessible name (`getByRole(\"button\", { name: \"Pay\" })`), then label or text, then a dedicated `data-testid`. Never use generated class names or long CSS paths.\n5. Waiting: rely on the tool's auto-wait and assert on the visible outcome (`expect(...).toBeVisible()`). No `sleep` or fixed timeouts. Wait for a specific network response only when the UI shows nothing.\n6. Data: create it per test through the API or a seed helper, with unique values, and clean up. Never depend on another test having run first. Log in through a saved session state, not the UI, except in the login test itself.\n7. External services: stub payment, email and analytics at the network layer; keep one thin test against the real sandbox if needed.\n8. Run each new test 10 times, and in parallel, before committing. Enable traces and screenshots on failure, and retries only in CI.\n\n## Rules\n\n- One test, one journey; no logic branches inside tests.\n- Do not assert on pixel details or copy that changes often.\n\n## Report\n\nJourneys chosen and rejected with reasons, tests written, flake check results, and run time.",
+  "example": {
+    "prompt": "Set up E2E tests for our shop with Playwright.",
+    "result": "Chosen: signup, login, add to cart and pay with a card, order history, and admin refund (5 tests). Skipped: filters and sorting, covered by API tests. All locators use roles or labels; 3 data-testid attributes added to the payment form. Stripe is stubbed at the network. Ran 10 times in parallel, no failures, 48 s total."
+  },
+  "faq": [
+    {
+      "question": "How many E2E tests should an app have?",
+      "answer": "Usually a dozen or fewer. Each one is slow and costly to maintain, so reserve them for flows where a break would be an incident."
+    },
+    {
+      "question": "Why log in with saved state?",
+      "answer": "Going through the login screen in every test adds time and a second reason to fail. Test login once, then reuse the session."
+    }
+  ],
+  "access": [
+    "Reads and edits test files and may add test ids to markup",
+    "Runs a browser through your test runner against a local or test environment"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

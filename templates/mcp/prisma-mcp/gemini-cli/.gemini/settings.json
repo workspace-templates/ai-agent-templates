@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "prisma": {
+      "httpUrl": "https://mcp.prisma.io/mcp"
+    }
+  }
+}

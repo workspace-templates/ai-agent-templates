@@ -1,0 +1,56 @@
+{
+  "slug": "migration-writer",
+  "title": "Migration Writer",
+  "kind": "agent",
+  "category": "database",
+  "summary": "Subagent that writes a reversible database migration for a described change and checks it against the current schema before finishing.",
+  "description": [
+    "A migration that passes on an empty dev database may block writes to a busy production table. This subagent reads your existing migrations and schema, matches your migration tool's conventions, and writes the new migration with both an up and a down step.",
+    "It checks the change against the schema it found and warns about operations that rewrite or lock large tables. It never applies the migration to a shared database; that stays with you."
+  ],
+  "stacks": [],
+  "topics": [
+    "migrations",
+    "sql"
+  ],
+  "useWhen": [
+    "You need to add, rename or drop a column and want it done safely",
+    "A change must backfill existing rows without locking the table",
+    "You want the rollback step written at the same time as the migration",
+    "Your team wants new migrations to follow one consistent style"
+  ],
+  "body": "# Migration writer\n\nWrite one reversible migration for the change the user describes. Create only the migration file (and its test if the project has migration tests). Do not apply it to any database except a throwaway local one.\n\n## Steps\n\n1. Detect the tool (Rails, Django, Alembic, Knex, Prisma, Flyway, Liquibase, plain SQL) from the repo and read the last three migrations to copy naming, numbering and style.\n2. Rebuild the current schema state from the existing migrations or the schema dump. Confirm the objects you will touch exist and check dependent indexes, constraints, views and foreign keys.\n3. Write the up step. Prefer changes that are safe on a live table: add a column as nullable first, backfill in batches in a separate step, then add NOT NULL or the constraint; create indexes concurrently where the database supports it; for a rename, add the new name, copy, switch code, then drop the old in a later migration.\n4. Write the down step so it restores the structure. If data would be lost (dropping a column), say so in a comment and in your report instead of pretending it reverses.\n5. Validate: run the migration up, down, and up again on a local scratch database if one exists. Otherwise read the generated SQL and trace it by hand.\n\n## Rules\n\n- Never combine a schema change and a large data backfill in one transaction.\n- Do not edit earlier migrations that may already have run elsewhere.\n- Flag any statement that takes a heavy lock on a big table.\n\n## Report\n\nThe file path, the SQL it will produce, the lock and duration risk, what down loses, and the deploy order with the application code.",
+  "agent": {
+    "tools": [
+      "Read",
+      "Write",
+      "Edit",
+      "Bash",
+      "Grep",
+      "Glob"
+    ],
+    "model": "sonnet"
+  },
+  "example": {
+    "prompt": "Split users.name into first_name and last_name.",
+    "result": "Wrote 20261115_split_user_name.sql. Step 1 adds both columns as nullable; the backfill runs in 10k-row batches; NOT NULL is deferred to a second migration after the code deploys. Down drops the new columns and keeps name, so nothing is lost. Ran up, down, up on the local scratch DB. Risk: backfill of about 2M rows, roughly one minute."
+  },
+  "faq": [
+    {
+      "question": "Will it run the migration on my database?",
+      "answer": "Only on a throwaway local database. Staging and production runs are yours to start after you read the SQL."
+    },
+    {
+      "question": "What if a change cannot be reversed?",
+      "answer": "It writes the best possible down step, states clearly what cannot be restored, and recommends taking a backup before you deploy."
+    }
+  ],
+  "access": [
+    "Reads existing migrations and schema files",
+    "Creates one new migration file",
+    "Runs the migration only against a local scratch database"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

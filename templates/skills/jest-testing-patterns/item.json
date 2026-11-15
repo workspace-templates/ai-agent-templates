@@ -1,0 +1,47 @@
+{
+  "slug": "jest-testing-patterns",
+  "title": "Jest Testing Patterns",
+  "kind": "skill",
+  "category": "testing",
+  "summary": "Structures Jest suites with factories, fake timers and module mocks that reset cleanly, so tests stay independent and order does not matter.",
+  "description": [
+    "Jest suites tend to rot into a tangle of shared fixtures, leaked mocks and tests that pass only in a fixed order. This skill gives the agent the setup patterns that keep each test isolated and easy to read.",
+    "It covers data factories, fake timers, module and spy mocking with automatic restore, async assertions, and the config switches that catch leaks early."
+  ],
+  "stacks": [
+    "javascript",
+    "typescript"
+  ],
+  "topics": [
+    "testing",
+    "typescript"
+  ],
+  "useWhen": [
+    "Writing or reviewing Jest tests in a Node or React project",
+    "Tests pass alone and fail together",
+    "Mocks from one file affect another",
+    "Tests use real timers and take seconds to run"
+  ],
+  "body": "# Jest testing patterns\n\nEvery test must pass alone, in any order, and clean up after itself.\n\n## Structure\n\n- Name tests as behavior: `it('rejects an expired coupon')`. One behavior per test, arrange / act / assert with blank lines between.\n- Build data with small factory functions (`makeUser({ role: 'admin' })`) with defaults and overrides. Do not share mutable fixtures between tests.\n\n## Mocks and isolation\n\n- Prefer `jest.spyOn(obj, 'method')` over replacing modules. For modules, use `jest.mock('./x')` at the top and `jest.requireActual` when you only want to override part.\n- Set `restoreMocks: true` and `clearMocks: true` in the Jest config so nothing leaks. Never rely on manual cleanup alone.\n- Use `jest.isolateModules` when a module reads environment variables at import time.\n- Reset anything global (env vars, `Date`, `fetch`) in `afterEach`.\n\n## Time and async\n\n- Use `jest.useFakeTimers()` and `advanceTimersByTime` or `runOnlyPendingTimers`. Restore with `useRealTimers` in `afterEach`. For promises plus timers use the async variants.\n- Always `await` or return promises. Use `await expect(p).rejects.toThrow(...)`, never a bare try/catch.\n\n## Rules\n\n- Do not use `test.only` or leave `console` noise unchecked; fail on unexpected console errors.\n- Do not snapshot large objects; assert the fields that matter.\n- Run `jest --runInBand --randomize` once to prove independence.\n\n## Report\n\nFiles changed, the isolation problems found and the config options added.",
+  "example": {
+    "prompt": "Our Jest tests only pass in order. Clean up the mocks in src/services.",
+    "result": "Found 3 leaks: a jest.mock of ./mailer without restore, a Date.now override never undone, and a shared user fixture mutated in two tests. Added restoreMocks to jest.config, converted fixtures to makeUser(), wrapped timers in afterEach. Suite now passes with --randomize across 5 seeds."
+  },
+  "faq": [
+    {
+      "question": "Does this work with Vitest?",
+      "answer": "Mostly yes. The structure and isolation rules carry over, but config names and the vi helpers differ, so the agent checks your runner first."
+    },
+    {
+      "question": "Should I use snapshots?",
+      "answer": "Only for small, stable output such as a short serialized string. Large snapshots get approved without reading and hide regressions."
+    }
+  ],
+  "access": [
+    "Reads source and test files",
+    "Edits tests and Jest config, and runs the test suite"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

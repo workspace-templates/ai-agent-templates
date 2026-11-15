@@ -1,0 +1,44 @@
+{
+  "slug": "context-management",
+  "title": "Context Management",
+  "kind": "skill",
+  "category": "productivity",
+  "summary": "Keeps long agent sessions on track with a running notes file, checkpoints and tightly scoped reads, so quality does not fade as the context fills.",
+  "description": [
+    "Long sessions fail quietly. The agent forgets a decision from two hours ago, rereads the same large files, or repeats an approach that already failed. This skill gives it a small set of habits that keep the important facts outside the context window and the context itself lean.",
+    "You end up with a notes file that any fresh session can pick up, so stopping and restarting costs minutes instead of an hour of re-explaining."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation"
+  ],
+  "useWhen": [
+    "A task will take more than an hour or touch many files",
+    "The agent starts contradicting earlier decisions",
+    "You need to hand a half-finished task to a new session",
+    "Responses slow down because huge files keep being read in full"
+  ],
+  "body": "# Context management\n\nPut facts on disk, read narrowly, and checkpoint often.\n\n## Steps\n\n1. At the start, create `.agent/notes.md` (add it to `.git/info/exclude` so it is not committed). Write four headings: Goal, Decisions, Done, Next. Fill Goal in the user's words plus the done check.\n2. Read narrowly. Search for the symbol or string first, then read only that function or the lines around it. Open a whole file only when you are about to edit most of it. Use `wc -l` before opening anything unfamiliar.\n3. Summarize large outputs. For test runs, build logs and diffs, keep the failing lines and counts, not the whole text. Redirect long output to a file and grep it.\n4. Record decisions the moment they are made, with the reason: \"use the existing retry helper in src/net.ts, because it handles 429\". Record failed approaches with the cause, so they are not tried again.\n5. Checkpoint after each completed step: update Done and Next, run the relevant tests, and commit when the user wants commits. A checkpoint is safe to resume from.\n6. Delegate noisy side work, such as scanning many files, to a subagent and take back only its conclusion.\n7. Watch for drift: if you are about to repeat a command, reread the notes first. If the same problem fails twice, stop, write what you know, and propose a different approach.\n8. When the session ends or grows heavy, write a handoff block in the notes: current state, exact next command, open questions, and files in flight.\n\n## Rules\n\n- Never paste secrets into the notes.\n- Keep the notes under 80 lines. Prune what is no longer true.\n- The notes file records facts, not plans you have not decided on.\n\n## Report\n\nAt each checkpoint, one line on what is done and what is next.",
+  "example": {
+    "prompt": "We are migrating 40 endpoints to the new auth middleware. This will take a while, so keep yourself organized.",
+    "result": "Created .agent/notes.md. Goal: all 40 routes use requireAuth(), tests green. Decisions: keep legacy checkSession for /webhooks, which uses signatures. Done: 12 of 40, routes under /users and /teams. Next: /billing, starting with src/routes/billing/invoices.ts. Failed approach: codemod for route files, it broke 5 with custom wrappers, so edits are manual."
+  },
+  "faq": [
+    {
+      "question": "Is the notes file committed?",
+      "answer": "No. It is added to the local git exclude list, so it stays on your machine unless you decide to share it."
+    },
+    {
+      "question": "Does this replace a project memory file like CLAUDE.md?",
+      "answer": "No. A memory file holds lasting project rules. The notes file holds the state of one task and can be deleted when that task is finished."
+    }
+  ],
+  "access": [
+    "Reads files in your project",
+    "Writes a notes file under .agent and a line in .git/info/exclude",
+    "Runs your tests at checkpoints"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

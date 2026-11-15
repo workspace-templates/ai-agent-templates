@@ -1,0 +1,46 @@
+{
+  "slug": "remix-rules",
+  "title": "Remix Rules",
+  "kind": "rules",
+  "category": "frontend",
+  "summary": "Project rules for Remix: route loaders and actions, nested routes, error boundaries, validated forms and progressive enhancement.",
+  "description": [
+    "These rules keep an agent working with the platform in Remix: data in loaders, writes in actions and forms that submit even before JavaScript loads.",
+    "They also set expectations for nested routes and error boundaries so failures stay local to one section of a page instead of taking down the whole screen."
+  ],
+  "stacks": [
+    "react",
+    "remix"
+  ],
+  "topics": [
+    "api-design",
+    "accessibility"
+  ],
+  "useWhen": [
+    "You add routes to a Remix app with an agent",
+    "Components fetch data with effects instead of loaders",
+    "A failed request blanks the whole page",
+    "Forms rely on client-side state only"
+  ],
+  "body": "# Project rules: Remix\n\n## Routes and data\n- Each route file owns its data. Read data in `loader`, change data in `action`, and read it in the component with `useLoaderData<typeof loader>()`. Do not fetch initial data in `useEffect`.\n- Use nested routes and `<Outlet />` for shared layouts. Name files with the flat-route dot convention and use pathless layouts for shared chrome.\n- Return responses with `json` or plain objects, set `headers` for caching on the loader, and keep loaders fast; load independent data in parallel with `Promise.all` or defer slow data.\n\n## Mutations\n- Use `<Form>` for navigation-style submits and `useFetcher` for in-place updates. Forms must work without JavaScript.\n- Validate form data on the server in the action with Zod, and return field errors with a 400 status; show them next to the inputs. Redirect after a successful write.\n- Protect actions and loaders: check the session first and throw a redirect or a 401 response.\n\n## Errors and UI state\n- Export an `ErrorBoundary` from every route that can fail, and use `isRouteErrorResponse` to tell expected errors (404, 403) from crashes. Throw `Response` objects for expected cases.\n- Use `useNavigation` for pending UI and optimistic updates.\n\n## Server-only code\n- Keep database and secrets in `*.server.ts` files so they never reach the client bundle.\n\n## Before finishing\n- Run `tsc`, the linter, the tests and `remix build`. Test loaders and actions as plain functions.",
+  "example": {
+    "prompt": "Add an edit form for a project name with validation",
+    "result": "The agent adds an action that parses with Zod and returns 400 with field errors, a Form with a pending state, a redirect on success, an ErrorBoundary and a test of the action function."
+  },
+  "faq": [
+    {
+      "question": "Why keep forms working without JavaScript?",
+      "answer": "Remix submits a normal form post first and enhances it later, so the feature survives slow loads and script failures."
+    },
+    {
+      "question": "Does this cover React Router framework mode?",
+      "answer": "Mostly yes, since Remix merged into it. Check file naming and import paths against your version."
+    }
+  ],
+  "access": [
+    "Instructions for the agent only; no commands or network use of its own"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}
