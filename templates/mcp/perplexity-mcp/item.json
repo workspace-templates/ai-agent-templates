@@ -1,0 +1,67 @@
+{
+  "slug": "perplexity-mcp",
+  "title": "Perplexity MCP Server",
+  "kind": "mcp",
+  "category": "productivity",
+  "summary": "Add Perplexity's official MCP server so your coding agent can run live web searches and get cited research answers while it works.",
+  "description": [
+    "Perplexity's MCP server gives an agent four tools: ranked web search, quick conversational answers, deep research with citations, and step-by-step reasoning. It is useful when a library changed after the model's training data ended.",
+    "This setup runs the server locally through npx and reads your key from the PERPLEXITY_API_KEY variable. Perplexity also offers a hosted Streamable HTTP endpoint with OAuth sign-in, if you prefer no local process."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation"
+  ],
+  "useWhen": [
+    "Check the current release notes for a library before upgrading",
+    "Look for a known issue behind an error message you cannot place",
+    "Get a cited comparison of two tools before you pick one",
+    "Verify an API detail that may have changed recently"
+  ],
+  "mcp": {
+    "name": "perplexity",
+    "transport": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "@perplexity-ai/mcp-server"
+    ],
+    "env": [
+      {
+        "name": "PERPLEXITY_API_KEY",
+        "description": "Your Perplexity API key, from your Perplexity API account"
+      }
+    ],
+    "headers": [],
+    "source": "https://docs.perplexity.ai/docs/getting-started/integrations/mcp-server",
+    "access": [
+      "Sends your search questions and prompts to Perplexity's API, which bills your API key",
+      "Does not read or change local files"
+    ]
+  },
+  "example": {
+    "prompt": "Use perplexity_search to find what changed in the latest Vite major release and list the breaking changes.",
+    "result": "Top results point to the Vite release notes and migration guide. Breaking changes: the minimum Node version was raised, a plugin hook was renamed, and one default build target moved. Each item cites its source URL."
+  },
+  "faq": [
+    {
+      "question": "Which tool should I ask for?",
+      "answer": "perplexity_search returns ranked links, perplexity_ask answers quickly, perplexity_research digs deeper with citations, and perplexity_reason handles logic problems."
+    },
+    {
+      "question": "Is there a way to avoid the local process?",
+      "answer": "Yes. Perplexity documents a remote server at https://api.perplexity.ai/mcp that signs in with OAuth or a bearer API key."
+    },
+    {
+      "question": "Does search_type fast matter?",
+      "answer": "Setting it on perplexity_search gives lower latency and cost. It needs local server version 1.3.0 or later."
+    }
+  ],
+  "access": [
+    "Sends your queries to Perplexity and uses your API quota",
+    "No access to your files"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

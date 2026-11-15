@@ -1,0 +1,58 @@
+{
+  "slug": "box-mcp",
+  "title": "Box MCP Server",
+  "kind": "mcp",
+  "category": "docs",
+  "summary": "Connect your coding agent to Box's hosted MCP server to search folders, read files and ask Box AI questions about documents you can already open.",
+  "description": [
+    "Box hosts its own remote MCP server at mcp.box.com. The agent can identify the signed-in user, list and search folders, read file content and use Box AI to answer questions about files or pull out metadata.",
+    "Access follows your Box permissions, so it reaches only what you could open yourself. An administrator has to switch the server on first, either the predefined Box MCP Server integration or an unlisted one, in the Admin Console under Integrations."
+  ],
+  "stacks": [],
+  "topics": [
+    "documentation"
+  ],
+  "useWhen": [
+    "Pull a spec or contract out of a shared Box folder while you implement it",
+    "Ask Box AI what a long PDF says about a deadline",
+    "Find the latest version of a design brief by folder search",
+    "Check an API requirements file stored in Box against your code"
+  ],
+  "mcp": {
+    "name": "box",
+    "transport": "http",
+    "url": "https://mcp.box.com",
+    "env": [],
+    "headers": [],
+    "source": "https://developer.box.com/guides/box-mcp/remote",
+    "access": [
+      "Reads files and folders your Box account can open, and runs Box AI questions on them",
+      "The OAuth scopes are readwrite, so Box lets the connection change content up to your own permissions"
+    ]
+  },
+  "example": {
+    "prompt": "In the Q4 Partners folder, find the signed SLA and tell me the uptime target and the credit for missing it.",
+    "result": "Found Acme-SLA-signed.pdf. The uptime target is 99.9 percent per month, and missing it earns a 10 percent credit on that month's fee."
+  },
+  "faq": [
+    {
+      "question": "Why does the setup ask for a client ID and secret?",
+      "answer": "Box uses OAuth 2.0. An admin creates the server in the Admin Console, which produces the client ID and secret, and your MCP client supplies the redirect URI."
+    },
+    {
+      "question": "Which OAuth scopes does it use?",
+      "answer": "Box documents root_readwrite, ai.readwrite and docgen.readwrite. The docgen scope needs an Enterprise Advanced license."
+    },
+    {
+      "question": "Is there a version I can run locally?",
+      "answer": "Box points to a separate self-hosted project, box-community/mcp-server-box, for that. This item covers only the hosted server."
+    }
+  ],
+  "access": [
+    "Reads your Box files and folders through your own permissions",
+    "OAuth scopes allow writes, so review what your admin enables"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "box": {
+      "httpUrl": "https://mcp.box.com"
+    }
+  }
+}

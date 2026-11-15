@@ -1,0 +1,60 @@
+{
+  "slug": "apify-mcp",
+  "title": "Apify MCP Server",
+  "kind": "mcp",
+  "category": "data",
+  "summary": "Give your coding agent Apify's hosted MCP server to find Actors, run web scrapers and read their datasets, signing in with OAuth.",
+  "description": [
+    "Apify is a platform of ready-made scrapers and automation programs called Actors. Its hosted MCP server lets an agent search the Apify Store, read an Actor's input schema, run it and fetch the results.",
+    "By default the server loads the Actor and docs tools plus web search and web fetch. Run storage, tasks, schedules and builds are off until you ask for them with a tools parameter on the URL, which keeps the surface small.",
+    "Running an Actor can use your Apify credits, so name the Actor and the limits in your prompt."
+  ],
+  "stacks": [],
+  "topics": [
+    "api-design"
+  ],
+  "useWhen": [
+    "Scrape a list of product pages into structured rows for a prototype",
+    "Search the Apify Store for an Actor that already does the job",
+    "Pull the dataset from a finished run into your test fixtures",
+    "Look up an Apify API detail without leaving the editor"
+  ],
+  "mcp": {
+    "name": "apify",
+    "transport": "http",
+    "url": "https://mcp.apify.com",
+    "env": [],
+    "headers": [],
+    "source": "https://docs.apify.com/platform/integrations/mcp",
+    "access": [
+      "Searches the Apify Store and reads Actor details and Apify documentation",
+      "Runs Actors on your account, which can spend Apify credits, and reads their datasets",
+      "Limit the tools with ?tools= on the URL; the endpoint allows 20 requests per second per user"
+    ]
+  },
+  "example": {
+    "prompt": "Find an Apify Actor that scrapes Google search results, run it for the query 'edge runtime benchmarks' with 10 results, and show me the titles.",
+    "result": "Ran apify/google-search-scraper with maxPagesPerQuery 1. Ten results returned, the first being 'Edge runtime cold start benchmarks, 2026' with its URL and snippet. The dataset ID is attached for follow-up."
+  },
+  "faq": [
+    {
+      "question": "Do I need an API token?",
+      "answer": "Not with OAuth, which opens a browser sign-in. A token is only needed for the bearer header option or for Apify's local npx server."
+    },
+    {
+      "question": "Can I try it without an account?",
+      "answer": "Partly. If the tools parameter lists only search-actors, fetch-actor-details and the docs and API lookup tools, no token is required. Anything else needs sign-in."
+    },
+    {
+      "question": "Why does call-actor not return my results?",
+      "answer": "It waits up to 45 seconds and returns run status and storage IDs. Follow it with get-dataset-items to read the data."
+    }
+  ],
+  "access": [
+    "Runs Actors on your Apify account and reads their output",
+    "Can consume Apify credits"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

@@ -1,0 +1,71 @@
+{
+  "slug": "convex-mcp",
+  "title": "Convex MCP Server",
+  "kind": "mcp",
+  "category": "database",
+  "summary": "Let your coding agent inspect a Convex deployment's tables, data, logs and functions through the Convex CLI's MCP server, with write tools turned off.",
+  "description": [
+    "The Convex CLI ships an MCP server that starts with npx and talks to your project's deployment. The agent can list tables and schemas, page through documents, run read-only queries and read recent function logs.",
+    "This setup passes the documented --disable-tools flag to remove run, envSet and envRemove, so the agent can look at your backend but cannot call mutations or change environment variables.",
+    "Production deployments stay off by default. Convex asks for an explicit dangerous flag to enable them, and this setup does not add it."
+  ],
+  "stacks": [
+    "typescript"
+  ],
+  "topics": [
+    "debugging",
+    "typescript"
+  ],
+  "useWhen": [
+    "Check what is really stored in a table while you debug a query",
+    "Read the last function errors after a failed deploy",
+    "Compare a schema with the types you wrote in your code",
+    "Find slow or failing functions from the health insights"
+  ],
+  "mcp": {
+    "name": "convex",
+    "transport": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "convex@latest",
+      "mcp",
+      "start",
+      "--disable-tools",
+      "run,envSet,envRemove"
+    ],
+    "env": [],
+    "headers": [],
+    "source": "https://docs.convex.dev/ai/convex-mcp-server",
+    "access": [
+      "Reads tables, documents, function metadata and logs from your development deployment",
+      "Environment variable values can be read with envGet and envList, so keep secrets out of dev",
+      "Cannot run functions or set and remove environment variables with the tools disabled here"
+    ]
+  },
+  "example": {
+    "prompt": "List my Convex tables, then show the five newest documents in messages and the last errors from the logs.",
+    "result": "Tables: users, messages, channels. The five newest messages are listed with their channelId and author. Logs show two sendMessage failures: a validation error for an empty body."
+  },
+  "faq": [
+    {
+      "question": "How do I limit it to one deployment?",
+      "answer": "Set the CONVEX_DEPLOY_KEY environment variable before starting the server. Convex notes that the insights tool is unavailable when you do."
+    },
+    {
+      "question": "How do I point it at production?",
+      "answer": "Convex requires the --dangerously-enable-production-deployments flag, and offers --cautiously-allow-production-pii for data reads. Leave both off unless you accept that risk."
+    },
+    {
+      "question": "Which tools can I switch off?",
+      "answer": "The flag takes data, envGet, envList, envRemove, envSet, functionSpec, insights, logs, run, runOneoffQuery, status and tables, separated by commas."
+    }
+  ],
+  "access": [
+    "Reads data and logs from your Convex development deployment",
+    "Write tools are disabled in this setup"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}

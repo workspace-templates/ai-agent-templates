@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "intercom": {
+      "httpUrl": "https://mcp.intercom.com/mcp"
+    }
+  }
+}

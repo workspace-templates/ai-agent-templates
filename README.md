@@ -1,6 +1,6 @@
 # AI templates for coding agents
 
-495 free, original templates for **Claude Code, Codex, Cursor, Gemini CLI and GitHub Copilot**: 150 skills, 100 subagents, 100 commands and prompts, 55 mcp setups, 40 hooks, 50 project rules. Each one is written once and delivered as the exact file every tool expects.
+500 free, original templates for **Claude Code, Codex, Cursor, Gemini CLI and GitHub Copilot**: 150 skills, 100 subagents, 100 commands and prompts, 60 mcp setups, 40 hooks, 50 project rules. Each one is written once and delivered as the exact file every tool expects.
 
 Browse and search them at **[workspacetemplates.com/ai](https://workspacetemplates.com/ai/)**.
 
@@ -393,15 +393,17 @@ Every template says what it can read, change or run. Read the file before you in
 | [Write Runbook](templates/commands/write-runbook/) | Writes an on-call runbook for a service or alert, with first checks, exact commands, escalation and a safe way back. |
 | [Write Tests](templates/commands/write-tests/) | Writes tests for a named file or function in your existing test style, runs them and reports what they cover and what they miss. |
 
-### MCP setups (55)
+### MCP setups (60)
 
 | Template | What it does |
 |---|---|
+| [Apify MCP Server](templates/mcp/apify-mcp/) | Give your coding agent Apify's hosted MCP server to find Actors, run web scrapers and read their datasets, signing in with OAuth. |
 | [Asana MCP Server](templates/mcp/asana-mcp/) | Let your coding agent read and update Asana tasks and projects through Asana's hosted V2 MCP server with a browser OAuth sign-in. |
 | [Atlassian MCP Server](templates/mcp/atlassian-mcp/) | Connect your agent to Atlassian's hosted MCP server to search and update Jira work items and Confluence pages with your own permissions. |
 | [Auth0 MCP Server](templates/mcp/auth0-mcp/) | Inspect Auth0 applications, APIs, actions and logs from your coding agent with Auth0's official MCP server, in read-only mode by default. |
 | [AWS Documentation MCP Server](templates/mcp/aws-mcp/) | Run the AWS Labs documentation MCP server with uvx so your agent can search and read current AWS docs instead of guessing from memory. |
 | [Azure MCP Server](templates/mcp/azure-mcp/) | Start Microsoft's Azure MCP server via npx and let the agent work with Azure storage, Monitor logs and Cosmos DB using your az login. |
+| [Box MCP Server](templates/mcp/box-mcp/) | Connect your coding agent to Box's hosted MCP server to search folders, read files and ask Box AI questions about documents you can already open. |
 | [Brave Search MCP Server](templates/mcp/brave-mcp/) | Give your coding agent live web, news, image and local search through Brave's own MCP server, so it can look up current docs and errors. |
 | [Browserbase MCP Server](templates/mcp/browserbase-mcp/) | Run browser sessions in the Browserbase cloud from your agent to open pages, act on them in plain language and extract data, via the self-hosted server. |
 | [Chroma MCP Server](templates/mcp/chroma-mcp/) | Create Chroma collections and add, query and inspect embeddings from your coding agent with the chroma-mcp server, run through uvx. |
@@ -411,6 +413,7 @@ Every template says what it can read, change or run. Read the file before you in
 | [ClickUp MCP Server](templates/mcp/clickup-mcp/) | Connect your agent to ClickUp's hosted MCP server to search, create and update tasks, docs and time entries after an OAuth sign-in. |
 | [Cloudflare MCP Server](templates/mcp/cloudflare-mcp/) | Point your agent at Cloudflare's hosted API MCP server to manage Workers, R2, DNS and other products and to search the Cloudflare docs. |
 | [Context7 MCP Server](templates/mcp/context7-mcp/) | Give your coding agent current library documentation and code examples through Upstash's Context7 MCP server, so it stops guessing at old APIs. |
+| [Convex MCP Server](templates/mcp/convex-mcp/) | Let your coding agent inspect a Convex deployment's tables, data, logs and functions through the Convex CLI's MCP server, with write tools turned off. |
 | [Docker MCP Gateway](templates/mcp/docker-mcp/) | Route your agent through Docker's MCP gateway so each tool server runs in its own isolated container with secrets kept out of env variables. |
 | [Exa MCP Server](templates/mcp/exa-mcp/) | Add Exa's hosted MCP server so your agent can run neural web search and fetch full page contents with web_search_exa and web_fetch_exa. |
 | [Fetch MCP Server](templates/mcp/fetch-mcp/) | Let your agent download a web page and read it as clean markdown, in chunks, using the reference fetch server from the MCP project. |
@@ -425,6 +428,7 @@ Every template says what it can read, change or run. Read the file before you in
 | [Grafana MCP Server](templates/mcp/grafana-mcp/) | Let your agent search Grafana dashboards, query Prometheus and Loki and read alert rules through Grafana's own MCP server, in read-only mode. |
 | [Honeycomb MCP Server](templates/mcp/honeycomb-mcp/) | Query Honeycomb traces, datasets and SLOs from your agent through Honeycomb's hosted MCP server, signed in with OAuth. |
 | [Hugging Face MCP Server](templates/mcp/huggingface-mcp/) | Search Hugging Face models, datasets, Spaces and papers from your agent through the official hosted MCP server and a read token. |
+| [Intercom MCP Server](templates/mcp/intercom-mcp/) | Let your coding agent search Intercom conversations, contacts and Help Center articles through Intercom's hosted MCP server with OAuth sign-in. |
 | [Linear MCP Server](templates/mcp/linear-mcp/) | Connect your agent to Linear's hosted MCP server to find, read, create and update issues and projects without leaving the terminal. |
 | [Memory MCP Server](templates/mcp/memory-mcp/) | Give your agent a persistent knowledge graph of people, projects and decisions that survives between sessions, stored in one local JSONL file. |
 | [monday.com MCP Server](templates/mcp/monday-mcp/) | Run monday.com's official MCP server locally in read-only mode so your agent can inspect boards and items without changing anything. |
@@ -434,6 +438,7 @@ Every template says what it can read, change or run. Read the file before you in
 | [Notion MCP Server](templates/mcp/notion-mcp/) | Connect your agent to Notion's hosted MCP server to search workspace pages, read databases and write notes, specs and tasks back. |
 | [PagerDuty MCP Server](templates/mcp/pagerduty-mcp/) | Read PagerDuty incidents, services, schedules and on-call rotations from your coding agent using PagerDuty's local MCP server in read-only mode. |
 | [PayPal MCP Server](templates/mcp/paypal-mcp/) | Run PayPal's official MCP server locally so your agent can create orders and invoices, manage subscriptions and list transactions in sandbox. |
+| [Perplexity MCP Server](templates/mcp/perplexity-mcp/) | Add Perplexity's official MCP server so your coding agent can run live web searches and get cited research answers while it works. |
 | [Pinecone MCP Server](templates/mcp/pinecone-mcp/) | Let your coding agent manage Pinecone indexes and run vector searches and upserts through Pinecone's own MCP server, started with npx. |
 | [PlanetScale MCP Server](templates/mcp/planetscale-mcp/) | Inspect PlanetScale databases and branches from your agent, run read queries, check schema and review performance insights over OAuth. |
 | [Playwright MCP Server](templates/mcp/playwright-mcp/) | Let your coding agent drive a real browser through Microsoft's Playwright MCP server to click through pages, fill forms and check what renders. |

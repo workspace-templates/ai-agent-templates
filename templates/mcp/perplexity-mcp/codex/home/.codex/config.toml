@@ -1,0 +1,6 @@
+[mcp_servers.perplexity]
+command = "npx"
+args = ["-y","@perplexity-ai/mcp-server"]
+
+[mcp_servers.perplexity.env]
+PERPLEXITY_API_KEY = "${PERPLEXITY_API_KEY}"

@@ -1,0 +1,61 @@
+{
+  "slug": "intercom-mcp",
+  "title": "Intercom MCP Server",
+  "kind": "mcp",
+  "category": "productivity",
+  "summary": "Let your coding agent search Intercom conversations, contacts and Help Center articles through Intercom's hosted MCP server with OAuth sign-in.",
+  "description": [
+    "Intercom runs a hosted MCP server for US workspaces. Once connected, the agent can search conversations and contacts, read companies, and look up or draft Help Center articles from the same chat where you write code.",
+    "Sign-in is OAuth in your browser, so no token sits in a config file. It is handy when a support ticket points at a bug and you want the customer's exact words next to the stack trace.",
+    "EU workspaces use a different host, mcp.eu.intercom.com, and Australian workspaces are not supported."
+  ],
+  "stacks": [],
+  "topics": [
+    "debugging",
+    "documentation"
+  ],
+  "useWhen": [
+    "Find the support conversations that mention a bug you are fixing",
+    "Look up which company a reporting contact belongs to",
+    "Check a Help Center article before changing the feature it describes",
+    "Add an internal note to a conversation after a fix ships"
+  ],
+  "mcp": {
+    "name": "intercom",
+    "transport": "http",
+    "url": "https://mcp.intercom.com/mcp",
+    "env": [],
+    "headers": [],
+    "source": "https://developers.intercom.com/docs/guides/mcp",
+    "access": [
+      "Reads conversations, contacts, companies and Help Center articles in your Intercom workspace",
+      "Can add internal notes to conversations and create or update Help Center articles",
+      "Cannot send customer-visible replies"
+    ]
+  },
+  "example": {
+    "prompt": "Search Intercom for conversations from the last week that mention a failed invoice export and summarize what customers saw.",
+    "result": "6 conversations match. Four customers report a blank PDF after clicking Export, two mention a timeout on accounts with more than 2,000 invoices. All six started after Tuesday's release."
+  },
+  "faq": [
+    {
+      "question": "Which URL do I use for an EU workspace?",
+      "answer": "Swap the host for mcp.eu.intercom.com. Intercom lists the US and EU endpoints on its MCP guide, and Australian workspaces are not supported yet."
+    },
+    {
+      "question": "Will the agent message my customers?",
+      "answer": "No. The only way it writes into a conversation is an internal note that teammates see. Be aware that a note on a snoozed conversation assigned to someone else can reopen it."
+    },
+    {
+      "question": "Can I use an API token instead of OAuth?",
+      "answer": "Intercom allows a bearer token in an Authorization header, but that route skips the Fin Operator tools. OAuth is the recommended path."
+    }
+  ],
+  "access": [
+    "Reads support conversations and customer data in Intercom",
+    "Can write internal notes and Help Center articles"
+  ],
+  "createdAt": "2026-11-15",
+  "updatedAt": "2026-11-15",
+  "published": true
+}
