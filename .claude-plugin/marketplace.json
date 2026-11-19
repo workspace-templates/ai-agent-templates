@@ -1,0 +1,370 @@
+{
+  "name": "workspacetemplates",
+  "description": "Free, MIT-licensed skills, subagents, commands and hooks for Claude Code from https://workspacetemplates.com/ai/",
+  "owner": {
+    "name": "WorkspaceTemplates",
+    "url": "https://workspacetemplates.com/ai/"
+  },
+  "plugins": [
+    {
+      "name": "code-quality",
+      "source": "./plugins/code-quality",
+      "description": "Review, refactoring and clean-up: code review agents, refactor skills and quality commands",
+      "version": "1.0.0",
+      "author": {
+        "name": "WorkspaceTemplates",
+        "url": "https://workspacetemplates.com/ai/"
+      },
+      "homepage": "https://workspacetemplates.com/ai/",
+      "repository": "https://github.com/workspace-templates/ai-agent-templates",
+      "license": "MIT",
+      "keywords": [
+        "debugging",
+        "logging",
+        "typescript",
+        "python",
+        "api-design",
+        "code-review",
+        "documentation",
+        "refactoring",
+        "performance",
+        "testing",
+        "ci",
+        "security"
+      ]
+    },
+    {
+      "name": "backend-apis",
+      "source": "./plugins/backend-apis",
+      "description": "Backend and API work: endpoint design, error handling, caching, deprecations and API docs",
+      "version": "1.0.0",
+      "author": {
+        "name": "WorkspaceTemplates",
+        "url": "https://workspacetemplates.com/ai/"
+      },
+      "homepage": "https://workspacetemplates.com/ai/",
+      "repository": "https://github.com/workspace-templates/ai-agent-templates",
+      "license": "MIT",
+      "keywords": [
+        "performance",
+        "api-design",
+        "testing",
+        "docker",
+        "sql",
+        "security",
+        "logging",
+        "code-review",
+        "migrations",
+        "python",
+        "documentation",
+        "debugging"
+      ]
+    },
+    {
+      "name": "devops-cloud",
+      "source": "./plugins/devops-cloud",
+      "description": "DevOps and cloud: CI pipelines, containers, Kubernetes, Terraform and incident work",
+      "version": "1.0.0",
+      "author": {
+        "name": "WorkspaceTemplates",
+        "url": "https://workspacetemplates.com/ai/"
+      },
+      "homepage": "https://workspacetemplates.com/ai/",
+      "repository": "https://github.com/workspace-templates/ai-agent-templates",
+      "license": "MIT",
+      "keywords": [
+        "ci",
+        "security",
+        "documentation",
+        "api-design",
+        "performance",
+        "logging",
+        "debugging",
+        "python",
+        "docker",
+        "migrations",
+        "devops",
+        "refactoring"
+      ]
+    },
+    {
+      "name": "testing",
+      "source": "./plugins/testing",
+      "description": "Testing: unit, integration and end-to-end tests, flaky test hunting and coverage",
+      "version": "1.0.0",
+      "author": {
+        "name": "WorkspaceTemplates",
+        "url": "https://workspacetemplates.com/ai/"
+      },
+      "homepage": "https://workspacetemplates.com/ai/",
+      "repository": "https://github.com/workspace-templates/ai-agent-templates",
+      "license": "MIT",
+      "keywords": [
+        "testing",
+        "debugging",
+        "performance",
+        "api-design",
+        "code-review",
+        "accessibility",
+        "sql",
+        "typescript",
+        "documentation",
+        "python",
+        "git",
+        "refactoring"
+      ]
+    },
+    {
+      "name": "frontend",
+      "source": "./plugins/frontend",
+      "description": "Frontend: components, accessibility, performance, state and framework migrations",
+      "version": "1.0.0",
+      "author": {
+        "name": "WorkspaceTemplates",
+        "url": "https://workspacetemplates.com/ai/"
+      },
+      "homepage": "https://workspacetemplates.com/ai/",
+      "repository": "https://github.com/workspace-templates/ai-agent-templates",
+      "license": "MIT",
+      "keywords": [
+        "testing",
+        "accessibility",
+        "code-review",
+        "api-design",
+        "debugging",
+        "typescript",
+        "refactoring",
+        "migrations",
+        "performance",
+        "security",
+        "documentation"
+      ]
+    },
+    {
+      "name": "git-releases",
+      "source": "./plugins/git-releases",
+      "description": "Git and releases: commits, pull requests, changelogs, versioning and release notes",
+      "version": "1.0.0",
+      "author": {
+        "name": "WorkspaceTemplates",
+        "url": "https://workspacetemplates.com/ai/"
+      },
+      "homepage": "https://workspacetemplates.com/ai/",
+      "repository": "https://github.com/workspace-templates/ai-agent-templates",
+      "license": "MIT",
+      "keywords": [
+        "git",
+        "code-review",
+        "debugging",
+        "api-design",
+        "documentation",
+        "refactoring",
+        "github",
+        "ci",
+        "typescript"
+      ]
+    },
+    {
+      "name": "security",
+      "source": "./plugins/security",
+      "description": "Security: audits, secret scanning, dependency risks, auth reviews and threat models",
+      "version": "1.0.0",
+      "author": {
+        "name": "WorkspaceTemplates",
+        "url": "https://workspacetemplates.com/ai/"
+      },
+      "homepage": "https://workspacetemplates.com/ai/",
+      "repository": "https://github.com/workspace-templates/ai-agent-templates",
+      "license": "MIT",
+      "keywords": [
+        "security",
+        "ci",
+        "api-design",
+        "debugging",
+        "code-review",
+        "git",
+        "docker",
+        "testing",
+        "documentation",
+        "logging",
+        "devops",
+        "sql"
+      ]
+    },
+    {
+      "name": "data-ai",
+      "source": "./plugins/data-ai",
+      "description": "Data and AI: pipelines, notebooks, evaluations, prompts and model work",
+      "version": "1.0.0",
+      "author": {
+        "name": "WorkspaceTemplates",
+        "url": "https://workspacetemplates.com/ai/"
+      },
+      "homepage": "https://workspacetemplates.com/ai/",
+      "repository": "https://github.com/workspace-templates/ai-agent-templates",
+      "license": "MIT",
+      "keywords": [
+        "python",
+        "debugging",
+        "api-design",
+        "vector-search",
+        "data",
+        "refactoring",
+        "sql",
+        "logging",
+        "migrations",
+        "documentation",
+        "testing",
+        "web-scraping"
+      ]
+    },
+    {
+      "name": "databases",
+      "source": "./plugins/databases",
+      "description": "Databases: schema design, migrations, query tuning and data fixes",
+      "version": "1.0.0",
+      "author": {
+        "name": "WorkspaceTemplates",
+        "url": "https://workspacetemplates.com/ai/"
+      },
+      "homepage": "https://workspacetemplates.com/ai/",
+      "repository": "https://github.com/workspace-templates/ai-agent-templates",
+      "license": "MIT",
+      "keywords": [
+        "sql",
+        "performance",
+        "security",
+        "debugging",
+        "typescript",
+        "migrations",
+        "api-design",
+        "code-review",
+        "testing",
+        "python"
+      ]
+    },
+    {
+      "name": "docs",
+      "source": "./plugins/docs",
+      "description": "Documentation: READMEs, ADRs, API references, guides and doc reviews",
+      "version": "1.0.0",
+      "author": {
+        "name": "WorkspaceTemplates",
+        "url": "https://workspacetemplates.com/ai/"
+      },
+      "homepage": "https://workspacetemplates.com/ai/",
+      "repository": "https://github.com/workspace-templates/ai-agent-templates",
+      "license": "MIT",
+      "keywords": [
+        "documentation",
+        "api-design",
+        "code-review",
+        "typescript",
+        "debugging",
+        "devops"
+      ]
+    },
+    {
+      "name": "workflow",
+      "source": "./plugins/workflow",
+      "description": "Workflow: planning, handovers, standups, task breakdown and session habits",
+      "version": "1.0.0",
+      "author": {
+        "name": "WorkspaceTemplates",
+        "url": "https://workspacetemplates.com/ai/"
+      },
+      "homepage": "https://workspacetemplates.com/ai/",
+      "repository": "https://github.com/workspace-templates/ai-agent-templates",
+      "license": "MIT",
+      "keywords": [
+        "documentation",
+        "debugging",
+        "logging",
+        "ci",
+        "code-review",
+        "testing",
+        "api-design",
+        "security",
+        "refactoring",
+        "python",
+        "git"
+      ]
+    },
+    {
+      "name": "mobile",
+      "source": "./plugins/mobile",
+      "description": "Mobile: iOS, Android, React Native and Flutter work",
+      "version": "1.0.0",
+      "author": {
+        "name": "WorkspaceTemplates",
+        "url": "https://workspacetemplates.com/ai/"
+      },
+      "homepage": "https://workspacetemplates.com/ai/",
+      "repository": "https://github.com/workspace-templates/ai-agent-templates",
+      "license": "MIT",
+      "keywords": [
+        "code-review",
+        "performance",
+        "debugging",
+        "ci",
+        "testing",
+        "refactoring",
+        "documentation",
+        "accessibility",
+        "api-design",
+        "typescript"
+      ]
+    },
+    {
+      "name": "safety-hooks",
+      "source": "./plugins/safety-hooks",
+      "description": "Hooks that block risky commands and protect secrets before Claude Code runs them",
+      "version": "1.0.0",
+      "author": {
+        "name": "WorkspaceTemplates",
+        "url": "https://workspacetemplates.com/ai/"
+      },
+      "homepage": "https://workspacetemplates.com/ai/",
+      "repository": "https://github.com/workspace-templates/ai-agent-templates",
+      "license": "MIT",
+      "keywords": [
+        "hooks",
+        "guardrails"
+      ]
+    },
+    {
+      "name": "quality-hooks",
+      "source": "./plugins/quality-hooks",
+      "description": "Hooks that check formatting, linting, tests and schema changes as Claude Code edits",
+      "version": "1.0.0",
+      "author": {
+        "name": "WorkspaceTemplates",
+        "url": "https://workspacetemplates.com/ai/"
+      },
+      "homepage": "https://workspacetemplates.com/ai/",
+      "repository": "https://github.com/workspace-templates/ai-agent-templates",
+      "license": "MIT",
+      "keywords": [
+        "hooks",
+        "guardrails"
+      ]
+    },
+    {
+      "name": "git-workflow-hooks",
+      "source": "./plugins/git-workflow-hooks",
+      "description": "Hooks that keep Git, workflow and deploy commands safe and tidy",
+      "version": "1.0.0",
+      "author": {
+        "name": "WorkspaceTemplates",
+        "url": "https://workspacetemplates.com/ai/"
+      },
+      "homepage": "https://workspacetemplates.com/ai/",
+      "repository": "https://github.com/workspace-templates/ai-agent-templates",
+      "license": "MIT",
+      "keywords": [
+        "hooks",
+        "guardrails"
+      ]
+    }
+  ]
+}

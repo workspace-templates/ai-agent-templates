@@ -14,6 +14,30 @@ npx workspacetemplates list postgres
 
 The CLI has no dependencies and no telemetry. It writes plain text files into your project and never runs what it downloads. Its source is in [`cli/`](cli/).
 
+## Or install a bundle as a Claude Code plugin
+
+This repository is also a Claude Code plugin marketplace. Install a bundle in one step (Claude Code 2.1.275 or later):
+
+| Bundle | What is in it | Install |
+|---|---|---|
+| `code-quality` | Review, refactoring and clean-up: code review agents, refactor skills and quality commands | `/plugin install code-quality --marketplace workspace-templates/ai-agent-templates` |
+| `backend-apis` | Backend and API work: endpoint design, error handling, caching, deprecations and API docs | `/plugin install backend-apis --marketplace workspace-templates/ai-agent-templates` |
+| `devops-cloud` | DevOps and cloud: CI pipelines, containers, Kubernetes, Terraform and incident work | `/plugin install devops-cloud --marketplace workspace-templates/ai-agent-templates` |
+| `testing` | Testing: unit, integration and end-to-end tests, flaky test hunting and coverage | `/plugin install testing --marketplace workspace-templates/ai-agent-templates` |
+| `frontend` | Frontend: components, accessibility, performance, state and framework migrations | `/plugin install frontend --marketplace workspace-templates/ai-agent-templates` |
+| `git-releases` | Git and releases: commits, pull requests, changelogs, versioning and release notes | `/plugin install git-releases --marketplace workspace-templates/ai-agent-templates` |
+| `security` | Security: audits, secret scanning, dependency risks, auth reviews and threat models | `/plugin install security --marketplace workspace-templates/ai-agent-templates` |
+| `data-ai` | Data and AI: pipelines, notebooks, evaluations, prompts and model work | `/plugin install data-ai --marketplace workspace-templates/ai-agent-templates` |
+| `databases` | Databases: schema design, migrations, query tuning and data fixes | `/plugin install databases --marketplace workspace-templates/ai-agent-templates` |
+| `docs` | Documentation: READMEs, ADRs, API references, guides and doc reviews | `/plugin install docs --marketplace workspace-templates/ai-agent-templates` |
+| `workflow` | Workflow: planning, handovers, standups, task breakdown and session habits | `/plugin install workflow --marketplace workspace-templates/ai-agent-templates` |
+| `mobile` | Mobile: iOS, Android, React Native and Flutter work | `/plugin install mobile --marketplace workspace-templates/ai-agent-templates` |
+| `safety-hooks` | Hooks that block risky commands and protect secrets before Claude Code runs them | `/plugin install safety-hooks --marketplace workspace-templates/ai-agent-templates` |
+| `quality-hooks` | Hooks that check formatting, linting, tests and schema changes as Claude Code edits | `/plugin install quality-hooks --marketplace workspace-templates/ai-agent-templates` |
+| `git-workflow-hooks` | Hooks that keep Git, workflow and deploy commands safe and tidy | `/plugin install git-workflow-hooks --marketplace workspace-templates/ai-agent-templates` |
+
+On older versions, add the marketplace first with `/plugin marketplace add workspace-templates/ai-agent-templates`, then run `/plugin install <bundle>@workspacetemplates`. Hook bundles run commands on their own, so install them only if you want those checks. Rules and MCP setups install with `npx` only.
+
 ## How this repository is organised
 
 ```
